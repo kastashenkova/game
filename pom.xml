@@ -45,5 +45,12 @@
             <artifactId>jme3-terrain</artifactId>
             <version>3.8.1-stable</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.jmonkeyengine</groupId>
+            <artifactId>jme3-plugins</artifactId>
+            <version>3.8.1-stable</version>
+        </dependency>
+
     </dependencies>
 </project>
