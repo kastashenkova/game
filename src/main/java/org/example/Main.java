@@ -29,7 +29,7 @@ public class Main extends SimpleApplication {
         assetManager.registerLocator("assets", FileLocator.class);
 
         // Завантажуємо героя
-        hero = (Node) assetManager.loadModel("Models/Hero/Carla.glb");
+        hero = (Node) assetManager.loadModel("Models/Hero/Mei.glb");
         rootNode.attachChild(hero);
         hero.scale(4f);
         hero.setLocalTranslation(0, 0, 0);
