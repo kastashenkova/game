@@ -20,12 +20,12 @@ public class Main extends SimpleApplication {
         assetManager.registerLocator("assets", FileLocator.class);
 
         // Завантаження героя
-        Spatial hero = assetManager.loadModel("Models/Hero/heroe.gltf");
+        Spatial hero = assetManager.loadModel("Models/Hero/woman.glb");
 
         // Додати героя на сцену
         rootNode.attachChild(hero);
 
-        hero.scale(0.05f); // або 0.1f, залежно від ситуації
+        hero.scale(4f); // або 0.1f, залежно від ситуації
 
 
         cam.setLocation(new Vector3f(0, 2, 10)); // Позиція камери
