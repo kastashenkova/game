@@ -17,7 +17,6 @@ public class GameFrame extends JFrame {
     private JButton toggleChatButton;
     private boolean chatExpanded = true;
 
-    // Store initial hero creation parameters
     private final String initialHeroName;
     private final String initialHeroImagePath;
     private final String initialDiamondImagePath;
@@ -25,14 +24,12 @@ public class GameFrame extends JFrame {
     private final int initialHeroY;
     private final double initialScaleFactor;
 
-
     public GameFrame(String heroName, String heroImagePath) {
         setTitle("NaUKMA Sims");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
 
-        // Define initial hero properties here
         this.initialHeroName = heroName;
         this.initialHeroImagePath = heroImagePath;
         this.initialDiamondImagePath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\diamond.png";
@@ -40,11 +37,8 @@ public class GameFrame extends JFrame {
         this.initialHeroY = 250;
         this.initialScaleFactor = 0.4;
 
-        // Initialize the hero with the stored initial properties
         hero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
 
-        // Pass only the hero and parent frame to GamePanel.
-        // GamePanel will manage its internal state including resetting for new game.
         gamePanel = new GamePanel(hero, this);
         add(gamePanel, BorderLayout.CENTER);
 
@@ -142,6 +136,6 @@ public class GameFrame extends JFrame {
 
     public void handleGameOver(String reason) {
         dispose();
-        SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true)); // Ensure it runs on EDT
+        SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
     }
 }
