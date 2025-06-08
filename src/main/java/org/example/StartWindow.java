@@ -21,7 +21,6 @@ public class StartWindow extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mainPanel.setBackground(new Color(220, 230, 250)); // Легкий синій фон
 
-        // Шляхи до зображень персонажів
         String oksanaPath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\Oksana.png";
         String oleksandraPath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\Oleksandra.png"; // Припустимо, у вас є ці файли
         String gabrielPath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\Gabriel.png";
@@ -29,7 +28,7 @@ public class StartWindow extends JFrame {
 
         // Перевірка існування файлів зображень (допоможе уникнути помилок)
         if (!new File(oksanaPath).exists()) {
-            System.err.println("Помилка: Файл Oksana.png не знайдено за шляхом: " + oksanaPath);
+            System.err.println("Помилка: Файл із зображенням персонажа не знайдено за шляхом");
         }
 
         addCharacterPanel(mainPanel, "Оксана", oksanaPath);
@@ -55,7 +54,7 @@ public class StartWindow extends JFrame {
 
         ImageIcon icon = new ImageIcon(imagePath);
         Image image = icon.getImage();
-        Image scaledImage = image.getScaledInstance(50, 150, Image.SCALE_SMOOTH); // Розмір зображення
+        Image scaledImage = image.getScaledInstance(60, 150, Image.SCALE_SMOOTH); // Розмір зображення
         JLabel imageLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
         charPanel.add(imageLabel, BorderLayout.CENTER);
 
@@ -82,7 +81,6 @@ public class StartWindow extends JFrame {
         }
     }
 
-    // Методи для отримання обраного персонажа (не потрібні, якщо гра запускається безпосередньо)
     public String getSelectedCharacterName() {
         return selectedCharacterName;
     }

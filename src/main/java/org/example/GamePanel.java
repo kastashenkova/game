@@ -74,7 +74,7 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel(Hero hero, GameFrame parentFrame) {
         this.hero = hero;
         this.parentFrame = parentFrame;
-        setPreferredSize(new Dimension(800, 600));
+        setPreferredSize(new Dimension(1000, 800));
         setBackground(Color.LIGHT_GRAY);
 
         setLayout(null);

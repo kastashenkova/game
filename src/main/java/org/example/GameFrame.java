@@ -20,7 +20,7 @@ public class GameFrame extends JFrame {
     private boolean chatExpanded = true;
 
     public GameFrame(String heroName, String heroImagePath) {
-        setTitle("2D Hero Game (Swing)");
+        setTitle("NaUKMA Sims");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
@@ -66,7 +66,7 @@ public class GameFrame extends JFrame {
 
         chatPanel.add(inputPanel, BorderLayout.SOUTH);
 
-        toggleChatButton = new JButton("<<");
+        toggleChatButton = new JButton("<< Чат");
         toggleChatButton.setFont(new Font("Arial", Font.BOLD, 10));
         toggleChatButton.setMargin(new Insets(2, 2, 2, 2));
         toggleChatButton.addActionListener(e -> toggleChatPanel());
