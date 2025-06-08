@@ -31,14 +31,11 @@ public class GameFrame extends JFrame {
 
         hero = new Hero(heroName, heroImagePath, diamondImagePath, 350, 250, scaleFactor);
 
-        // --- ВИПРАВЛЕННЯ: ІНІЦІАЛІЗУЄМО gamePanel ТУТ ---
         gamePanel = new GamePanel(hero, this);
-        add(gamePanel, BorderLayout.CENTER); // Додаємо його одразу до центру
+        add(gamePanel, BorderLayout.CENTER);
 
-        // Модифікована панель чату
         chatPanel = new JPanel(new BorderLayout());
         originalChatPanelWidth = 250;
-        // Тепер висота chatPanel буде динамічною, тому що gamePanel вже встановлений
         chatPanel.setPreferredSize(new Dimension(originalChatPanelWidth, 0));
         chatPanel.setBorder(BorderFactory.createTitledBorder("Чат КМА"));
 
@@ -78,8 +75,6 @@ public class GameFrame extends JFrame {
         chatControlPanel.add(toggleChatButton, BorderLayout.NORTH);
         chatControlPanel.add(chatPanel, BorderLayout.CENTER);
 
-        // Встановлюємо preferred/minimum/maximum size для chatControlPanel
-        // Тепер gamePanel.getPreferredSize() вже доступний
         chatControlPanel.setPreferredSize(new Dimension(originalChatPanelWidth, gamePanel.getPreferredSize().height));
         chatControlPanel.setMinimumSize(new Dimension(0, 0));
         chatControlPanel.setMaximumSize(new Dimension(originalChatPanelWidth, Short.MAX_VALUE));
@@ -114,14 +109,14 @@ public class GameFrame extends JFrame {
             chatControlPanel.setPreferredSize(new Dimension(toggleChatButton.getPreferredSize().width, chatControlPanel.getHeight()));
             chatControlPanel.setMinimumSize(new Dimension(toggleChatButton.getPreferredSize().width, chatControlPanel.getHeight()));
             chatControlPanel.setMaximumSize(new Dimension(toggleChatButton.getPreferredSize().width, Short.MAX_VALUE));
-            toggleChatButton.setText(">>");
+            toggleChatButton.setText("Чат >>");
             chatPanel.setVisible(false);
             toggleChatButton.setToolTipText("Розгорнути чат");
         } else {
             chatControlPanel.setPreferredSize(new Dimension(originalChatPanelWidth, chatControlPanel.getHeight()));
             chatControlPanel.setMinimumSize(new Dimension(originalChatPanelWidth, chatControlPanel.getHeight()));
             chatControlPanel.setMaximumSize(new Dimension(originalChatPanelWidth, Short.MAX_VALUE));
-            toggleChatButton.setText("<<");
+            toggleChatButton.setText("<< Чат");
             chatPanel.setVisible(true);
             toggleChatButton.setToolTipText("Згорнути чат");
         }

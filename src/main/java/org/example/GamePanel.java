@@ -41,11 +41,12 @@ public class GamePanel extends JPanel implements ActionListener {
             "Треба здати дедлайн з проєктного менеджменту!",
             "Де найкраща кава біля корпусу?",
             "Порадьте, як вижити на сесії в Могилянці!!!",
-            "Завтра пара з паном Брюховецьким, хто готовий?",
+            "Завтра пара з Пєчкуровою, хто готовий?",
+            "Хочу до Глибовця на лекцію!",
             "У когось є конспект з історії України?",
             "Не забудьте зареєструватися на вибіркові!",
             "Мій сім вже п'яту годину сидить над курсовою...",
-            "Хтось піде сьогодні на Вечорниці на Контрактовій?",
+            "Хтось піде сьогодні на КМЦ?",
             "Як же хочеться спати, але ж лекція з мікроекономіки!",
             "Шукаю одногрупників для роботи над спільним проєктом.",
             "Чи є в когось вільний комп'ютер у бібліотеці?",
@@ -53,7 +54,7 @@ public class GamePanel extends JPanel implements ActionListener {
             "Цей семінар з логіки просто вибух мозку.",
             "Коли наступний могилянський пікнік?",
             "Хтось вже бачив розклад на наступний семестр?",
-            "Ура, здали всі лаби з фізики!",
+            "Ура, здали всі лаби з матаналізу!",
             "Думаю про те, як поєднати навчання і роботу.",
             "Що не так із САЗом???",
             "Вже скучив за бурсою...",
@@ -107,13 +108,13 @@ public class GamePanel extends JPanel implements ActionListener {
         });
         heroActionsPanel.add(sleepButton);
 
-        JButton workButton = new JButton("Працювати");
-        workButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        workButton.addActionListener(e -> {
-            hero.work();
+        JButton studyButton = new JButton("Навчатися");
+        studyButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        studyButton.addActionListener(e -> {
+            hero.study();
             updateStatsDisplay();
         });
-        heroActionsPanel.add(workButton);
+        heroActionsPanel.add(studyButton);
 
         JButton relaxButton = new JButton("Відпочивати");
         relaxButton.setFont(new Font("Arial", Font.PLAIN, 10));

@@ -55,7 +55,7 @@ public class StartWindow extends JFrame {
 
         ImageIcon icon = new ImageIcon(imagePath);
         Image image = icon.getImage();
-        Image scaledImage = image.getScaledInstance(60, 150, Image.SCALE_SMOOTH); // Розмір зображення
+        Image scaledImage = image.getScaledInstance(50, 150, Image.SCALE_SMOOTH); // Розмір зображення
         JLabel imageLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
         charPanel.add(imageLabel, BorderLayout.CENTER);
 

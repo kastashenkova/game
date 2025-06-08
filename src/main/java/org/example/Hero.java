@@ -95,7 +95,6 @@ public class Hero {
         isSelected = selected;
     }
 
-    // --- Нове: Метод для отримання останнього повідомлення дії ---
     public String getLastActionMessage() {
         String message = lastActionMessage;
         lastActionMessage = null; // Очищуємо після отримання, щоб не повторювати
@@ -128,9 +127,9 @@ public class Hero {
         lastActionMessage = null;
     }
 
-    public void work() {
+    public void study() {
         if (energy < 20) {
-            setMessage(name + " не має енергії для роботи.");
+            setMessage(name + " не має енергії для навчання.");
             return;
         }
         energy -= 20;
@@ -158,16 +157,11 @@ public class Hero {
 
         if (hunger >= 80) health = Math.max(0, health - 1);
         if (energy < 20) mood = Math.max(0, mood - 1);
-        if (health <= 0) {
-            // System.out.println(name + " непритомний або помер. Гра закінчена.");
-        }
 
         animationTimer += SWAY_SPEED;
         double swayOffset = SWAY_AMPLITUDE * Math.sin(animationTimer);
         this.y = initialY + (int) swayOffset;
 
-        // Очищаємо повідомлення, якщо час його відображення минув,
-        // але НЕ очищаємо lastActionMessage тут, бо його має прочитати GamePanel
         if (currentTime > messageDisplayEndTime) {
             heroMessage = "";
         }
@@ -215,8 +209,8 @@ public class Hero {
         }
 
         if (diamondImage != null) {
-            int diamondWidth = (int) (diamondImage.getWidth() * scaleFactor);
-            int diamondHeight = (int) (diamondImage.getHeight() * scaleFactor);
+            int diamondWidth = (int) (diamondImage.getWidth() * 0.2);
+            int diamondHeight = (int) (diamondImage.getHeight() * 0.2);
             int diamondX = currentDrawX + (currentDrawWidth - diamondWidth) / 2;
             int diamondY = currentDrawY - diamondHeight - 10;
             g2d.drawImage(diamondImage, diamondX, diamondY, diamondWidth, diamondHeight, null);
