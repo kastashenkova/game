@@ -103,7 +103,7 @@ public class Hero {
     // New method to get the game over reason
     public String getGameOverReason() {
         if (isGameOverDueToEnergy) {
-            return name + " вичерпав всю енергію і не відпочив вчасно! Гра закінчена.";
+            return name + " не має енергії! Гра завершена.";
         }
         return null;
     }
@@ -162,7 +162,6 @@ public class Hero {
             lastHungerIncreaseTime = currentTime;
         }
 
-        // Mood decrease if energy is low (less than 20)
         if (energy < 20) {
             mood = Math.max(0, mood - 1);
         }
@@ -192,7 +191,6 @@ public class Hero {
         double swayOffset = SWAY_AMPLITUDE * Math.sin(animationTimer);
         this.y = initialY + (int) swayOffset;
 
-        // Clear temporary hero message after duration
         if (currentTime > messageDisplayEndTime) {
             heroMessage = "";
         }
