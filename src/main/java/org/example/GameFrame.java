@@ -1,7 +1,5 @@
 package org.example;
 
-import org.example.StartWindow;
-
 import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -10,7 +8,7 @@ import java.util.Random;
 
 public class GameFrame extends JFrame {
     private Hero hero;
-    private GamePanel gamePanel; // Оголошуємо тут
+    private GamePanel gamePanel;
     private JTextArea chatArea;
     private JTextField messageInputField;
     private JPanel chatPanel;
@@ -19,18 +17,34 @@ public class GameFrame extends JFrame {
     private JButton toggleChatButton;
     private boolean chatExpanded = true;
 
+    // Store initial hero creation parameters
+    private final String initialHeroName;
+    private final String initialHeroImagePath;
+    private final String initialDiamondImagePath;
+    private final int initialHeroX;
+    private final int initialHeroY;
+    private final double initialScaleFactor;
+
+
     public GameFrame(String heroName, String heroImagePath) {
         setTitle("NaUKMA Sims");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
 
-        String diamondImagePath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\diamond.png";
+        // Define initial hero properties here
+        this.initialHeroName = heroName;
+        this.initialHeroImagePath = heroImagePath;
+        this.initialDiamondImagePath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\diamond.png";
+        this.initialHeroX = 350;
+        this.initialHeroY = 250;
+        this.initialScaleFactor = 0.4;
 
-        double scaleFactor = 0.4;
+        // Initialize the hero with the stored initial properties
+        hero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
 
-        hero = new Hero(heroName, heroImagePath, diamondImagePath, 350, 250, scaleFactor);
-
+        // Pass only the hero and parent frame to GamePanel.
+        // GamePanel will manage its internal state including resetting for new game.
         gamePanel = new GamePanel(hero, this);
         add(gamePanel, BorderLayout.CENTER);
 
@@ -76,12 +90,12 @@ public class GameFrame extends JFrame {
         chatControlPanel.add(chatPanel, BorderLayout.CENTER);
 
         chatControlPanel.setPreferredSize(new Dimension(originalChatPanelWidth, gamePanel.getPreferredSize().height));
-        chatControlPanel.setMinimumSize(new Dimension(0, 0));
-        chatControlPanel.setMaximumSize(new Dimension(originalChatPanelWidth, Short.MAX_VALUE));
 
         add(chatControlPanel, BorderLayout.EAST);
 
-        // Встановлюємо початковий розмір фрейму
+        gamePanel.setFocusable(true);
+        gamePanel.requestFocusInWindow();
+
         setPreferredSize(new Dimension(gamePanel.getPreferredSize().width + originalChatPanelWidth, gamePanel.getPreferredSize().height));
         pack();
         setLocationRelativeTo(null);
@@ -96,6 +110,11 @@ public class GameFrame extends JFrame {
         chatArea.setCaretPosition(chatArea.getDocument().getLength());
     }
 
+    public void clearChat() {
+        chatArea.setText("");
+        appendToChat("Система", "Гра перезапущена.");
+    }
+
     private void sendMessage() {
         String message = messageInputField.getText().trim();
         if (!message.isEmpty()) {
@@ -107,21 +126,22 @@ public class GameFrame extends JFrame {
     private void toggleChatPanel() {
         if (chatExpanded) {
             chatControlPanel.setPreferredSize(new Dimension(toggleChatButton.getPreferredSize().width, chatControlPanel.getHeight()));
-            chatControlPanel.setMinimumSize(new Dimension(toggleChatButton.getPreferredSize().width, chatControlPanel.getHeight()));
-            chatControlPanel.setMaximumSize(new Dimension(toggleChatButton.getPreferredSize().width, Short.MAX_VALUE));
             toggleChatButton.setText("Чат >>");
             chatPanel.setVisible(false);
             toggleChatButton.setToolTipText("Розгорнути чат");
         } else {
             chatControlPanel.setPreferredSize(new Dimension(originalChatPanelWidth, chatControlPanel.getHeight()));
-            chatControlPanel.setMinimumSize(new Dimension(originalChatPanelWidth, chatControlPanel.getHeight()));
-            chatControlPanel.setMaximumSize(new Dimension(originalChatPanelWidth, Short.MAX_VALUE));
             toggleChatButton.setText("<< Чат");
             chatPanel.setVisible(true);
             toggleChatButton.setToolTipText("Згорнути чат");
         }
         chatExpanded = !chatExpanded;
-        SwingUtilities.getWindowAncestor(chatControlPanel).revalidate();
-        SwingUtilities.getWindowAncestor(chatControlPanel).repaint();
+        revalidate();
+        repaint();
+    }
+
+    public void handleGameOver(String reason) {
+        dispose();
+        SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true)); // Ensure it runs on EDT
     }
 }

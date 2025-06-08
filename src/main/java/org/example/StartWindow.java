@@ -54,7 +54,7 @@ public class StartWindow extends JFrame {
 
         ImageIcon icon = new ImageIcon(imagePath);
         Image image = icon.getImage();
-        Image scaledImage = image.getScaledInstance(60, 150, Image.SCALE_SMOOTH); // Розмір зображення
+        Image scaledImage = image.getScaledInstance(60, 165, Image.SCALE_SMOOTH);
         JLabel imageLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
         charPanel.add(imageLabel, BorderLayout.CENTER);
 
@@ -72,9 +72,7 @@ public class StartWindow extends JFrame {
 
     private void startGame() {
         if (selectedCharacterName != null && selectedCharacterImagePath != null) {
-            // Закриваємо вікно вибору персонажа
             this.dispose();
-            // Запускаємо гру з обраним персонажем
             SwingUtilities.invokeLater(() -> new GameFrame(selectedCharacterName, selectedCharacterImagePath));
         } else {
             JOptionPane.showMessageDialog(this, "Будь ласка, оберіть персонажа!", "Помилка вибору", JOptionPane.WARNING_MESSAGE);

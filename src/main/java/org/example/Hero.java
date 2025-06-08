@@ -36,20 +36,30 @@ public class Hero {
     private final long HUNGER_INCREASE_INTERVAL = 5000; // Збільшувати голод кожні 5 секунд (5000 мс)
     private final int HUNGER_INCREASE_AMOUNT = 3; // Збільшувати голод на 3 одиниці за раз
 
+    // --- Нове: Для стану низької енергії та таймера гри ---
+    private boolean lowEnergyWarningActive;
+    private long lowEnergyWarningStartTime;
+    private final long GAME_OVER_TIME_LIMIT = 15000;
+    private boolean isGameOverDueToEnergy;
 
-    public Hero(String name, String imagePath, String diamondImagePath, int initialX, int initialY, double scaleFactor) {
+
+    public Hero(String name, String imagePath, String diamondImagePath, int initialX, int intialY, double scaleFactor) {
         this.name = name;
         this.energy = 100;
         this.mood = 70;
         this.hunger = 0;
         this.x = initialX;
-        this.initialY = initialY;
-        this.y = initialY;
+        this.initialY = intialY;
+        this.y = intialY;
         this.animationTimer = 0;
         this.scaleFactor = scaleFactor;
         this.isSelected = false;
 
         this.lastHungerIncreaseTime = System.currentTimeMillis();
+
+        this.lowEnergyWarningActive = false;
+        this.lowEnergyWarningStartTime = 0;
+        this.isGameOverDueToEnergy = false;
 
         try {
             this.heroImage = ImageIO.read(new File(imagePath));
@@ -61,7 +71,7 @@ public class Hero {
                 System.err.println("Помилка: Не вдалося завантажити зображення алмазу зі шляху: " + diamondImagePath);
             }
         } catch (IOException e) {
-            System.err.println("Помилка під час читання файлу зображення: " + e.getMessage());
+            System.err.println("Помилка: Під час читання файлу зображення: " + e.getMessage());
             e.printStackTrace();
             this.heroImage = null;
             this.diamondImage = null;
@@ -85,6 +95,18 @@ public class Hero {
         isSelected = selected;
     }
 
+    // New method to check if game over condition for this hero is met
+    public boolean isGameOverDueToEnergy() {
+        return isGameOverDueToEnergy;
+    }
+
+    // New method to get the game over reason
+    public String getGameOverReason() {
+        if (isGameOverDueToEnergy) {
+            return name + " вичерпав всю енергію і не відпочив вчасно! Гра закінчена.";
+        }
+        return null;
+    }
 
     private void setMessage(String message) {
         this.heroMessage = message;
@@ -93,7 +115,7 @@ public class Hero {
 
     public void eat() {
         if (hunger <= 0) {
-            setMessage(name + " не хоче їсти");
+            setMessage(name + " не хоче їсти.");
             return;
         }
         hunger = Math.max(0, hunger - 30);
@@ -101,12 +123,16 @@ public class Hero {
     }
 
     public void sleep() {
-        if (energy >= 100) {
+        // Reset low energy warning if hero sleeps
+        if (energy < 100) {
+            lowEnergyWarningActive = false;
+            lowEnergyWarningStartTime = 0;
+            isGameOverDueToEnergy = false; // Important: Reset game over state
+            energy = Math.min(100, energy + 40);
+            mood = Math.min(100, mood + 10);
+        } else {
             setMessage(name + " не хоче спати.");
-            return;
         }
-        energy = Math.min(100, energy + 40);
-        mood = Math.min(100, mood + 10);
     }
 
     public void study() {
@@ -129,17 +155,44 @@ public class Hero {
 
     public void update() {
         long currentTime = System.currentTimeMillis();
+
+        // Hunger increase logic
         if (currentTime - lastHungerIncreaseTime >= HUNGER_INCREASE_INTERVAL) {
             hunger = Math.min(100, hunger + HUNGER_INCREASE_AMOUNT);
             lastHungerIncreaseTime = currentTime;
         }
 
-        if (energy < 20) mood = Math.max(0, mood - 1);
+        // Mood decrease if energy is low (less than 20)
+        if (energy < 20) {
+            mood = Math.max(0, mood - 1);
+        }
+
+        if (energy <= 0) {
+            if (!lowEnergyWarningActive) {
+                lowEnergyWarningActive = true;
+                lowEnergyWarningStartTime = currentTime;
+                setMessage(name + " потребує сну! Залишилося 30 сек.");
+            } else {
+                if (currentTime - lowEnergyWarningStartTime >= GAME_OVER_TIME_LIMIT) {
+                    isGameOverDueToEnergy = true;
+                } else {
+                    long timeLeft = (GAME_OVER_TIME_LIMIT - (currentTime - lowEnergyWarningStartTime)) / 1000;
+                    setMessage(name + " не має сил! Залишилося " + timeLeft + " сек.");
+                }
+            }
+        } else {
+            if (lowEnergyWarningActive) {
+                lowEnergyWarningActive = false;
+                lowEnergyWarningStartTime = 0;
+                setMessage(name + " почувається краще.");
+            }
+        }
 
         animationTimer += SWAY_SPEED;
         double swayOffset = SWAY_AMPLITUDE * Math.sin(animationTimer);
         this.y = initialY + (int) swayOffset;
 
+        // Clear temporary hero message after duration
         if (currentTime > messageDisplayEndTime) {
             heroMessage = "";
         }
@@ -179,7 +232,7 @@ public class Hero {
         g2d.drawImage(heroImage, currentDrawX, currentDrawY, currentDrawWidth, currentDrawHeight, null);
 
         if (isSelected) {
-            g2d.setColor(Color.YELLOW);
+            g2d.setColor(Color.GREEN);
             Stroke oldStroke = g2d.getStroke();
             g2d.setStroke(new BasicStroke(3));
             g2d.drawRect(currentDrawX - 2, currentDrawY - 2, currentDrawWidth + 4, currentDrawHeight + 4);
@@ -190,7 +243,7 @@ public class Hero {
             int diamondWidth = (int) (diamondImage.getWidth() * 0.2);
             int diamondHeight = (int) (diamondImage.getHeight() * 0.2);
             int diamondX = currentDrawX + (currentDrawWidth - diamondWidth) / 2;
-            int diamondY = currentDrawY - diamondHeight - 10;
+            int diamondY = currentDrawY - diamondHeight - 5;
             g2d.drawImage(diamondImage, diamondX, diamondY, diamondWidth, diamondHeight, null);
         }
 
@@ -202,7 +255,7 @@ public class Hero {
             int textHeight = fm.getHeight();
 
             int messageX = currentDrawX + (currentDrawWidth - textWidth) / 2;
-            int messageY = currentDrawY - textHeight - (diamondImage != null ? (int)(diamondImage.getHeight() * scaleFactor) + 20 : 10);
+            int messageY = currentDrawY - textHeight - (diamondImage != null ? (int)(diamondImage.getHeight() * 0.2) + 5 : 5);
 
             g2d.fillRoundRect(messageX - 5, messageY - textHeight, textWidth + 10, textHeight + 5, 10, 10);
             g2d.setColor(Color.BLACK);
