@@ -2,6 +2,8 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
@@ -26,12 +28,54 @@ public class ProgrammingLectionClassroom extends JPanel {
     private final Color WINDOW_FRAME_COLOR = new Color(100, 100, 100);
     private final Color WINDOW_GLASS_COLOR = new Color(200, 230, 255, 150);
     private final Color DOOR_COLOR = new Color(139, 69, 19);
-    private final Color EXIT_BUTTON_COLOR = new Color(220, 0, 0);
-    private final Color EXIT_BUTTON_TEXT_COLOR = Color.WHITE;
+
+    public interface ExitButtonClickListener {
+        void onExitButtonClicked();
+    }
+
+    private ExitButtonClickListener exitButtonListener;
+
+    public void setExitButtonClickListener(ExitButtonClickListener listener) {
+        this.exitButtonListener = listener;
+    }
 
     public ProgrammingLectionClassroom() {
-        setPreferredSize(new Dimension(1200, 800));
+        setPreferredSize(new Dimension(1000, 800));
         setBackground(WALL_COLOR);
+        setLayout(null); // Важливо: використовуємо null layout для ручного позиціонування кнопки
+
+        int doorWidth = 80;
+        int doorHeight = 180;
+        int doorX = 30;
+
+        int doorY = 800 / 3 - doorHeight; // Використовуємо 800 як висоту панелі для розрахунку
+
+        // --- Кнопка "Вихід" ---
+        JButton exitButton = new JButton("Вихід");
+        exitButton.setFont(new Font("Arial", Font.BOLD, 9));
+        exitButton.setBackground(new Color(220, 0, 0)); // Колір кнопки
+        exitButton.setForeground(Color.WHITE); // Колір тексту
+        exitButton.setBorderPainted(false); // Не малювати рамку кнопки
+        exitButton.setFocusPainted(false); // Не малювати фокус навколо тексту
+        exitButton.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Курсор у вигляді руки при наведенні
+
+        // Розміри кнопки
+        int exitButtonWidth = 60;
+        int exitButtonHeight = 30;
+        int exitButtonX = doorX + doorWidth / 2 - exitButtonWidth / 2;
+        int exitButtonY = doorY + 20; // Позиція кнопки на дверях
+
+        exitButton.setBounds(exitButtonX, exitButtonY, exitButtonWidth, exitButtonHeight);
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (exitButtonListener != null) {
+                    exitButtonListener.onExitButtonClicked(); // Сповіщаємо слухача
+                }
+            }
+        });
+
+        add(exitButton);
     }
 
     @Override
@@ -41,15 +85,15 @@ public class ProgrammingLectionClassroom extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-// --- Floor ---
+        // --- Floor ---
         g2d.setColor(FLOOR_COLOR);
         g2d.fillRect(0, getHeight() / 3, getWidth(), getHeight() * 2 / 3);
 
-// --- Back Wall ---
+        // --- Back Wall ---
         g2d.setColor(WALL_COLOR);
         g2d.fillRect(0, 0, getWidth(), getHeight() / 3);
 
-// --- Blackboard ---
+        // --- Blackboard ---
         int blackboardWidth = getWidth() / 2;
         int blackboardHeight = 150;
         int blackboardX = (getWidth() - blackboardWidth) / 2;
@@ -58,15 +102,15 @@ public class ProgrammingLectionClassroom extends JPanel {
         g2d.fillRect(blackboardX, blackboardY, blackboardWidth, blackboardHeight);
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.ITALIC, 20));
-        g2d.drawString("Лекція", blackboardX + 20, blackboardY + 30);
+        g2d.drawString("Лекція з програмування", blackboardX + 20, blackboardY + 30);
         g2d.setStroke(new BasicStroke(2));
         g2d.setColor(new Color(80, 80, 80));
         g2d.drawRect(blackboardX, blackboardY, blackboardWidth, blackboardHeight);
 
-// --- Window (One window, not above the blackboard) ---
+        // --- Window ---
         int windowWidth = 200;
         int windowHeight = 150;
-        int windowX = getWidth() - windowWidth - 50;
+        int windowX = getWidth() - windowWidth - 20;
         int windowY = 25;
         g2d.setColor(WINDOW_FRAME_COLOR);
         g2d.setStroke(new BasicStroke(4));
@@ -77,11 +121,11 @@ public class ProgrammingLectionClassroom extends JPanel {
         g2d.drawLine(windowX + windowWidth / 2, windowY + 5, windowX + windowWidth / 2, windowY + windowHeight - 5);
         g2d.drawLine(windowX + 5, windowY + windowHeight / 2, windowX + windowWidth - 5, windowY + windowHeight / 2);
 
-// --- Door ---
+        // --- Door ---
         int doorWidth = 80;
         int doorHeight = 180;
         int doorX = 30;
-        int doorY = getHeight() / 3 - doorHeight;
+        int doorY = getHeight() / 3 - doorHeight; // Розрахунок doorY тут, щоб він був актуальним
         g2d.setColor(DOOR_COLOR);
         g2d.fillRect(doorX, doorY, doorWidth, doorHeight);
         g2d.setColor(new Color(110, 49, 0));
@@ -90,22 +134,7 @@ public class ProgrammingLectionClassroom extends JPanel {
         g2d.setColor(new Color(210, 210, 210));
         g2d.fillOval(doorX + doorWidth - 25, doorY + doorHeight / 2 - 10, 20, 20);
 
-// --- Exit Button on Door ---
-        int exitButtonWidth = 60;
-        int exitButtonHeight = 30;
-        int exitButtonX = doorX + doorWidth / 2 - exitButtonWidth / 2;
-        int exitButtonY = doorY + 20;
-        g2d.setColor(EXIT_BUTTON_COLOR);
-        g2d.fillRoundRect(exitButtonX, exitButtonY, exitButtonWidth, exitButtonHeight, 10, 10);
-        g2d.setColor(EXIT_BUTTON_TEXT_COLOR);
-        g2d.setFont(new Font("Arial", Font.BOLD, 12));
-        FontMetrics fm = g2d.getFontMetrics();
-        Rectangle2D r = fm.getStringBounds("Вихід", g2d);
-        int textX = (int) (exitButtonX + (exitButtonWidth - r.getWidth()) / 2);
-        int textY = (int) (exitButtonY + (exitButtonHeight - r.getHeight()) / 2 + fm.getAscent());
-        g2d.drawString("Вихід", textX, textY);
-
-// --- Desks and Chairs ---
+        // --- Desks and Chairs ---
         g2d.setColor(DESK_COLOR);
         int startX = (getWidth() - (3 * COLUMN_SPACING)) / 2;
         int startY = getHeight() / 3 + 50;
@@ -113,28 +142,27 @@ public class ProgrammingLectionClassroom extends JPanel {
             for (int col = 0; col < 3; col++) {
                 int deskX = startX + col * COLUMN_SPACING;
                 int deskY = startY + row * ROW_SPACING;
-// Desk
+                // Desk
                 g2d.fillRect(deskX, deskY, DESK_WIDTH, DESK_DEPTH);
-// Desk Legs
+                // Desk Legs
                 g2d.fillRect(deskX + 5, deskY + DESK_DEPTH, 5, 20);
                 g2d.fillRect(deskX + DESK_WIDTH - 10, deskY + DESK_DEPTH, 5, 20);
-// Chair
+                // Chair
                 g2d.setColor(CHAIR_COLOR);
                 int chairX = deskX + (DESK_WIDTH - CHAIR_WIDTH) / 2;
                 int chairY = deskY + DESK_DEPTH - 5;
-// Chair Seat
+                // Chair Seat
                 g2d.fillRect(chairX, chairY, CHAIR_WIDTH, CHAIR_DEPTH);
-// Chair Back
+                // Chair Back
                 g2d.fillRect(chairX + CHAIR_WIDTH - 10, chairY - (CHAIR_BACK_HEIGHT - CHAIR_DEPTH), 10, CHAIR_BACK_HEIGHT - CHAIR_DEPTH);
-// Chair Legs
+                // Chair Legs
                 g2d.fillRect(chairX + 5, chairY + CHAIR_DEPTH, 5, 15);
                 g2d.fillRect(chairX + CHAIR_WIDTH - 10, chairY + CHAIR_DEPTH, 5, 15);
                 g2d.setColor(DESK_COLOR); // Reset desk color for next desk
             }
         }
 
-
-// --- Teacher's Desk ---
+        // --- Teacher's Desk ---
         g2d.setColor(new Color(130, 90, 50));
         int teacherDeskWidth = 200;
         int teacherDeskDepth = 80;
@@ -145,21 +173,21 @@ public class ProgrammingLectionClassroom extends JPanel {
         g2d.fillRect(teacherDeskX + teacherDeskWidth - 20, teacherDeskY + teacherDeskDepth, 10, 30);
     }
 
-
-//ТЕСТ
+    // --- Main method for testing ---
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Авдиторія для лекцій із програмування");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);
+
             ProgrammingLectionClassroom programmingLectionClassroom = new ProgrammingLectionClassroom();
+            programmingLectionClassroom.setExitButtonClickListener(frame::dispose);
+
             frame.add(programmingLectionClassroom, BorderLayout.CENTER);
+
             frame.pack();
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
-
         });
-
     }
-
 }
