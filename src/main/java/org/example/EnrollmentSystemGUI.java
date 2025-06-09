@@ -274,6 +274,7 @@ public class EnrollmentSystemGUI extends JFrame {
     }
 
     // Method to initialize test data based on selected course
+    // ТРЕБА ВІДРЕДАГУВАТИ ВИКЛАДАЧІВ, ОБОВ'ЯЗКОВІСТЬ І КУРСИ
     private void initializeInitialData(int selectedCourse) {
         enrollmentSystem.addStudent(new Student("І 005/24 бп", "Студент", selectedCourse, "Інженерія програмного забезпечення"));
 
