@@ -32,7 +32,7 @@ public class GameFrame extends JFrame {
 
         this.initialHeroName = heroName;
         this.initialHeroImagePath = heroImagePath;
-        this.initialDiamondImagePath = "C:\\Users\\Acer\\IdeaProjects\\game\\assets\\Models\\Hero\\diamond.png";
+        this.initialDiamondImagePath = "src/main/resources/assets/Models/Hero/diamond.png";
         this.initialHeroX = 350;
         this.initialHeroY = 250;
         this.initialScaleFactor = 0.4;

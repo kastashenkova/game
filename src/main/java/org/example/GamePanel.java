@@ -291,7 +291,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 36));
-            String gameOverText = "ГРА ЗАКІНЧЕНА!";
+            String gameOverText = "ГРА ЗАВЕРШЕНА!";
             FontMetrics fm = g.getFontMetrics(g.getFont());
             int textWidth = fm.stringWidth(gameOverText);
             int textHeight = fm.getHeight();
