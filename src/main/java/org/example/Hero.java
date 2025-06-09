@@ -65,7 +65,6 @@ public class Hero {
             URL heroImageUrl = getClass().getClassLoader().getResource(heroResourcePath);
             if (heroImageUrl != null) {
                 this.heroImage = ImageIO.read(heroImageUrl);
-                System.out.println("Hero: Зображення героя '" + name + "' завантажено з URL: " + heroImageUrl);
             } else {
                 System.err.println("Hero: Помилка: Ресурс зображення героя не знайдено за шляхом: " + heroResourcePath);
             }
@@ -77,12 +76,9 @@ public class Hero {
 
         // Завантаження зображення діаманта як ресурсу з classpath
         try {
-
-
             URL diamondImageUrl = getClass().getClassLoader().getResource(diamondResourcePath);
             if (diamondImageUrl != null) {
                 this.diamondImage = ImageIO.read(diamondImageUrl);
-                System.out.println("Hero: Зображення алмазу завантажено з URL: " + diamondImageUrl);
             } else {
                 System.err.println("Hero: Помилка: Ресурс зображення алмазу не знайдено за шляхом: " + diamondResourcePath);
             }
@@ -158,9 +154,9 @@ public class Hero {
             setMessage(name + " не має енергії для навчання.");
             return;
         }
-        energy -= 20;
+        energy = Math.max(0, energy - 20);
         mood = Math.max(0, mood - 10);
-        setMessage(name + " повчилася."); // Додано повідомлення
+        setMessage(name + " повчилася.");
     }
 
     public void relax() {
@@ -170,7 +166,7 @@ public class Hero {
         }
         mood = Math.min(100, mood + 20);
         energy = Math.min(100, energy + 5);
-        setMessage(name + " відпочила."); // Додано повідомлення
+        setMessage(name + " відпочила.");
     }
 
     public void update() {

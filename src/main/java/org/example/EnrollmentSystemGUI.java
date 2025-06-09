@@ -90,29 +90,7 @@ public class EnrollmentSystemGUI extends JFrame {
             currentStudent.enrollDiscipline(mandatoryDisc);
         }
 
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Змінено на DO_NOTHING_ON_CLOSE для кастомного обробника
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (autoEnrollTimer != null) {
-                    autoEnrollTimer.stop();
-                }
-                Object[] options = {"Так", "Ні"};
-                int confirm = JOptionPane.showOptionDialog(EnrollmentSystemGUI.this,
-                        "Ви впевнені, що хочете вийти без збереження вибору?",
-                        "Підтвердження виходу",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        options,
-                        options[0]);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    System.exit(0);
-                }
-            }
-        });
-
-        setSize(1000, 800); // Збільшено розмір для кращого відображення
+        setSize(1200, 800); // Збільшено розмір для кращого відображення
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
@@ -238,8 +216,14 @@ public class EnrollmentSystemGUI extends JFrame {
     }
 
     // --- Course Selection Dialog ---
+    // --- Course Selection Dialog ---
     private int showCourseSelectionDialog() {
         String[] courses = {"2", "3", "4"};
+
+        // Встановлюємо український текст для кнопок "OK" та "Cancel"
+        UIManager.put("OptionPane.okButtonText", "ОК");
+        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+
         String selectedCourseStr = (String) JOptionPane.showInputDialog(
                 this,
                 "Будь ласка, оберіть Ваш курс!",

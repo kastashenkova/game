@@ -10,6 +10,8 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
@@ -36,10 +38,25 @@ public class GamePanel extends JPanel implements ActionListener {
     private long nextMessageInterval;
     private Random random = new Random();
 
+    // --- Для спливаючих повідомлень чату ---
+    private List<FloatingMessage> floatingMessages;
+    private final int FLOATING_MESSAGE_DISPLAY_DURATION = 3500; // 3.5 секунди
+    private final int MESSAGE_OFFSET_Y = 5; // Відступ між повідомленнями
+    private final int MESSAGE_MARGIN_X = 20; // Відступ від правого краю
+    private final int MESSAGE_BOTTOM_START_Y = 50; // Відступ від нижнього краю для першого повідомлення
+
+    // --- Закоментовані рядки для звуку, як у наданому коді користувача ---
+    //private Clip messageSoundClip;
+    //private final String MESSAGE_SOUND_PATH = "assets/Sounds/Message.wav";// Шлях до звукового файлу
+
+    // --- Нове: Для введення повідомлень користувачем ---
+    private JTextField userMessageInputField;
+    private JButton sendUserMessageButton;
+
     private String[] studentNames = {"Ксенія", "Катя", "Петро", "Женя", "Ольга", "Тарас", "Стас", "Дмитро"};
     private String[] kmaMessages = {
             "Коли там вже результати модуля з вишки?",
-            "Хтось розуміє, що робити з цим есе з філософії?.",
+            "Хтось розуміє, що робити з цим есе з філософії?",
             "Треба здати дедлайн з проєктного менеджменту!",
             "Де найкраща кава біля корпусу?",
             "Порадьте, як вижити на сесії в Могилянці!!!",
@@ -77,14 +94,34 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     private GameState currentGameState;
 
-    // Default hero properties are no longer needed here as Hero object is passed directly.
-    // The responsibility for creating new hero moved to GameFrame for restart.
+    // Внутрішній клас для представлення спливаючого повідомлення
+    private static class FloatingMessage {
+        String sender;
+        String message;
+        long startTime;
+        int currentY;
+        int height;
+        int width;
+
+        FloatingMessage(String sender, String message, long startTime, int initialY, int width, int height) {
+            this.sender = sender;
+            this.message = message;
+            this.startTime = startTime;
+            this.currentY = initialY;
+            this.width = width;
+            this.height = height;
+        }
+
+        public void updateY(int newY) {
+            this.currentY = newY;
+        }
+    }
 
 
-    public GamePanel(Hero hero, GameFrame parentFrame) { // Removed initial hero properties from constructor
+    public GamePanel(Hero hero, GameFrame parentFrame) {
         this.hero = hero;
         this.parentFrame = parentFrame;
-        setPreferredSize(new Dimension(1000, 800));
+        setPreferredSize(new Dimension(1200, 800)); // Змінено розмір для кращого розміщення чату
         setBackground(Color.LIGHT_GRAY);
 
         currentGameState = GameState.PLAYING;
@@ -97,6 +134,8 @@ public class GamePanel extends JPanel implements ActionListener {
         updateStatsDisplay();
         statsLabel.setBounds(10, 10, 200, 100);
         add(statsLabel);
+
+        floatingMessages = new ArrayList<>();
 
         heroActionsPanel = new JPanel();
         heroActionsPanel.setLayout(new GridLayout(2, 2, 5, 5));
@@ -151,10 +190,39 @@ public class GamePanel extends JPanel implements ActionListener {
         lastMessageTime = System.currentTimeMillis();
         nextMessageInterval = generateRandomMessageInterval();
 
+        // --- Ініціалізація та додавання поля вводу та кнопки надсилання ---
+        userMessageInputField = new JTextField();
+        userMessageInputField.setFont(new Font("Arial", Font.PLAIN, 12));
+        userMessageInputField.setToolTipText("Введіть ваше повідомлення...");
+        add(userMessageInputField);
+
+        sendUserMessageButton = new JButton("Надіслати");
+        sendUserMessageButton.setFont(new Font("Arial", Font.BOLD, 12));
+        add(sendUserMessageButton);
+
+        // Додаємо слухача подій для кнопки та поля вводу
+        ActionListener sendMessageAction = e -> {
+            String message = userMessageInputField.getText().trim();
+            if (!message.isEmpty()) {
+                showFloatingMessage("Ви", message); // Відображаємо повідомлення
+                userMessageInputField.setText(""); // Очищаємо поле
+            }
+        };
+        sendUserMessageButton.addActionListener(sendMessageAction);
+        userMessageInputField.addActionListener(sendMessageAction); // Відправлення по Enter
+
+        // --- Завантаження звукового файлу при ініціалізації панелі (якщо не закоментовано) ---
+        //loadMessageSound();
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (currentGameState != GameState.PLAYING) return;
+
+                // Якщо користувач натиснув на поле вводу, не перетягуємо сцену/героя
+                if (e.getSource() == userMessageInputField || e.getSource() == sendUserMessageButton) {
+                    return;
+                }
 
                 int scaledMouseX = (int) ((e.getX() - sceneOffsetX) / sceneScale);
                 int scaledMouseY = (int) ((e.getY() - sceneOffsetY) / sceneScale);
@@ -178,6 +246,11 @@ public class GamePanel extends JPanel implements ActionListener {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (currentGameState != GameState.PLAYING) return;
+
+                // Якщо користувач подвійним кліком на поле вводу, не перемикаємо виділення героя
+                if (e.getSource() == userMessageInputField || e.getSource() == sendUserMessageButton) {
+                    return;
+                }
 
                 if (e.getClickCount() == 2) {
                     int scaledMouseX = (int) ((e.getX() - sceneOffsetX) / sceneScale);
@@ -205,6 +278,11 @@ public class GamePanel extends JPanel implements ActionListener {
             public void mouseDragged(MouseEvent e) {
                 if (currentGameState != GameState.PLAYING) return;
                 if (lastMousePos == null) return;
+
+                // Якщо перетягування відбувається на елементах введення, ігноруємо
+                if (e.getSource() == userMessageInputField || e.getSource() == sendUserMessageButton) {
+                    return;
+                }
 
                 if (isHeroDragging && hero.isSelected()) {
                     int newHeroX = (int) ((e.getX() - sceneOffsetX) / sceneScale - lastMousePos.x);
@@ -250,7 +328,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 sceneOffsetY = (int) (mouseY - ((mouseY - sceneOffsetY) * scaleRatio));
 
                 updateHeroActionsPanelLocation();
-
+                positionUserChatElements(); // Оновлюємо позицію поля вводу при масштабуванні
                 repaint();
             }
         });
@@ -260,12 +338,47 @@ public class GamePanel extends JPanel implements ActionListener {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (currentGameState == GameState.GAME_OVER && e.getKeyCode() == KeyEvent.VK_R) {
-                    // Trigger game over event in parent frame
                     fireGameOverEvent(hero.getGameOverReason());
                 }
             }
         });
+        // Переміщено виклик positionUserChatElements в кінець конструктора
+        // після того, як компоненти були додані до панелі та GamePanel ініціалізовано.
+        positionUserChatElements();
     }
+
+    // --- Метод для завантаження звукового файлу (закоментований) ---
+    /*private void loadMessageSound() {
+        try {
+            URL soundUrl = getClass().getClassLoader().getResource(MESSAGE_SOUND_PATH);
+            if (soundUrl != null) {
+                AudioInputStream audioStream = null;
+                try {
+                    audioStream = AudioSystem.getAudioInputStream(soundUrl);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                messageSoundClip = AudioSystem.getClip();
+                messageSoundClip.open(audioStream);
+                System.out.println("Sound loaded: " + MESSAGE_SOUND_PATH);
+            } else {
+                System.err.println("Error: Sound file not found in classpath: " + MESSAGE_SOUND_PATH);
+            }
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            System.err.println("Error loading sound file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }*/
+
+    // --- Метод для відтворення звуку (закоментований) ---
+    /*private void playMessageSound() {
+        if (messageSoundClip != null) {
+            messageSoundClip.stop(); // Зупиняємо, якщо звук вже грає
+            messageSoundClip.setFramePosition(0); // Перемотуємо на початок
+            messageSoundClip.start(); // Запускаємо звук
+        }
+    }*/
+
 
     private void updateStatsDisplay() {
         String stats = String.format(
@@ -285,6 +398,48 @@ public class GamePanel extends JPanel implements ActionListener {
         super.paintComponent(g);
         hero.draw(g, sceneOffsetX, sceneOffsetY, sceneScale);
 
+        long currentTime = System.currentTimeMillis();
+        Font messageFont = new Font("Segoe UI", Font.BOLD, 10);
+        g.setFont(messageFont);
+        FontMetrics fm = g.getFontMetrics(messageFont);
+
+        // Позиціонування повідомлень знизу вгору, з урахуванням поля вводу
+        // Зміщення, якщо поле вводу видно. (inputFieldHeight + 10 = висота поля + відступ)
+        int currentY = getHeight() - MESSAGE_BOTTOM_START_Y - (userMessageInputField.isVisible() ? userMessageInputField.getHeight() + 10 : 0);
+        List<FloatingMessage> messagesToRemove = new ArrayList<>();
+
+        for (int i = floatingMessages.size() - 1; i >= 0; i--) {
+            FloatingMessage msg = floatingMessages.get(i);
+            if (currentTime - msg.startTime < FLOATING_MESSAGE_DISPLAY_DURATION) {
+                String text = "<html><b>" + msg.sender + ":</b> " + msg.message + "</html>";
+                JLabel tempLabel = new JLabel(text);
+                tempLabel.setFont(messageFont);
+                tempLabel.setSize(Integer.MAX_VALUE, Integer.MAX_VALUE);
+                Dimension prefSize = tempLabel.getPreferredSize();
+
+                int messageWidth = prefSize.width + 30;
+                int messageHeight = prefSize.height + 10;
+
+                int messageX = getWidth() - messageWidth - MESSAGE_MARGIN_X;
+                msg.currentY = currentY;
+
+                g.setColor(new Color(255, 255, 220, 200));
+                g.fillRoundRect(messageX, msg.currentY, messageWidth, messageHeight, 10, 10);
+                g.setColor(Color.GRAY);
+                g.drawRoundRect(messageX, msg.currentY, messageWidth, messageHeight, 10, 10);
+
+                String displayText = msg.sender + ": " + msg.message;
+                g.setColor(Color.BLUE.darker());
+                g.drawString(displayText, messageX + 10, msg.currentY + fm.getAscent() + 5);
+
+                currentY -= (messageHeight + MESSAGE_OFFSET_Y);
+
+            } else {
+                messagesToRemove.add(msg);
+            }
+        }
+        floatingMessages.removeAll(messagesToRemove);
+
         if (currentGameState == GameState.GAME_OVER) {
             g.setColor(new Color(0, 0, 0, 150));
             g.fillRect(0, 0, getWidth(), getHeight());
@@ -292,7 +447,7 @@ public class GamePanel extends JPanel implements ActionListener {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.BOLD, 36));
             String gameOverText = "ГРА ЗАВЕРШЕНА!";
-            FontMetrics fm = g.getFontMetrics(g.getFont());
+            fm = g.getFontMetrics(g.getFont());
             int textWidth = fm.stringWidth(gameOverText);
             int textHeight = fm.getHeight();
             g.drawString(gameOverText, (getWidth() - textWidth) / 2, getHeight() / 2 - textHeight);
@@ -308,6 +463,15 @@ public class GamePanel extends JPanel implements ActionListener {
             fm = g.getFontMetrics(g.getFont());
             textWidth = fm.stringWidth(restartText);
             g.drawString(restartText, (getWidth() - textWidth) / 2, getHeight() / 2 + 80);
+
+            // Приховуємо поле вводу та кнопку, коли гра завершена
+            userMessageInputField.setVisible(false);
+            sendUserMessageButton.setVisible(false);
+        } else {
+            // Показуємо поле вводу та кнопку, коли гра активна
+            userMessageInputField.setVisible(true);
+            sendUserMessageButton.setVisible(true);
+            positionUserChatElements(); // Забезпечуємо правильне позиціонування
         }
     }
 
@@ -321,7 +485,7 @@ public class GamePanel extends JPanel implements ActionListener {
                 currentGameState = GameState.GAME_OVER;
                 heroActionsPanel.setVisible(false);
                 gameTimer.stop();
-                parentFrame.appendToChat("Система", hero.getGameOverReason());
+                showFloatingMessage("Система", hero.getGameOverReason());
             }
 
             long currentTime = System.currentTimeMillis();
@@ -366,6 +530,30 @@ public class GamePanel extends JPanel implements ActionListener {
         heroActionsPanel.setLocation(panelX, panelY);
     }
 
+    private void positionUserChatElements() {
+        int inputFieldWidth = 150;
+        int inputFieldHeight = 25;
+        int buttonWidth = 100;
+        int buttonHeight = 25;
+        int padding = 10;
+
+        // Загальна ширина елементів чату
+        int totalChatInputWidth = inputFieldWidth + buttonWidth + padding;
+        // X-координата для вирівнювання по правому краю
+        int inputX = getWidth() - totalChatInputWidth - MESSAGE_MARGIN_X;
+        // Y-координата залишається знизу
+        int inputY = getHeight() - inputFieldHeight - padding;
+
+        userMessageInputField.setBounds(inputX, inputY, inputFieldWidth, inputFieldHeight);
+
+        // Розміщуємо кнопку надсилання праворуч від поля вводу
+        int buttonX = inputX + inputFieldWidth + padding;
+        int buttonY = inputY;
+
+        sendUserMessageButton.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
+    }
+
+
     private long generateRandomMessageInterval() {
         return (long) (random.nextDouble() * (MESSAGE_INTERVAL_MAX - MESSAGE_INTERVAL_MIN + 1)) + MESSAGE_INTERVAL_MIN;
     }
@@ -373,23 +561,51 @@ public class GamePanel extends JPanel implements ActionListener {
     private void generateRandomChatMessages() {
         String randomPlayer = studentNames[random.nextInt(studentNames.length)];
         String randomMsg = kmaMessages[random.nextInt(kmaMessages.length)];
-        parentFrame.appendToChat(randomPlayer, randomMsg);
+        showFloatingMessage(randomPlayer, randomMsg);
     }
 
-    // New method to fire the game over event to the parent frame
+    public void showFloatingMessage(String sender, String message) {
+        // playMessageSound(); // Цей рядок закоментовано, як у вашому попередньому коді
+
+        Font messageFont = new Font("Segoe UI", Font.BOLD, 10);
+        JLabel tempLabel = new JLabel("<html><b>" + sender + ":</b> " + message + "</html>");
+        tempLabel.setFont(messageFont);
+        tempLabel.setSize(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        Dimension prefSize = tempLabel.getPreferredSize();
+
+        int messageWidth = prefSize.width + 20;
+        int messageHeight = prefSize.height + 10;
+
+        // Обчислюємо початкову позицію для нового повідомлення (нижній правий кут),
+        // враховуючи наявність поля вводу повідомлень
+        int startY = getHeight() - MESSAGE_BOTTOM_START_Y;
+
+        // Зміщуємо всі існуючі повідомлення вгору
+        for (FloatingMessage msg : floatingMessages) {
+            msg.updateY(msg.currentY - (messageHeight + MESSAGE_OFFSET_Y));
+        }
+
+        FloatingMessage newMessage = new FloatingMessage(sender, message, System.currentTimeMillis(), startY, messageWidth, messageHeight);
+        floatingMessages.add(newMessage);
+
+        repaint();
+    }
+
+
     public void fireGameOverEvent(String reason) {
-        // Stop the game timer definitively
         if (gameTimer != null && gameTimer.isRunning()) {
             gameTimer.stop();
         }
-        // Notify the GameFrame that the game is over and it should handle the restart
         parentFrame.handleGameOver(reason);
+        // Забезпечуємо зупинку звуку, якщо він грав (закоментовано)
+        /*if (messageSoundClip != null && messageSoundClip.isRunning()) {
+            messageSoundClip.stop();
+        }*/
     }
 
-    // Method to set a new hero (used for restarting from GameFrame)
     public void setHero(Hero newHero) {
         this.hero = newHero;
-        currentGameState = GameState.PLAYING; // Reset game state to playing
+        currentGameState = GameState.PLAYING;
         isHeroDragging = false;
         isSceneDragging = false;
         sceneOffsetX = 0;
@@ -397,9 +613,19 @@ public class GamePanel extends JPanel implements ActionListener {
         sceneScale = 1.0;
         hideHeroActionsPanel();
         updateStatsDisplay();
-        gameTimer.start(); // Restart the timer for the new game
+        gameTimer.start();
         lastMessageTime = System.currentTimeMillis();
         nextMessageInterval = generateRandomMessageInterval();
+        floatingMessages.clear();
+        // Забезпечуємо зупинку та перезавантаження звуку при перезапуску (закоментовано)
+        //if (messageSoundClip != null) {
+        //if (messageSoundClip.isRunning()) {
+        //messageSoundClip.stop();
+        //}
+        //messageSoundClip.close();
+        //messageSoundClip = null;
+        //loadMessageSound();
+        //}
         repaint();
     }
 }
