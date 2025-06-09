@@ -72,9 +72,18 @@ public class EnrollmentSystemGUI extends JFrame {
         super("Система автоматизованого запису на дисципліни (САЗ)");
         enrollmentSystem = new EnrollmentSystem();
 
-        // --- Course Selection ---
-        int selectedCourse = showCourseSelectionDialog();
-        if (selectedCourse == -1) { // User cancelled
+        // Встановлюємо український текст для кнопок "OK" та "Скасувати" перед викликом діалогів
+        UIManager.put("OptionPane.okButtonText", "ОК");
+        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+
+        // --- Degree and Course Selection ---
+        String selectedDegree = showDegreeSelectionDialog();
+        if (selectedDegree == null) { // User cancelled degree selection
+            System.exit(0);
+        }
+
+        int selectedCourse = showCourseSelectionDialog(selectedDegree);
+        if (selectedCourse == -1) { // User cancelled course selection
             System.exit(0);
         }
 
@@ -187,7 +196,7 @@ public class EnrollmentSystemGUI extends JFrame {
         Color simsAccent = new Color(66, 244, 180);
         Color simsLightPink = new Color(255, 251, 253);
 
-// Основне тло
+        // Основне тло
         mainPanel.setBackground(simsPink);
         studentInfoPanel.setBackground(simsPink);
         searchPanel.setBackground(simsPink);
@@ -197,18 +206,18 @@ public class EnrollmentSystemGUI extends JFrame {
         enrolledElectivePanel.setBackground(simsPink);
         topContentPanel.setBackground(simsPink);
 
-// Кнопки
+        // Кнопки
         enrollElectiveButton.setBackground(simsAccent);
         dropElectiveButton.setBackground(simsAccent);
         confirmSelectionButton.setBackground(simsAccent);
         searchButton.setBackground(simsAccent);
 
-// Списки
+        // Списки
         electiveDisciplineList.setBackground(simsLightPink);
         enrolledElectiveList.setBackground(simsLightPink);
         mandatoryDisciplineList.setBackground(simsLightPink);
 
-// Заголовки меж
+        // Заголовки меж
         ((javax.swing.border.TitledBorder) electivePanel.getBorder()).setTitleColor(BLACK);
         ((javax.swing.border.TitledBorder) enrolledElectivePanel.getBorder()).setTitleColor(BLACK);
         ((javax.swing.border.TitledBorder) mandatoryPanel.getBorder()).setTitleColor(BLACK);
@@ -247,18 +256,43 @@ public class EnrollmentSystemGUI extends JFrame {
         });
     }
 
-    // --- Course Selection Dialog ---
-    private int showCourseSelectionDialog() {
-        String[] courses = {"2", "3", "4"};
+    private String showDegreeSelectionDialog() {
+        String[] degrees = {"Бакалаврат", "Магістратура"};
 
-        // Встановлюємо український текст для кнопок "OK" та "Cancel"
-        UIManager.put("OptionPane.okButtonText", "ОК");
-        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+        String selectedDegreeStr = (String) JOptionPane.showInputDialog(
+                this, // Використовуємо 'this' оскільки метод знаходиться в класі JFrame
+                "Будь ласка, оберіть Ваш освітній ступінь!",
+                "Вибір освітнього ступеня",
+                JOptionPane.QUESTION_MESSAGE,
+                null, // Без власної іконки
+                degrees,
+                degrees[0]); // Вибір за замовчуванням
+
+        return selectedDegreeStr; // Повертаємо обраний ступінь або null
+    }
+
+    private int showCourseSelectionDialog(String degree) {
+        String[] courses;
+        String dialogTitle;
+        String dialogMessage;
+
+        if ("Бакалаврат".equals(degree)) {
+            courses = new String[]{"2", "3", "4"};
+            dialogTitle = "Вибір курсу (Бакалаврат)";
+            dialogMessage = "Будь ласка, оберіть Ваш курс бакалаврату!";
+        } else if ("Магістратура".equals(degree)) {
+            courses = new String[]{"1", "2"};
+            dialogTitle = "Вибір курсу (Магістратура)";
+            dialogMessage = "Будь ласка, оберіть Ваш курс магістратури!";
+        } else {
+            JOptionPane.showMessageDialog(this, "Неправильний освітній ступінь.", "Помилка", JOptionPane.ERROR_MESSAGE);
+            return -1;
+        }
 
         String selectedCourseStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Будь ласка, оберіть Ваш курс!",
-                "Вибір курсу",
+                this, // Використовуємо 'this' оскільки метод знаходиться в класі JFrame
+                dialogMessage,
+                dialogTitle,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 courses,
@@ -269,10 +303,11 @@ public class EnrollmentSystemGUI extends JFrame {
                 return Integer.parseInt(selectedCourseStr);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Неправильний формат курсу. Спробуйте ще раз.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                return showCourseSelectionDialog(); // Re-prompt on error
+                // Повторно запитуємо, якщо виникла помилка формату
+                return showCourseSelectionDialog(degree); // Рекурсивний виклик без parentComponent
             }
         }
-        return -1; // User cancelled
+        return -1; // Користувач скасував
     }
 
     // Method to initialize test data based on selected course
@@ -474,7 +509,6 @@ public class EnrollmentSystemGUI extends JFrame {
 
     private void filterElectiveDisciplines(String searchText) {
         updateDisciplineLists();
-        appendOutput("Пошук дисциплін за запитом: '" + searchText + "'\n");
     }
 
     // --- Update Student Information Display ---
@@ -601,7 +635,7 @@ public class EnrollmentSystemGUI extends JFrame {
         // Add confirmation dialog for dropping
         Object[] options = {"Так", "Ні"};
         int confirm = JOptionPane.showOptionDialog(this,
-                "Ви впевнені, що хочете виписатися з дисципліни '" + selectedDiscipline.getName() + "'?",
+                "Ви впевнені, що хочете виписатися з дисципліни " + selectedDiscipline.getName() + "?",
                 "Підтвердження виписки",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
@@ -653,7 +687,7 @@ public class EnrollmentSystemGUI extends JFrame {
             searchField.setEnabled(false);
             searchButton.setEnabled(false);
 
-            appendOutput("Вибір дисциплін завершено. Подальші зміни не можливі.\n");
+            appendOutput("Вибір дисциплін завершено. Подальші зміни неможливі.\n");
 
             // Повідомлення про проходження першого рівня
             JOptionPane.showMessageDialog(this,
@@ -686,7 +720,7 @@ public class EnrollmentSystemGUI extends JFrame {
                 int index = list.locationToIndex(e.getPoint());
                 if (index != -1) {
                     Discipline selectedDiscipline = (Discipline) list.getModel().getElementAt(index);
-                    String info = "Інформація про дисципліну:\n" +
+                    String info = "Інформація про дисципліну\n" +
                             "Код: " + selectedDiscipline.getDisciplineId() + "\n" +
                             "Назва: " + selectedDiscipline.getName() + "\n" +
                             "Викладач: " + selectedDiscipline.getInstructor() + "\n" +

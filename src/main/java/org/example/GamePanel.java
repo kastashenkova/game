@@ -33,14 +33,14 @@ public class GamePanel extends JPanel implements ActionListener {
     private JPanel heroActionsPanel;
 
     private long lastMessageTime;
-    private final long MESSAGE_INTERVAL_MIN = 2000;
-    private final long MESSAGE_INTERVAL_MAX = 6000;
+    private final long MESSAGE_INTERVAL_MIN = 500;
+    private final long MESSAGE_INTERVAL_MAX = 2000;
     private long nextMessageInterval;
     private Random random = new Random();
 
     // --- Для спливаючих повідомлень чату ---
     private List<FloatingMessage> floatingMessages;
-    private final int FLOATING_MESSAGE_DISPLAY_DURATION = 3500; // 3.5 секунди
+    private final int FLOATING_MESSAGE_DISPLAY_DURATION = 3300;
     private final int MESSAGE_OFFSET_Y = 5; // Відступ між повідомленнями
     private final int MESSAGE_MARGIN_X = 20; // Відступ від правого краю
     private final int MESSAGE_BOTTOM_START_Y = 50; // Відступ від нижнього краю для першого повідомлення
@@ -49,7 +49,6 @@ public class GamePanel extends JPanel implements ActionListener {
     //private Clip messageSoundClip;
     //private final String MESSAGE_SOUND_PATH = "assets/Sounds/Message.wav";// Шлях до звукового файлу
 
-    // --- Нове: Для введення повідомлень користувачем ---
     private JTextField userMessageInputField;
     private JButton sendUserMessageButton;
 
@@ -76,7 +75,6 @@ public class GamePanel extends JPanel implements ActionListener {
             "Ура, здали всі лаби з матаналізу!",
             "Думаю про те, як поєднати навчання і роботу.",
             "Що не так із САЗом???",
-            "Вже скучив за бурсою...",
             "Що робити, якщо я вже всьо?..",
             "Хеееееелп",
             "Чому цей персонаж так швидко знову хоче їсти???",
@@ -86,7 +84,32 @@ public class GamePanel extends JPanel implements ActionListener {
             "Ля-ля-ля",
             "Туць-туць-туць",
             "i want to break free",
-            "Можна не спамити тут???"
+            "Можна не спамити тут???",
+            "Чому на 3 курсі кожна пара — як фінальний босс?",
+            "Невже хтось уже написав курсову з ML? Поділіться натхненням!",
+            "Як це «використайте API», якщо я ще чайник у ньому?",
+            "Чи є в когось старі лаби з системного програмування?",
+            "Мені здається, що інтеліджі мене ненавидить...",
+            "У когось є гайд по нормальному сну під час сесії?",
+            "Які кафешки працюють після 9 вечора біля кампусу?",
+            "Чому компілюється, але не працює?!",
+            "Що брати з собою на ІТ-хакатон? Крім паніки.",
+            "Хто хоче зібратись і разом подебажити алгоритми перед заліком?",
+            "Скільки ще можна мучити ту джаву...",
+            "Коли дедлайн — це твій особистий ворог номер один...",
+            "Хтось іде сьогодні на англійську?",
+            "Нащо мені це все, якщо я просто хочу писати гемблінг?",
+            "Можна, будь ласка, ще один тиждень перед сесією...",
+            "Є хто з бакалаврату, хто пережив лаби з ОС? Поділіться секретами.",
+            "Це вже навіть не баг, це фіча життя, пхпхахх",
+            "А можна просто скласти сесію, нічого не вивчивши, і жити далі?",
+            "Моя мотивація зараз десь між «поспати» і «поплакати»",
+            "Гуглю, як здати лабу, якщо ти програміст тільки в серці",
+            "Тільки я один починаю курсову в день дедлайну, чи це вже факультетська традиція?",
+            "Моя клавіатура вже сама друкує 'git commit -m 'panic fix'",
+            "Чому з кожним семестром кави треба все більше, а віри — все менше?",
+            "Знову прослухав всю пару, думаючи, чи то я тупий, чи то тема складна",
+            "Я тут, я читаю, я нічого не розумію, але я тут"
     };
 
     private enum GameState {
@@ -121,7 +144,7 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel(Hero hero, GameFrame parentFrame) {
         this.hero = hero;
         this.parentFrame = parentFrame;
-        setPreferredSize(new Dimension(1200, 800)); // Змінено розмір для кращого розміщення чату
+        setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.LIGHT_GRAY);
 
         currentGameState = GameState.PLAYING;
@@ -390,7 +413,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 hero.getEnergy(),
                 hero.getMood(), hero.getHunger()
         );
-        statsLabel.setText(stats);
     }
 
     @Override

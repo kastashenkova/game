@@ -1,10 +1,11 @@
 package org.example;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.IOException; // Імпортуємо тільки IOException
-import java.net.URL; // Імпортуємо URL
+import java.io.IOException;
+import java.net.URL;
 import javax.imageio.ImageIO;
 
 public class Hero {
@@ -12,6 +13,9 @@ public class Hero {
     private int energy;
     private int mood;
     private int hunger;
+    private int knowledge; // Новий атрибут: Знання, від 0 до 100
+    private int level; // Новий атрибут: Поточний рівень героя (1 або 2)
+    private boolean canLevelUp; // Новий атрибут: Чи може герой перейти на новий рівень
 
     public int x;
     public int initialY;
@@ -46,6 +50,10 @@ public class Hero {
         this.energy = 100;
         this.mood = 70;
         this.hunger = 0;
+        this.knowledge = 0; // Ініціалізація знань
+        this.level = 1; // Починаємо з рівня 1
+        this.canLevelUp = false; // За замовчуванням герой не може перейти на новий рівень
+
         this.x = initialX;
         this.initialY = intialY;
         this.y = intialY;
@@ -59,7 +67,11 @@ public class Hero {
         this.lowEnergyWarningStartTime = 0;
         this.isGameOverDueToEnergy = false;
 
-        diamondResourcePath = "assets/Models/Hero/diamond.png";
+        // Шлях до зображення діаманта. Якщо він передається як параметр, використовуємо його.
+        // Якщо ні, використовуємо шлях за замовчуванням.
+        if (diamondResourcePath == null || diamondResourcePath.isEmpty()) {
+            diamondResourcePath = "assets/Models/Hero/diamond.png";
+        }
 
         try {
             URL heroImageUrl = getClass().getClassLoader().getResource(heroResourcePath);
@@ -93,6 +105,8 @@ public class Hero {
     public int getEnergy() { return energy; }
     public int getMood() { return mood; }
     public int getHunger() { return hunger; }
+    public int getKnowledge() { return knowledge; } // Геттер для знань
+    public int getLevel() { return level; } // Геттер для рівня
     public int getX() { return x; }
     public int getY() { return y; }
     // Ці методи повертають масштабовані розміри на основі оригінального зображення та scaleFactor
@@ -118,6 +132,11 @@ public class Hero {
             return name + " не має енергії! Гра завершена.";
         }
         return null;
+    }
+
+    // Новий метод для перевірки, чи може герой перейти на наступний рівень
+    public boolean canLevelUp() {
+        return canLevelUp;
     }
 
     private void setMessage(String message) {
@@ -154,9 +173,23 @@ public class Hero {
             setMessage(name + " не має енергії для навчання.");
             return;
         }
+        // Якщо герой вже на рівні сесії і знання повні, не дозволяємо вчитися далі
+        if (level >= 2 && knowledge >= 100) {
+            setMessage(name + " вже готова до сесії!");
+            return;
+        }
+
         energy = Math.max(0, energy - 20);
         mood = Math.max(0, mood - 10);
-        setMessage(name + " повчилася.");
+        knowledge = Math.min(100, knowledge + 10); // Знання повільно наповнюються (+10 за навчання)
+
+        // Перевіряємо, чи може герой перейти на новий рівень
+        if (knowledge >= 100 && level == 1) { // Тільки якщо знання досягли 100 і ми на 1 рівні
+            canLevelUp = true;
+            setMessage(name + " готова до сесії! Натисніть 'Підвищити рівень'."); // Повідомлення про готовність до сесії
+        } else {
+            setMessage(name + " повчилася. Знання: " + knowledge + "%.");
+        }
     }
 
     public void relax() {
@@ -169,6 +202,25 @@ public class Hero {
         setMessage(name + " відпочила.");
     }
 
+    /**
+     * Метод для переходу героя на наступний рівень.
+     * Наразі підтримує перехід з рівня 1 на рівень 2 (сесія).
+     */
+    public void levelUp() {
+        if (canLevelUp && level == 1) { // Можна перейти тільки з 1 на 2 рівень, якщо дозволено
+            level = 2; // Переходимо на рівень 2 (сесія)
+            knowledge = 0; // Скидаємо знання після переходу на новий рівень
+            canLevelUp = false; // Скидаємо можливість переходу
+            energy = Math.min(100, energy + 20); // Трохи енергії після переходу
+            mood = Math.min(100, mood + 10); // Покращуємо настрій
+            setMessage(name + " успішно перейшла на рівень 2 (сесія)!");
+        } else if (level >= 2) {
+            setMessage(name + " вже на рівні сесії.");
+        } else {
+            setMessage(name + " ще не готова до сесії (потрібно більше знань).");
+        }
+    }
+
     public void update() {
         long currentTime = System.currentTimeMillis();
 
@@ -176,17 +228,23 @@ public class Hero {
         if (currentTime - lastHungerIncreaseTime >= HUNGER_INCREASE_INTERVAL) {
             hunger = Math.min(100, hunger + HUNGER_INCREASE_AMOUNT);
             lastHungerIncreaseTime = currentTime;
+            // Якщо голод високий, настрій може падати
+            if (hunger > 70) {
+                mood = Math.max(0, mood - 2);
+            }
         }
 
+        // Energy and Mood decay when low energy
         if (energy < 20) {
             mood = Math.max(0, mood - 1);
         }
 
+        // Game Over logic for energy
         if (energy <= 0) {
             if (!lowEnergyWarningActive) {
                 lowEnergyWarningActive = true;
                 lowEnergyWarningStartTime = currentTime;
-                setMessage(name + " потребує сну! Залишилося 30 сек."); // Змінено на 30 сек.
+                setMessage(name + " потребує сну! Залишилося " + (GAME_OVER_TIME_LIMIT / 1000) + " сек.");
             } else {
                 if (currentTime - lowEnergyWarningStartTime >= GAME_OVER_TIME_LIMIT) {
                     isGameOverDueToEnergy = true;
@@ -199,14 +257,16 @@ public class Hero {
             if (lowEnergyWarningActive) {
                 lowEnergyWarningActive = false;
                 lowEnergyWarningStartTime = 0;
-                setMessage(name + " почувається краще.");
+                // Не встановлюємо повідомлення тут, щоб не перебивати інші важливіші повідомлення
             }
         }
 
+        // Sway animation
         animationTimer += SWAY_SPEED;
         double swayOffset = SWAY_AMPLITUDE * Math.sin(animationTimer);
         this.y = initialY + (int) swayOffset;
 
+        // Clear message after duration
         if (currentTime > messageDisplayEndTime) {
             heroMessage = "";
         }
@@ -225,6 +285,10 @@ public class Hero {
             g.fillRect(x + offsetX, y + offsetY, 50, 50);
             g.setColor(java.awt.Color.BLACK);
             g.drawString("ПОМИЛКА ЗОБРАЖЕННЯ", x + offsetX + 5, y + offsetY + 25);
+            // Важливо: відновити трансформацію, навіть якщо зображення не завантажено
+            // Щоб уникнути впливу на подальші малювання
+            Graphics2D g2d_for_reset = (Graphics2D) g;
+            g2d_for_reset.setTransform(new AffineTransform()); // Скидаємо до одиничної матриці
             return;
         }
 
@@ -268,7 +332,7 @@ public class Hero {
             g2d.drawImage(diamondImage, diamondX, diamondY, diamondWidth, diamondHeight, null);
         }
 
-        // Відображення повідомлення над героєм
+        // Відображення повідомлення над героєм (для eat, sleep, study, relax)
         if (!heroMessage.isEmpty()) {
             g2d.setColor(Color.WHITE);
             g2d.setFont(new Font("Arial", Font.BOLD, 12)); // Шрифт для повідомлення
@@ -287,7 +351,76 @@ public class Hero {
             g2d.drawString(heroMessage, messageX, messageY - fm.getDescent());
         }
 
-        // Відновлюємо оригінальну трансформацію графічного контексту
+        // Відновлюємо оригінальну трансформацію графічного контексту,
+        // щоб малювати UI елементи у фіксованих позиціях на панелі
         g2d.setTransform(oldTransform);
+
+
+        // --- Відображення статичних панелей (шкал) у верхньому правому куті ---
+        int panelWidth = g.getClipBounds().width; // Отримуємо фактичну ширину панелі
+        int statsBarWidth = 100;
+        int statsBarHeight = 10;
+        int statsPadding = 5;
+        int initialTopRightX = panelWidth - statsBarWidth - 20; // 20px відступ від правого краю
+        int currentTopRightY = 20; // 20px відступ від верхнього краю
+
+        // Панель енергії
+        g2d.setColor(Color.RED);
+        g2d.fillRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setColor(Color.GREEN);
+        g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (energy / 100.0)), statsBarHeight);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 10));
+        g2d.drawString("Енергія: " + energy + "%", initialTopRightX, currentTopRightY - 5);
+
+
+        // Панель настрою
+        currentTopRightY += (statsBarHeight + statsPadding + 10); // Додатковий відступ для зручності
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setColor(Color.ORANGE);
+        g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (mood / 100.0)), statsBarHeight);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.drawString("Настрій: " + mood + "%", initialTopRightX, currentTopRightY - 5);
+
+
+        // Панель голоду
+        currentTopRightY += (statsBarHeight + statsPadding + 10);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setColor(new Color(139, 69, 19)); // Коричневий для голоду
+        g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (hunger / 100.0)), statsBarHeight);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.drawString("Голод: " + hunger + "%", initialTopRightX, currentTopRightY - 5);
+
+
+        // Панель знань
+        currentTopRightY += (statsBarHeight + statsPadding + 10);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setColor(new Color(0, 150, 250)); // Синій для знань
+        g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (knowledge / 100.0)), statsBarHeight);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.drawString("Знання: " + knowledge + "%", initialTopRightX, currentTopRightY - 5);
+
+        // Відображення поточного рівня
+        currentTopRightY += (statsBarHeight + statsPadding + 10);
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.drawString("Рівень: " + level, initialTopRightX, currentTopRightY);
+
+        // Повідомлення про можливість переходу на новий рівень
+        if (canLevelUp) {
+            currentTopRightY += (statsBarHeight + statsPadding + 5);
+            g2d.setColor(Color.BLUE.darker());
+            g2d.setFont(new Font("Arial", Font.BOLD, 14));
+            String levelUpMsg = "Готова до сесії!";
+            int msgWidth = g2d.getFontMetrics().stringWidth(levelUpMsg);
+            g2d.drawString(levelUpMsg, initialTopRightX + (statsBarWidth - msgWidth) / 2, currentTopRightY);
+        }
     }
 }

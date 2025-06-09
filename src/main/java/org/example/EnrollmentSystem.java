@@ -119,7 +119,7 @@ public class EnrollmentSystem {
         if (electives.isEmpty()) return;
 
         // Probability that a "virtual student" attempts to enroll
-        if (random.nextDouble() < 1) {
+        if (random.nextDouble() < 0.8) {
             String virtualStudentId = "VirtualStudent_" + random.nextInt(MAX_VIRTUAL_STUDENTS_TO_ENROLL * 2);
             virtualStudentElectiveCounts.putIfAbsent(virtualStudentId, 0);
             virtualStudentEnrolledElectives.putIfAbsent(virtualStudentId, new HashSet<>());
