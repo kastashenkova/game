@@ -1,9 +1,8 @@
 package org.example;
 
-
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL; // Імпортуємо URL
+import java.net.URL;
 
 public class StartWindow extends JFrame {
 

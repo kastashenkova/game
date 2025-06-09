@@ -136,7 +136,7 @@ public class Hero {
         }
         hunger = Math.max(0, hunger - 30);
         mood = Math.min(100, mood + 15);
-        setMessage(name + " поїв."); // Додано повідомлення
+        setMessage(name + " поїла."); // Додано повідомлення
     }
 
     public void sleep() {
@@ -147,7 +147,7 @@ public class Hero {
             isGameOverDueToEnergy = false; // Important: Reset game over state
             energy = Math.min(100, energy + 40);
             mood = Math.min(100, mood + 10);
-            setMessage(name + " поспав."); // Додано повідомлення
+            setMessage(name + " поспала."); // Додано повідомлення
         } else {
             setMessage(name + " не хоче спати.");
         }
@@ -160,7 +160,7 @@ public class Hero {
         }
         energy -= 20;
         mood = Math.max(0, mood - 10);
-        setMessage(name + " повчився."); // Додано повідомлення
+        setMessage(name + " повчилася."); // Додано повідомлення
     }
 
     public void relax() {
@@ -170,7 +170,7 @@ public class Hero {
         }
         mood = Math.min(100, mood + 20);
         energy = Math.min(100, energy + 5);
-        setMessage(name + " відпочив."); // Додано повідомлення
+        setMessage(name + " відпочила."); // Додано повідомлення
     }
 
     public void update() {
