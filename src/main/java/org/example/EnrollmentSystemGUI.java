@@ -131,9 +131,6 @@ public class EnrollmentSystemGUI extends JFrame {
 
         // Elective Disciplines Panel (Available for Enrollment)
         JPanel electivePanel = new JPanel(new BorderLayout(5, 5));
-        // TitledBorder electiveBorder = BorderFactory.createTitledBorder("Вибіркові дисципліни (доступні для запису)");
-        // electiveBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14)); // Шрифт для заголовка, можна прибрати якщо UIManager вже встановлює
-        // electivePanel.setBorder(electiveBorder);
         electivePanel.setBorder(BorderFactory.createTitledBorder("Вибіркові дисципліни (доступні для запису)")); // UIManager встановить шрифт
         electiveListModel = new DefaultListModel<>();
         electiveDisciplineList = new JList<>(electiveListModel);
@@ -181,7 +178,7 @@ public class EnrollmentSystemGUI extends JFrame {
         enrolledElectiveList = new JList<>(enrolledElectiveListModel);
         enrolledElectiveList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         enrolledElectiveList.setCellRenderer(new DisciplineListRenderer());
-        enrolledElectiveList.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JList
+        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
         enrolledElectivePanel.add(new JScrollPane(enrolledElectiveList), BorderLayout.CENTER);
         enrolledElectiveList.addMouseListener(new DisciplineInfoMouseAdapter());
 
@@ -194,18 +191,15 @@ public class EnrollmentSystemGUI extends JFrame {
         // Додаємо electiveSplitPane до верхньої панелі
         topContentPanel.add(electiveSplitPane, BorderLayout.CENTER);
 
-        // Mandatory Disciplines Panel - тепер окремо внизу
+        // Mandatory Disciplines Panel
         JPanel mandatoryPanel = new JPanel(new BorderLayout(5, 5));
-        // TitledBorder mandatoryBorder = BorderFactory.createTitledBorder("Обов'язкові дисципліни");
-        // mandatoryBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14)); // Шрифт для заголовка
-        // mandatoryPanel.setBorder(mandatoryBorder);
         mandatoryPanel.setBorder(BorderFactory.createTitledBorder("Обов'язкові дисципліни")); // UIManager встановить шрифт
         mandatoryListModel = new DefaultListModel<>();
         mandatoryDisciplineList = new JList<>(mandatoryListModel);
         mandatoryDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mandatoryDisciplineList.setCellRenderer(new DisciplineListRenderer());
         mandatoryDisciplineList.setEnabled(false); // Обов'язкові не змінюються
-        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JList
+        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
         mandatoryPanel.add(new JScrollPane(mandatoryDisciplineList), BorderLayout.CENTER);
         mandatoryDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
 
