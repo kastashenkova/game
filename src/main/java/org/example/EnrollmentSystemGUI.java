@@ -10,6 +10,8 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Random;
 
+import static java.awt.Color.*;
+
 public class EnrollmentSystemGUI extends JFrame {
 
     private EnrollmentSystem enrollmentSystem;
@@ -45,7 +47,7 @@ public class EnrollmentSystemGUI extends JFrame {
                 if (!disc.isMandatory()) {
                     label.setText(disc.getName() + " (Зайнято місць: " + disc.getCurrentEnrollment() + "/" + disc.getMaxCapacity() + ")");
                     if (!disc.hasAvailableSlots()) {
-                        label.setForeground(Color.RED.darker());
+                        label.setForeground(RED.darker());
                     } else if (disc.getCurrentEnrollment() > disc.getMaxCapacity() * 0.75) {
                         label.setForeground(new Color(200, 100, 0)); // Orange for nearing capacity
                     } else {
@@ -103,7 +105,7 @@ public class EnrollmentSystemGUI extends JFrame {
         studentInfoPanel.add(studentInfoLabel);
         mainPanel.add(studentInfoPanel, BorderLayout.NORTH);
 
-        // Панель для верхньої частини (вибіркові та обрані вибіркові)
+        // Панель для верхньої частини (вибіркові та обрані дисципліни)
         JPanel topContentPanel = new JPanel(new BorderLayout());
         topContentPanel.setBorder(new EmptyBorder(0, 0, 10, 0)); // Додаємо невеликий відступ знизу
 
@@ -114,7 +116,7 @@ public class EnrollmentSystemGUI extends JFrame {
         electiveDisciplineList = new JList<>(electiveListModel);
         electiveDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         electiveDisciplineList.setCellRenderer(new DisciplineListRenderer());
-        electiveDisciplineList.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JList
+        electiveDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         electivePanel.add(new JScrollPane(electiveDisciplineList), BorderLayout.CENTER);
         electiveDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
 
@@ -134,7 +136,7 @@ public class EnrollmentSystemGUI extends JFrame {
         dropElectiveButton = new JButton("Виписатися з вибіркової");
         dropElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JButton
         confirmSelectionButton = new JButton("Готово (Кредитів: 0)");
-        confirmSelectionButton.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Шрифт для кнопки "Готово"
+        confirmSelectionButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для кнопки "Готово"
         confirmSelectionButton.setEnabled(false);
 
         enrollElectiveButton.addActionListener(e -> attemptEnrollment());
@@ -151,12 +153,12 @@ public class EnrollmentSystemGUI extends JFrame {
 
         // Panel for Enrolled Electives
         JPanel enrolledElectivePanel = new JPanel(new BorderLayout(5, 5));
-        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Ваші обрані вибіркові дисципліни")); // UIManager встановить шрифт
+        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни")); // UIManager встановить шрифт
         enrolledElectiveListModel = new DefaultListModel<>();
         enrolledElectiveList = new JList<>(enrolledElectiveListModel);
         enrolledElectiveList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         enrolledElectiveList.setCellRenderer(new DisciplineListRenderer());
-        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
+        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         enrolledElectivePanel.add(new JScrollPane(enrolledElectiveList), BorderLayout.CENTER);
         enrolledElectiveList.addMouseListener(new DisciplineInfoMouseAdapter());
 
@@ -177,9 +179,39 @@ public class EnrollmentSystemGUI extends JFrame {
         mandatoryDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mandatoryDisciplineList.setCellRenderer(new DisciplineListRenderer());
         mandatoryDisciplineList.setEnabled(false); // Обов'язкові не змінюються
-        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
+        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         mandatoryPanel.add(new JScrollPane(mandatoryDisciplineList), BorderLayout.CENTER);
         mandatoryDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
+
+        Color simsPink = new Color(255, 233, 243, 255);
+        Color simsAccent = new Color(66, 244, 180);
+        Color simsLightPink = new Color(255, 251, 253);
+
+// Основне тло
+        mainPanel.setBackground(simsPink);
+        studentInfoPanel.setBackground(simsPink);
+        searchPanel.setBackground(simsPink);
+        electiveButtonsPanel.setBackground(simsPink);
+        mandatoryPanel.setBackground(simsPink);
+        electivePanel.setBackground(simsPink);
+        enrolledElectivePanel.setBackground(simsPink);
+        topContentPanel.setBackground(simsPink);
+
+// Кнопки
+        enrollElectiveButton.setBackground(simsAccent);
+        dropElectiveButton.setBackground(simsAccent);
+        confirmSelectionButton.setBackground(simsAccent);
+        searchButton.setBackground(simsAccent);
+
+// Списки
+        electiveDisciplineList.setBackground(simsLightPink);
+        enrolledElectiveList.setBackground(simsLightPink);
+        mandatoryDisciplineList.setBackground(simsLightPink);
+
+// Заголовки меж
+        ((javax.swing.border.TitledBorder) electivePanel.getBorder()).setTitleColor(BLACK);
+        ((javax.swing.border.TitledBorder) enrolledElectivePanel.getBorder()).setTitleColor(BLACK);
+        ((javax.swing.border.TitledBorder) mandatoryPanel.getBorder()).setTitleColor(BLACK);
 
         // Головна панель (mainPanel) тепер організовує розташування
         mainPanel.add(topContentPanel, BorderLayout.CENTER); // Вибіркові у центрі
@@ -215,7 +247,6 @@ public class EnrollmentSystemGUI extends JFrame {
         });
     }
 
-    // --- Course Selection Dialog ---
     // --- Course Selection Dialog ---
     private int showCourseSelectionDialog() {
         String[] courses = {"2", "3", "4"};

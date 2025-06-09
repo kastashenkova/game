@@ -8,10 +8,10 @@ public class StartWindow extends JFrame {
 
     // Поля для зберігання вибраного персонажа
     private String selectedCharacterName;
-    private String selectedCharacterResourcePath; // Зберігаємо ресурсний шлях (відносний до classpath)
+    private String selectedCharacterResourcePath;
 
     public StartWindow() {
-        setTitle("Виберіть персонажа");
+        setTitle("Оберіть персонажку");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
