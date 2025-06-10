@@ -76,6 +76,8 @@ public class EnrollmentSystemGUI extends JFrame {
         UIManager.put("OptionPane.okButtonText", "ОК");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
 
+        showInstructionsDialog();
+
         // --- Degree and Course Selection ---
         String selectedDegree = showDegreeSelectionDialog();
         if (selectedDegree == null) { // User cancelled degree selection
@@ -254,6 +256,43 @@ public class EnrollmentSystemGUI extends JFrame {
                 System.exit(0);
             }
         });
+    }
+
+    /**
+     * Відображає вікно з інструкціями для користувача перед початком роботи із системою запису.
+     */
+    private void showInstructionsDialog() {
+        String instructions = "<html>" +
+                "<body style='font-family: \"Segoe UI\"; font-size: 12px;'>" +
+                "<h2>Інструкція щодо запису на вибіркові дисципліни</h2>" +
+                "<p>Ласкаво просимо до Системи автоматизованого запису (САЗ) " +
+                "Національного університету «Києво-Могилянська академія» (НаУКМА).</p>" +
+                "<p>Будь ласка, дотримуйтеся цих кроків для успішного запису</p>" +
+                "<ol>" +
+                "<li><b>Виберіть свій освітній ступінь</b> (Бакалаврат/Магістратура).</li>" +
+                "<li><b>Виберіть свій курс</b> відповідно до обраного ступеня.</li>" +
+                "<li>У лівому списку <b>«Вибіркові дисципліни»</b> Ви знайдете предмети, доступні для запису.</li>" +
+                "<li>Виберіть дисципліну з переліку і натисніть <b>«Записатися»</b>, щоб додати її до своїх обраних.</li>" +
+                "<li>У правому списку <b>«Обрані вибіркові дисципліни»</b> Ви побачите предмети, на які вже записалися.</li>" +
+                "<li>Щоб виписатися з дисципліни, виберіть її з правого списку та натисніть <b>«Виписатися»</b>.</li>" +
+                "<li><b>Обов'язкові дисципліни</b> відображаються в нижньому списку, вони записуються автоматично і не можуть бути змінені.</li>" +
+                "<li>Ваша <b>загальна кількість кредитів</b> відображається у верхній частині вікна та на кнопці «Готово».</li>" +
+                "<li>Вам потрібно набрати мінімум 55 кредитів</b>. Кнопка «Готово» стане активною, коли ви досягнете цього мінімуму.</li>" +
+                "<li>Натисніть <b>«Готово»</b>, щоб підтвердити свій вибір.</li>" +
+                "</ol>" +
+                "<p>Успішного запису!</p>" +
+                "</body></html>";
+
+        // Використовуємо JEditorPane для відображення HTML тексту, щоб він правильно форматувався
+        JEditorPane editorPane = new JEditorPane("text/html", instructions);
+        editorPane.setEditable(false);
+        editorPane.setBackground(new Color(255, 251, 253)); // simsLightPink
+        editorPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setPreferredSize(new Dimension(600, 450)); // Зручний розмір для інструкцій
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Інструкції", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private String showDegreeSelectionDialog() {
