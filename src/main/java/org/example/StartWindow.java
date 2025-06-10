@@ -11,6 +11,7 @@ public class StartWindow extends JFrame {
     private String selectedCharacterResourcePath;
 
     public StartWindow() {
+
         setTitle("Оберіть персонажку");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -112,6 +113,10 @@ public class StartWindow extends JFrame {
     }
 
     public static void main(String[] args) {
+
+        MusicPlayer player = new MusicPlayer();
+        player.playMusic("src/main/resources/assets/Sounds/Background.wav");
+
         SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
     }
 }

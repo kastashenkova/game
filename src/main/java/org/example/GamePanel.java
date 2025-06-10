@@ -45,12 +45,11 @@ public class GamePanel extends JPanel implements ActionListener {
     private final int MESSAGE_MARGIN_X = 20; // Відступ від правого краю
     private final int MESSAGE_BOTTOM_START_Y = 50; // Відступ від нижнього краю для першого повідомлення
 
-    // --- Закоментовані рядки для звуку, як у наданому коді користувача ---
-    //private Clip messageSoundClip;
-    //private final String MESSAGE_SOUND_PATH = "assets/Sounds/Message.wav";// Шлях до звукового файлу
-
     private JTextField userMessageInputField;
     private JButton sendUserMessageButton;
+
+    // Instance of MusicPlayer for sound effects
+    private MusicPlayer musicPlayer;
 
     private String[] studentNames = {"Ксенія", "Катя", "Петро", "Женя", "Ольга", "Тарас", "Стас", "Дмитро"};
     private String[] kmaMessages = {
@@ -151,6 +150,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
         setLayout(null);
 
+        // Initialize MusicPlayer (assuming default sound path or specific path if needed)
+        musicPlayer = new MusicPlayer();
+
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         statsLabel.setForeground(Color.BLACK);
@@ -228,14 +230,12 @@ public class GamePanel extends JPanel implements ActionListener {
             String message = userMessageInputField.getText().trim();
             if (!message.isEmpty()) {
                 showFloatingMessage("Ви", message); // Відображаємо повідомлення
+                musicPlayer.playEffect("src/main/resources/assets/Sounds/message_send.wav");
                 userMessageInputField.setText(""); // Очищаємо поле
             }
         };
         sendUserMessageButton.addActionListener(sendMessageAction);
         userMessageInputField.addActionListener(sendMessageAction); // Відправлення по Enter
-
-        // --- Завантаження звукового файлу при ініціалізації панелі (якщо не закоментовано) ---
-        //loadMessageSound();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -365,54 +365,15 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
             }
         });
-        // Переміщено виклик positionUserChatElements в кінець конструктора
-        // після того, як компоненти були додані до панелі та GamePanel ініціалізовано.
+
         positionUserChatElements();
     }
 
-    // --- Метод для завантаження звукового файлу (закоментований) ---
-    /*private void loadMessageSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource(MESSAGE_SOUND_PATH);
-            if (soundUrl != null) {
-                AudioInputStream audioStream = null;
-                try {
-                    audioStream = AudioSystem.getAudioInputStream(soundUrl);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                messageSoundClip = AudioSystem.getClip();
-                messageSoundClip.open(audioStream);
-                System.out.println("Sound loaded: " + MESSAGE_SOUND_PATH);
-            } else {
-                System.err.println("Error: Sound file not found in classpath: " + MESSAGE_SOUND_PATH);
-            }
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            System.err.println("Error loading sound file: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }*/
-
-    // --- Метод для відтворення звуку (закоментований) ---
-    /*private void playMessageSound() {
-        if (messageSoundClip != null) {
-            messageSoundClip.stop(); // Зупиняємо, якщо звук вже грає
-            messageSoundClip.setFramePosition(0); // Перемотуємо на початок
-            messageSoundClip.start(); // Запускаємо звук
-        }
-    }*/
-
-
     private void updateStatsDisplay() {
-        String stats = String.format(
-                "<html><b>%s</b><br>" +
-                        "Енергія: %d<br>" +
-                        "Настрій: %d<br>" +
-                        "Голод: %d</html>",
-                hero.getName(),
-                hero.getEnergy(),
-                hero.getMood(), hero.getHunger()
-        );
+        // Статистика героя тепер відображається в його методі draw,
+        // тому цей метод більше не оновлює JLabel statsLabel.
+        // Якщо ви хочете, щоб statsLabel відображав додаткову інформацію,
+        // ви можете додати її тут.
     }
 
     @Override
@@ -426,7 +387,6 @@ public class GamePanel extends JPanel implements ActionListener {
         FontMetrics fm = g.getFontMetrics(messageFont);
 
         // Позиціонування повідомлень знизу вгору, з урахуванням поля вводу
-        // Зміщення, якщо поле вводу видно. (inputFieldHeight + 10 = висота поля + відступ)
         int currentY = getHeight() - MESSAGE_BOTTOM_START_Y - (userMessageInputField.isVisible() ? userMessageInputField.getHeight() + 10 : 0);
         List<FloatingMessage> messagesToRemove = new ArrayList<>();
 
@@ -501,7 +461,6 @@ public class GamePanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (currentGameState == GameState.PLAYING) {
             hero.update();
-            updateStatsDisplay();
 
             if (hero.isGameOverDueToEnergy()) {
                 currentGameState = GameState.GAME_OVER;
@@ -513,6 +472,7 @@ public class GamePanel extends JPanel implements ActionListener {
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastMessageTime >= nextMessageInterval) {
                 generateRandomChatMessages();
+                musicPlayer.playEffect("src/main/resources/assets/Sounds/message_received.wav");
                 lastMessageTime = currentTime;
                 nextMessageInterval = generateRandomMessageInterval();
             }
@@ -587,8 +547,6 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void showFloatingMessage(String sender, String message) {
-        // playMessageSound(); // Цей рядок закоментовано, як у вашому попередньому коді
-
         Font messageFont = new Font("Segoe UI", Font.BOLD, 10);
         JLabel tempLabel = new JLabel("<html><b>" + sender + ":</b> " + message + "</html>");
         tempLabel.setFont(messageFont);
@@ -602,7 +560,7 @@ public class GamePanel extends JPanel implements ActionListener {
         // враховуючи наявність поля вводу повідомлень
         int startY = getHeight() - MESSAGE_BOTTOM_START_Y;
 
-        // Зміщуємо всі існуючі повідомлення вгору
+        // Зміщуємо всі наявні повідомлення вгору
         for (FloatingMessage msg : floatingMessages) {
             msg.updateY(msg.currentY - (messageHeight + MESSAGE_OFFSET_Y));
         }
@@ -619,10 +577,6 @@ public class GamePanel extends JPanel implements ActionListener {
             gameTimer.stop();
         }
         parentFrame.handleGameOver(reason);
-        // Забезпечуємо зупинку звуку, якщо він грав (закоментовано)
-        /*if (messageSoundClip != null && messageSoundClip.isRunning()) {
-            messageSoundClip.stop();
-        }*/
     }
 
     public void setHero(Hero newHero) {
@@ -639,15 +593,6 @@ public class GamePanel extends JPanel implements ActionListener {
         lastMessageTime = System.currentTimeMillis();
         nextMessageInterval = generateRandomMessageInterval();
         floatingMessages.clear();
-        // Забезпечуємо зупинку та перезавантаження звуку при перезапуску (закоментовано)
-        //if (messageSoundClip != null) {
-        //if (messageSoundClip.isRunning()) {
-        //messageSoundClip.stop();
-        //}
-        //messageSoundClip.close();
-        //messageSoundClip = null;
-        //loadMessageSound();
-        //}
         repaint();
     }
 }
