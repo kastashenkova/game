@@ -7,6 +7,15 @@ import java.awt.geom.RoundRectangle2D;
 
 public class NAUKMAEntrance extends JPanel {
 
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+    private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
+    private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
+    private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -183,7 +192,13 @@ public class NAUKMAEntrance extends JPanel {
         g2d.fillRect(panelWidth - 140, 100, 2, 40); // Хвилинна стрілка (трохи довша)
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+        UIManager.put("control", SIMS_LIGHT_PINK);
+        UIManager.put("textForeground", SIMS_DARK_TEXT);
+
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Вхід до НаУКМА");
             NAUKMAEntrance panel = new NAUKMAEntrance();

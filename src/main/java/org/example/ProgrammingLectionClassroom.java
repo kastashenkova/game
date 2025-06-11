@@ -29,6 +29,15 @@ public class ProgrammingLectionClassroom extends JPanel {
     private final Color WINDOW_GLASS_COLOR = new Color(200, 230, 255, 150);
     private final Color DOOR_COLOR = new Color(139, 69, 19);
 
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+    private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
+    private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
+    private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
+
     public interface ExitButtonClickListener {
         void onExitButtonClicked();
     }
@@ -174,7 +183,13 @@ public class ProgrammingLectionClassroom extends JPanel {
     }
 
     // --- Main method for testing ---
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+        UIManager.put("control", SIMS_LIGHT_PINK);
+        UIManager.put("textForeground", SIMS_DARK_TEXT);
+
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Авдиторія для лекцій із програмування");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

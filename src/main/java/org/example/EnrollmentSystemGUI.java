@@ -364,6 +364,8 @@ public class EnrollmentSystemGUI extends JFrame {
         scrollPane.setPreferredSize(new Dimension(600, 450));
 
         JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
+
+
     }
 
     private String toHex(Color color) {
@@ -886,7 +888,13 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
-        public static void main(String[] args) {
+        public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+            UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+            UIManager.put("control", SIMS_LIGHT_PINK);
+            UIManager.put("textForeground", SIMS_DARK_TEXT);
+
             SwingUtilities.invokeLater(EnrollmentSystemGUI::new);
         }
 }
