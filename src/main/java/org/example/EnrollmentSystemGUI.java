@@ -3,10 +3,7 @@ package org.example;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
 import java.util.Random;
 
@@ -107,14 +104,14 @@ public class EnrollmentSystemGUI extends JFrame {
         showStartAnimation();
 
         // Initialize data based on selected course
-        if (selectedDegree.equals("Бакалаврат")){
+        if (selectedDegree.equals("Бакалаврат")) {
             initializeInitialDataB(selectedCourse);
             currentStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
             if (currentStudent == null) {
                 JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
                 System.exit(1);
             }
-        } else if (selectedDegree.equals("Магістратура")){
+        } else if (selectedDegree.equals("Магістратура")) {
             initializeInitialDataM(selectedCourse);
             currentStudent = enrollmentSystem.getStudentById("І 005/24 мп").orElse(null);
             if (currentStudent == null) {
@@ -299,11 +296,31 @@ public class EnrollmentSystemGUI extends JFrame {
         });
         autoEnrollTimer.start();
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                autoEnrollTimer.stop();
-                System.exit(0);
+            public void windowClosing(WindowEvent windowEvent) {
+                UIManager.put("OptionPane.yesButtonText", "Так");
+                UIManager.put("OptionPane.noButtonText", "Ні");
+
+                boolean wasTimerRunning = (autoEnrollTimer != null && autoEnrollTimer.isRunning());
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        EnrollmentSystemGUI.this,
+                        "Ви дійсно хочете завершити поточну гру та повернутися на початок?",
+                        "Завершити гру",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if (autoEnrollTimer != null) {
+                        autoEnrollTimer.stop();
+                    }
+                    EnrollmentSystemGUI.this.dispose();
+                    SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
+                }
             }
         });
     }
