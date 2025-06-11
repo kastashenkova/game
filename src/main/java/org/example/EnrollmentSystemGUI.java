@@ -37,6 +37,15 @@ public class EnrollmentSystemGUI extends JFrame {
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
 
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+    private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
+    private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
+    private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
+
     // Internal class for customizing list item display in JList
     static class DisciplineListRenderer extends DefaultListCellRenderer {
         @Override
@@ -325,16 +334,12 @@ public class EnrollmentSystemGUI extends JFrame {
         });
     }
 
-    /**
-     * Відображає вікно з інструкціями для користувача перед початком роботи із системою запису.
-     */
     private void showInstructionsDialog() {
         String instructions = "<html>" +
-                "<body style='font-family: \"Segoe UI\"; font-size: 12px;'>" +
-                "<h2>Інструкція щодо запису на вибіркові дисципліни</h2>" +
-                "<p>Ласкаво просимо до Системи автоматизованого запису (САЗ) " +
-                "Національного університету «Києво-Могилянська академія» (НаУКМА).</p>" +
-                "<p>Будь ласка, дотримуйтеся цих кроків для успішного запису</p>" +
+                "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до запису на вибіркові дисципліни</h1>" +
+                "<p>Ласкаво просимо до Системи автоматизованого запису (САЗ) НаУКМА!</p>" +
+                "<p>Будь ласка, дотримуйтеся цих кроків для успішного запису!</p>" +
                 "<ol>" +
                 "<li><b>Виберіть свій освітній ступінь</b> (Бакалаврат/Магістратура).</li>" +
                 "<li><b>Виберіть свій курс</b> відповідно до обраного ступеня.</li>" +
@@ -347,19 +352,22 @@ public class EnrollmentSystemGUI extends JFrame {
                 "<li>Вам потрібно набрати мінімум 55 кредитів</b>. Кнопка «Готово» стане активною, коли ви досягнете цього мінімуму.</li>" +
                 "<li>Натисніть <b>«Готово»</b>, щоб підтвердити свій вибір.</li>" +
                 "</ol>" +
-                "<p>Успішного запису!</p>" +
+                "<p><b>Успішного запису!</b></p>" +
                 "</body></html>";
 
-        // Використовуємо JEditorPane для відображення HTML тексту, щоб він правильно форматувався
         JEditorPane editorPane = new JEditorPane("text/html", instructions);
         editorPane.setEditable(false);
-        editorPane.setBackground(new Color(255, 251, 253)); // simsLightPink
+        editorPane.setBackground(SIMS_LIGHT_PINK);
         editorPane.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JScrollPane scrollPane = new JScrollPane(editorPane);
-        scrollPane.setPreferredSize(new Dimension(600, 450)); // Зручний розмір для інструкцій
+        scrollPane.setPreferredSize(new Dimension(600, 450));
 
-        JOptionPane.showMessageDialog(this, scrollPane, "Інструкції", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private String toHex(Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
     private String showDegreeSelectionDialog() {
