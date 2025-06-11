@@ -156,7 +156,6 @@ public class GamePanel extends JPanel implements ActionListener {
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         statsLabel.setForeground(Color.BLACK);
-        updateStatsDisplay();
         statsLabel.setBounds(10, 10, 200, 100);
         add(statsLabel);
 
@@ -172,7 +171,6 @@ public class GamePanel extends JPanel implements ActionListener {
         eatButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.eat();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(eatButton);
@@ -182,7 +180,6 @@ public class GamePanel extends JPanel implements ActionListener {
         sleepButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.sleep();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(sleepButton);
@@ -192,7 +189,6 @@ public class GamePanel extends JPanel implements ActionListener {
         studyButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.study();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(studyButton);
@@ -202,7 +198,6 @@ public class GamePanel extends JPanel implements ActionListener {
         relaxButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.relax();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(relaxButton);
@@ -367,13 +362,6 @@ public class GamePanel extends JPanel implements ActionListener {
         });
 
         positionUserChatElements();
-    }
-
-    private void updateStatsDisplay() {
-        // Статистика героя тепер відображається в його методі draw,
-        // тому цей метод більше не оновлює JLabel statsLabel.
-        // Якщо ви хочете, щоб statsLabel відображав додаткову інформацію,
-        // ви можете додати її тут.
     }
 
     @Override
@@ -588,7 +576,6 @@ public class GamePanel extends JPanel implements ActionListener {
         sceneOffsetY = 0;
         sceneScale = 1.0;
         hideHeroActionsPanel();
-        updateStatsDisplay();
         gameTimer.start();
         lastMessageTime = System.currentTimeMillis();
         nextMessageInterval = generateRandomMessageInterval();
