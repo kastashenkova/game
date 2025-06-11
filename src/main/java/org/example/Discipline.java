@@ -2,25 +2,27 @@ package org.example;
 
 import java.util.Objects;
 
+import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
+
 public class Discipline {
     private String disciplineId;
     private String name;
     private String instructor; // Changed from 'lecturer' to 'instructor' for consistency
-    private int credits;
+    private double credits;
     private int maxCapacity;
     private int currentEnrollment;
     private boolean isMandatory;
     private int targetCourse;
 
-    public Discipline(String disciplineId, String name, String instructor, int credits, int maxCapacity, boolean isMandatory, int targetCourse) {
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse) {
         this.disciplineId = disciplineId;
         this.name = name;
-        this.instructor = instructor; // Changed
+        this.instructor = instructor;
         this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
         this.maxCapacity = maxCapacity;
         this.isMandatory = isMandatory;
         this.targetCourse = targetCourse;
-        this.currentEnrollment = 0; // Починаємо з 0 записаних
     }
 
     // Гетери
@@ -36,7 +38,7 @@ public class Discipline {
         return instructor;
     }
 
-    public int getCredits() {
+    public double getCredits() {
         return credits;
     }
 
@@ -61,6 +63,8 @@ public class Discipline {
         if (currentEnrollment < maxCapacity) {
             currentEnrollment++;
             return true;
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
+            currentEnrollment++;
         }
         return false;
     }
@@ -74,7 +78,12 @@ public class Discipline {
     }
 
     public boolean hasAvailableSlots() {
-        return currentEnrollment < maxCapacity;
+        if (currentEnrollment < maxCapacity) {
+            return currentEnrollment < maxCapacity;
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
+            return currentEnrollment < 64;
+        }
+        return false;
     }
 
     @Override
