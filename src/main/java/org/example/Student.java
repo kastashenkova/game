@@ -10,7 +10,7 @@ public class Student {
     private int course;
     private String major;
     private List<Discipline> enrolledDisciplines;
-    private int electiveCount; // Відстежує кількість обраних вибіркових дисциплін
+    private int electiveCount;
 
     public Student(String studentId, String name, int course, String major) {
         this.studentId = studentId;

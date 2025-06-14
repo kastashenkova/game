@@ -25,8 +25,8 @@ public class EnrollmentSystem {
     static {
         COURSE_CREDIT_LIMITS.put(1, 61);
         COURSE_CREDIT_LIMITS.put(2, 62);
-        COURSE_CREDIT_LIMITS.put(3, 63);
-        COURSE_CREDIT_LIMITS.put(4, 60);
+        COURSE_CREDIT_LIMITS.put(3, 62);
+        COURSE_CREDIT_LIMITS.put(4, 62);
     }
 
     // Мінімальна кількість кредитів для завершення вибору
