@@ -21,6 +21,10 @@ public class Hero {
     public int initialY;
     public int y;
 
+    public String heroResourcePath;
+
+
+
     private BufferedImage heroImage; // Зображення героя (оригінального розміру)
     private double scaleFactor; // Коефіцієнт масштабування для малювання
 
@@ -45,6 +49,9 @@ public class Hero {
     private final long GAME_OVER_TIME_LIMIT = 15000; // 15 секунд до завершення гри
     private boolean isGameOverDueToEnergy;
 
+    public Hero(){
+
+    }
     public Hero(String name, String heroResourcePath, String diamondResourcePath, int initialX, int intialY, double scaleFactor) {
         this.name = name;
         this.energy = 100;
@@ -66,6 +73,8 @@ public class Hero {
         this.lowEnergyWarningActive = false;
         this.lowEnergyWarningStartTime = 0;
         this.isGameOverDueToEnergy = false;
+
+        this.heroResourcePath = heroResourcePath;
 
         // Шлях до зображення діаманта. Якщо він передається як параметр, використовуємо його.
         // Якщо ні, використовуємо шлях за замовчуванням.
@@ -100,7 +109,13 @@ public class Hero {
             this.diamondImage = null; // Забезпечити null, якщо завантаження не вдалося
         }
     }
+    public BufferedImage getHeroImage() {
+        return heroImage;
+    }
 
+    public void setHeroImage(BufferedImage heroImage) {
+        this.heroImage = heroImage;
+    }
     public String getName() { return name; }
     public int getEnergy() { return energy; }
     public int getMood() { return mood; }
@@ -422,5 +437,8 @@ public class Hero {
             int msgWidth = g2d.getFontMetrics().stringWidth(levelUpMsg);
             g2d.drawString(levelUpMsg, initialTopRightX + (statsBarWidth - msgWidth) / 2, currentTopRightY);
         }
+    }
+    public void setName(String name){
+        this.name = name;
     }
 }

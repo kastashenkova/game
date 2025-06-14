@@ -1,5 +1,9 @@
 package org.example;
 
+import com.formdev.flatlaf.FlatLightLaf;
+import gui.LoadingFrame;
+import mainstage.MainFrame;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
@@ -20,9 +24,11 @@ public class StartWindow extends JFrame {
     private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
     private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
     private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
+    MusicPlayer musicPlayer = new MusicPlayer();
 
     public StartWindow() {
 
+       musicPlayer.playMusic("src/main/resources/assets/Sounds/Background.wav");
         setTitle("Оберіть персонажку");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -34,16 +40,16 @@ public class StartWindow extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mainPanel.setBackground(new Color(220, 230, 250)); // Легкий синій фон
 
-        String oksanaResourcePath = "assets/Models/Hero/Oksana.png";
-        String oleksandraResourcePath = "assets/Models/Hero/Oleksandra.png";
-        String gabrielResourcePath = "assets/Models/Hero/Gabriel.png";
+        String oksanaResourcePath = "assets/Models/Hero/girl1.png";
+        String oleksandraResourcePath = "assets/Models/Hero/girl2.png";
+        String gabrielResourcePath = "assets/Models/Hero/girl3.png";
         String sofiaResourcePath = "assets/Models/Hero/Sofia.png";
 
         // Передаємо ресурсні шляхи (String) до методу addCharacterPanel
-        addCharacterPanel(mainPanel, "Оксана", oksanaResourcePath);
-        addCharacterPanel(mainPanel, "Олександра", oleksandraResourcePath);
-        addCharacterPanel(mainPanel, "Габріель", gabrielResourcePath);
-        addCharacterPanel(mainPanel, "Софія", sofiaResourcePath);
+        addCharacterPanel(mainPanel, "girl1", oksanaResourcePath);
+        addCharacterPanel(mainPanel, "girl2", oleksandraResourcePath);
+        addCharacterPanel(mainPanel, "girl3", gabrielResourcePath);
+      //  addCharacterPanel(mainPanel, "Софія", sofiaResourcePath);
 
         add(mainPanel, BorderLayout.CENTER);
 
@@ -71,7 +77,7 @@ public class StartWindow extends JFrame {
             characterIcon = new ImageIcon(imageUrl);
             // Масштабуємо зображення до потрібного розміру (60x165)
             Image image = characterIcon.getImage();
-            Image scaledImage = image.getScaledInstance(60, 165, Image.SCALE_SMOOTH);
+            Image scaledImage = image.getScaledInstance(90, 155, Image.SCALE_SMOOTH);
             characterIcon = new ImageIcon(scaledImage); // Створюємо новий ImageIcon зі масштабованим зображенням
         } else {
             System.err.println("Помилка: зображення '" + name + "' не знайдено в classpath за шляхом: " + imageResourcePath);
@@ -99,6 +105,7 @@ public class StartWindow extends JFrame {
         selectButton.addActionListener(e -> {
             selectedCharacterName = name;
             selectedCharacterResourcePath = imageResourcePath;
+            musicPlayer.playButtonClick();
             startGame();
         });
 
@@ -109,7 +116,13 @@ public class StartWindow extends JFrame {
     private void startGame() {
         if (selectedCharacterName != null && selectedCharacterResourcePath != null) {
             this.dispose();
-            SwingUtilities.invokeLater(() -> new GameFrame(selectedCharacterName, selectedCharacterResourcePath).setVisible(true)); // Передаємо ресурсний шлях
+            musicPlayer.stopMusic();
+            SwingUtilities.invokeLater(() -> {
+                LoadingFrame loading = new LoadingFrame();
+                loading.startLoading(() -> {
+                    new GameFrame(selectedCharacterName, selectedCharacterResourcePath).setVisible(true);
+                });
+            });
         } else {
             JOptionPane.showMessageDialog(this, "Будь ласка, оберіть персонажа!", "Помилка вибору", JOptionPane.WARNING_MESSAGE);
         }
@@ -123,17 +136,20 @@ public class StartWindow extends JFrame {
         return selectedCharacterResourcePath;
     }
 
-    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+    /**  public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 
-        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+       UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
         UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
         UIManager.put("control", SIMS_LIGHT_PINK);
         UIManager.put("textForeground", SIMS_DARK_TEXT);
 
-        MusicPlayer player = new MusicPlayer();
-        player.playMusic("src/main/resources/assets/Sounds/Background.wav");
+        UIManager.setLookAndFeel(new FlatLightLaf());
+
+      //  MusicPlayer player = new MusicPlayer();
+     //   player.playMusic("src/main/resources/assets/Sounds/Background.wav");
 
         SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
-    }
+    } */
+
 }
