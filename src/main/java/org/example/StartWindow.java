@@ -8,8 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 
-import static org.example.EnrollmentSystemGUI.*;
-
 public class StartWindow extends JFrame {
 
     // Поля для зберігання вибраного персонажа
