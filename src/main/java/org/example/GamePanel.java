@@ -54,8 +54,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private JTextField userMessageInputField;
     private JButton sendUserMessageButton;
 
-    // Instance of MusicPlayer for sound effects
-    private MusicPlayer musicPlayer;
+
 
     private String[] studentNames = {"Ксенія", "Катя", "Петро", "Женя", "Ольга", "Тарас", "Стас", "Дмитро"};
     private String[] kmaMessages = {
@@ -155,8 +154,8 @@ public class GamePanel extends JPanel implements ActionListener {
         setLayout(null);
 
         // Initialize MusicPlayer (assuming default sound path or specific path if needed)
-        musicPlayer = new MusicPlayer();
-        musicPlayer.playMusic("src/main/resources/assets/Sounds/Background.wav");
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
 
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -229,8 +228,8 @@ public class GamePanel extends JPanel implements ActionListener {
         ActionListener sendMessageAction = e -> {
             String message = userMessageInputField.getText().trim();
             if (!message.isEmpty()) {
-                showFloatingMessage("Ви", message); // Відображаємо повідомлення
-                musicPlayer.playEffect("src/main/resources/assets/Sounds/message_send.wav");
+                MusicPlayer.getInstance().setMusicEnabled(true);
+                MusicPlayer.getInstance().playEffect("/assets/Sounds/message_send.wav");
                 userMessageInputField.setText(""); // Очищаємо поле
             }
         };
@@ -468,7 +467,9 @@ public class GamePanel extends JPanel implements ActionListener {
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastMessageTime >= nextMessageInterval) {
                 generateRandomChatMessages();
-                musicPlayer.playEffect("src/main/resources/assets/Sounds/message_received.wav");
+
+                MusicPlayer.getInstance().setMusicEnabled(true);
+                MusicPlayer.getInstance().playEffect("/assets/Sounds/message_received.wav");
                 lastMessageTime = currentTime;
                 nextMessageInterval = generateRandomMessageInterval();
             }
@@ -600,9 +601,9 @@ public class GamePanel extends JPanel implements ActionListener {
         goToWorldButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         goToWorldButton.setBorder(new LineBorder(Color.WHITE, 2, true)); // true = округлі кути
         goToWorldButton.addActionListener(e ->{
-                    musicPlayer.playButtonClick();
-                    musicPlayer.stopMusic();
-                    parentFrame.dispose();
+                  MusicPlayer.getInstance().playButtonClick();
+                  MusicPlayer.getInstance().setMusicEnabled(false);
+                     parentFrame.dispose();
                     currentGameState=GameState.GAME_PAUSED;
                     SwingUtilities.invokeLater(() -> {
                         Window gameWindow = SwingUtilities.getWindowAncestor(this);

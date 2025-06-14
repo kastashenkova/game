@@ -55,15 +55,14 @@ public class LoadingFrame extends JFrame {
 
     public void startLoading(Runnable onFinish) {
         setVisible(true);
-        messageTimer.start();
-        MusicPlayer player = new MusicPlayer();
-        player.playMusic("src/main/resources//assets/Sounds/theme2.wav");
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/theme2.wav");
         new Thread(() -> {
             for (int i = 0; i <= 100; i++) {
                 final int progress = i;
                 SwingUtilities.invokeLater(() -> progressBar.setValue(progress));
                 try {
-                    Thread.sleep(30);
+                    Thread.sleep(40);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -71,7 +70,7 @@ public class LoadingFrame extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 messageTimer.stop();
                 dispose();
-                player.stopMusic();
+                MusicPlayer.getInstance().setMusicEnabled(false);
                 onFinish.run();
             });
         }).start();

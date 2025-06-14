@@ -3,29 +3,69 @@ package org.example;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 public class MusicPlayer {
+    private static MusicPlayer instance;
     private Clip clip;
+    private boolean musicEnabled = true;
+    private float volumePercent = 100;
 
+    public static MusicPlayer getInstance() {
+        if (instance == null) {
+            instance = new MusicPlayer();
+        }
+        return instance;
+    }
+
+    public void setMusicEnabled(boolean enabled) {
+        musicEnabled = enabled;
+        if (!enabled) stopMusic();
+    }
+
+    public boolean isMusicEnabled() {
+        return musicEnabled;
+    }
 
     public void playMusic(String filePath) {
-        try {
-            File musicPath = new File(filePath);
+        if (!musicEnabled) return;
 
-            if (musicPath.exists()) {
-                stopMusic();
-                AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
-                clip = AudioSystem.getClip();
-                clip.open(audioInput);
-                clip.loop(Clip.LOOP_CONTINUOUSLY); // Зациклене відтворення
-                clip.start();
-            } else {
+        try {
+            stopMusic();
+
+            URL url = getClass().getResource(filePath);
+            if (url == null) {
                 System.out.println("Файл не знайдено: " + filePath);
+                return;
             }
+
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
+            clip = AudioSystem.getClip();
+            clip.open(audioInput);
+            setVolume(volumePercent);
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            clip.start();
+
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
+    public void setVolume(float percent) {
+        volumePercent = percent;
+
+        if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+
+            if (percent == 0f) {
+                gainControl.setValue(gainControl.getMinimum());
+            } else {
+                float gain = (float) (20f * Math.log10(percent / 100f));
+                gain = Math.max(gain, gainControl.getMinimum());
+                gainControl.setValue(gain);
+            }
+        }
+    }
+
 
     public void stopMusic() {
         if (clip != null && clip.isRunning()) {
@@ -36,47 +76,38 @@ public class MusicPlayer {
 
     public void playEffect(String filePath) {
         try {
-            File soundFile = new File(filePath);
-
-            if (soundFile.exists()) {
-                AudioInputStream audioInput = AudioSystem.getAudioInputStream(soundFile);
-                Clip effectClip = AudioSystem.getClip();
-                effectClip.open(audioInput);
-                effectClip.start();
-
-                effectClip.addLineListener(event -> {
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        effectClip.close();
-                    }
-                });
-            } else {
+            URL url = getClass().getResource(filePath);
+            if (url == null) {
                 System.out.println("Файл звукового ефекту не знайдено: " + filePath);
+                return;
             }
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
+            Clip effectClip = AudioSystem.getClip();
+            effectClip.open(audioInput);
+            if (effectClip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+                FloatControl gainControl = (FloatControl) effectClip.getControl(FloatControl.Type.MASTER_GAIN);
+                float gain;
+                if (volumePercent == 0f) {
+                    gain = gainControl.getMinimum();
+                } else {
+                    gain = (float) (20f * Math.log10(volumePercent / 100f));
+                    gain = Math.max(gain, gainControl.getMinimum());
+                }
+                gainControl.setValue(gain);
+            }
+            effectClip.start();
+
+            effectClip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    effectClip.close();
+                }
+            });
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
+
     public void playButtonClick() {
-        try {
-            File soundFile = new File("src/main/resources/assets/Sounds/select2.wav");
-
-            if (soundFile.exists()) {
-                AudioInputStream audioInput = AudioSystem.getAudioInputStream(soundFile);
-                Clip effectClip = AudioSystem.getClip();
-                effectClip.open(audioInput);
-                effectClip.start();
-
-                effectClip.addLineListener(event -> {
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        effectClip.close();
-                    }
-                });
-            } else {
-                System.out.println("Файл звукового ефекту не знайдено: ");
-            }
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            e.printStackTrace();
-        }
+        playEffect("/assets/Sounds/select.wav");
     }
-
 }

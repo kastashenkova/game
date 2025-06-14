@@ -38,36 +38,40 @@ private void initUI() throws IOException {
     pauseButton.setBorderPainted(false);
     pauseButton.setFocusPainted(false);
     pauseButton.setOpaque(false);
+
+    JButton resumeButton = new JButton();
+    ImageIcon iconBtn1 = new ImageIcon(getClass().getResource( "/button/start.png"));
+    Image scaledImage1 = iconBtn1.getImage().getScaledInstance(140, 30, Image.SCALE_SMOOTH);
+    iconBtn1 = new ImageIcon(scaledImage1);
+    resumeButton.setIcon(iconBtn1);
+    resumeButton.setContentAreaFilled(false);
+    resumeButton.setBorderPainted(false);
+    resumeButton.setFocusPainted(false);
+    resumeButton.setOpaque(false);
+    resumeButton.addActionListener(e->{
+        MusicPlayer.getInstance().playButtonClick();
+        if(gameBoard.isPaused()){
+            gameBoard.setPaused(false);
+            gameBoard.requestFocus();
+        }
+    });
+
+
     JPanel topBar = new JPanel();
     topBar.setOpaque(false);
+
+    topBar.add(resumeButton);
     topBar.add(pauseButton);
+
     add(topBar, BorderLayout.NORTH);
     gameBoard.startGameThread();
     pack();
     setLocationRelativeTo(null);
     BufferedImage icon = ImageIO.read(getClass().getResourceAsStream("/logo.png"));
     setIconImage(icon);
-    pauseButton.setFocusable(false);
+    resumeButton.setFocusable(false);
 
 }
-    private JButton createButton(String text) {
-
-        String filePath =  "/button/" + text + ".png";
-
-        JButton button = new JButton();
-        ImageIcon icon = new ImageIcon(getClass().getResource(filePath));
-
-        Image scaledImage = icon.getImage().getScaledInstance(190, 50, Image.SCALE_SMOOTH);
-        icon = new ImageIcon(scaledImage);
-
-        button.setIcon(icon);
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setOpaque(false);
-
-        return button;
-    }
 
 
 }

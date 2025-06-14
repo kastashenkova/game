@@ -1,7 +1,6 @@
 package gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.GameFrame;
 import org.example.MusicPlayer;
 import org.example.StartWindow;
 
@@ -13,6 +12,7 @@ import java.awt.*;
         import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.net.URL;
 
@@ -22,18 +22,16 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     private JMenuItem newGameItem, exitItem;
     JButton startButton; JButton optionsButton;  JButton quitButton;
     BufferedImage icon;
-    MusicPlayer player;
-    Border BorderFactory = new LineBorder(Color.BLACK);
 
     public WelcomeFrame() {
         setTitle("Sims NaUKMA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1000, 700);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        player = new MusicPlayer();
-        player.playMusic("src/main/resources//assets/Sounds/welcome.wav");
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/welcome.wav");
 
         BackgroundPanel backgroundPanel = new BackgroundPanel(getClass().getResource("/backMain.png").getFile());
         setContentPane(backgroundPanel);
@@ -58,7 +56,7 @@ public class WelcomeFrame extends JFrame implements ActionListener {
             URL url = getClass().getResource("/sims.gif");
             ImageIcon icon = new ImageIcon(url);
             JLabel gifLabel = new JLabel(icon, SwingConstants.CENTER);
-            gifLabel.setBounds(0, 400, 200, 184);
+            gifLabel.setBounds(0, 500, 200, 184);
             backgroundPanel.add(gifLabel);
         } catch (Exception e) {
         }
@@ -66,7 +64,7 @@ public class WelcomeFrame extends JFrame implements ActionListener {
             URL url = getClass().getResource("/study.gif");
             String html = "<html><body><img src='" + url + "' width='150' height='120'></body></html>";
             JLabel gifLabel = new JLabel(html, SwingConstants.CENTER);
-            gifLabel.setBounds(600, 0, 200, 184);
+            gifLabel.setBounds(800, 0, 200, 184);
             backgroundPanel.add(gifLabel);
         } catch (Exception e) {
         }
@@ -114,10 +112,18 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == startButton) {
             SwingUtilities.invokeLater(() -> {
-                player.stopMusic();
+                MusicPlayer.getInstance().setMusicEnabled(false);
                 dispose();
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> new StartWindow().setVisible(true));
+            });
+        } else if (e.getSource() == quitButton) {
+            MusicPlayer.getInstance().playButtonClick();
+            System.exit(0);
+        } else if(e.getSource() == optionsButton) {
+            SwingUtilities.invokeLater(() -> {
+                MusicPlayer.getInstance().playButtonClick();
+                new OptionsFrame().setVisible(true);
             });
         }
     }
@@ -129,14 +135,20 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     private JButton createButton(String text) {
 
         String filePath =  "/button/" + text + ".png";
-
         JButton button = new JButton();
         ImageIcon icon = new ImageIcon(getClass().getResource(filePath));
 
-       Image scaledImage = icon.getImage().getScaledInstance(190, 50, Image.SCALE_SMOOTH);
+        Image scaledImage = icon.getImage().getScaledInstance(190, 50, Image.SCALE_SMOOTH);
         icon = new ImageIcon(scaledImage);
 
+        ImageIcon hoverIcon = darkenIcon(icon, 0.85f);
+        ImageIcon pressedIcon = darkenIcon(icon, 0.65f);
+
         button.setIcon(icon);
+        button.setRolloverIcon(hoverIcon);
+        button.setPressedIcon(pressedIcon);
+
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
@@ -144,6 +156,25 @@ public class WelcomeFrame extends JFrame implements ActionListener {
 
         return button;
     }
+    private ImageIcon darkenIcon(ImageIcon originalIcon, float darknessFactor) {
+        BufferedImage original = new BufferedImage(
+                originalIcon.getIconWidth(),
+                originalIcon.getIconHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g = original.createGraphics();
+        originalIcon.paintIcon(null, g, 0, 0);
+        g.dispose();
+
+
+        RescaleOp rescaleOp = new RescaleOp(
+                new float[]{darknessFactor, darknessFactor, darknessFactor, 1f},
+                new float[4], null);
+        BufferedImage darkened = rescaleOp.filter(original, null);
+
+        return new ImageIcon(darkened);
+    }
+
 
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {

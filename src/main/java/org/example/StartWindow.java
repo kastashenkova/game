@@ -22,11 +22,12 @@ public class StartWindow extends JFrame {
     private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
     private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
     private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
-    MusicPlayer musicPlayer = new MusicPlayer();
+
 
     public StartWindow() {
 
-       musicPlayer.playMusic("src/main/resources/assets/Sounds/Background.wav");
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
         setTitle("Оберіть персонажку");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -103,7 +104,7 @@ public class StartWindow extends JFrame {
         selectButton.addActionListener(e -> {
             selectedCharacterName = name;
             selectedCharacterResourcePath = imageResourcePath;
-            musicPlayer.playButtonClick();
+            MusicPlayer.getInstance().playButtonClick();
             startGame();
         });
 
@@ -114,7 +115,7 @@ public class StartWindow extends JFrame {
     private void startGame() {
         if (selectedCharacterName != null && selectedCharacterResourcePath != null) {
             this.dispose();
-            musicPlayer.stopMusic();
+            MusicPlayer.getInstance().setMusicEnabled(false);
             SwingUtilities.invokeLater(() -> {
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> {
