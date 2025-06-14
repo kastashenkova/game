@@ -14,7 +14,6 @@ public class PauseAction extends AbstractAction {
     private static final Color GP_BG = new Color(0, 0, 0, ALPHA);
     private GameBoard gameBoard;
     private DeDialogPanel deDialogPanel = new DeDialogPanel(gameBoard);  // jpanel shown in JDialog
-    private final MusicPlayer musicPlayer =  new MusicPlayer();
 
     public PauseAction(String name, GameBoard gameBoard) {
 
@@ -27,7 +26,7 @@ public class PauseAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        musicPlayer.playButtonClick();
+        MusicPlayer.getInstance().playButtonClick();
         gameBoard.setPaused(true);
         Component comp = (Component) e.getSource();
         if (comp == null) {
@@ -57,6 +56,7 @@ public class PauseAction extends AbstractAction {
         dialog.pack();
         dialog.setLocationRelativeTo((Window) win);
         dialog.setVisible(true);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         glassPane.setVisible(false);
 

@@ -68,7 +68,8 @@ public class GameBoard  extends JPanel implements Runnable {
     public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
-        musicPlayer.playMusic("src/main/resources//assets/Sounds/theme1.wav");
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/theme1.wav");
 
     }
 
