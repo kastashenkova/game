@@ -32,7 +32,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
     private JTextField searchField;
     private JButton searchButton;
-
+    private JComboBox<String> searchCriteriaCombo;
     private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");;
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
@@ -83,7 +83,6 @@ public class EnrollmentSystemGUI extends JFrame {
     }
 
     public EnrollmentSystemGUI() {
-        // Налаштування шрифтів для JOptionPane та інших стандартних компонентів
         UIManager.put("OptionPane.messageFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("OptionPane.buttonFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("Label.font", new Font("Segoi UI", Font.BOLD, 12));
@@ -93,7 +92,6 @@ public class EnrollmentSystemGUI extends JFrame {
         super("Система автоматизованого запису на дисципліни (САЗ)");
         enrollmentSystem = new EnrollmentSystem();
 
-        // Встановлюємо український текст для кнопок "OK" та "Скасувати" перед викликом діалогів
         UIManager.put("OptionPane.okButtonText", "ОК");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
 
@@ -163,11 +161,18 @@ public class EnrollmentSystemGUI extends JFrame {
         electiveDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        searchPanel.add(new JLabel("Пошук за назвою:"));
+
+        searchCriteriaCombo = new JComboBox<>(new String[] {
+                "за назвою", "за кодом", "за викладачем_кою"
+        });
+        searchCriteriaCombo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+        searchPanel.add(new JLabel("Пошук:"));
         searchField = new JTextField(20);
-        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JTextField
+        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         searchButton = new JButton("Пошук");
-        searchButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JButton
+        searchButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        searchPanel.add(searchCriteriaCombo);
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
         electivePanel.add(searchPanel, BorderLayout.NORTH);
@@ -185,8 +190,18 @@ public class EnrollmentSystemGUI extends JFrame {
         dropElectiveButton.addActionListener(e -> attemptDrop());
         confirmSelectionButton.addActionListener(e -> confirmSelection());
 
-        searchButton.addActionListener(e -> filterElectiveDisciplines(searchField.getText()));
-        searchField.addActionListener(e -> filterElectiveDisciplines(searchField.getText()));
+        searchButton.addActionListener(e -> {
+            String text = searchField.getText();
+            String criterion = (String) searchCriteriaCombo.getSelectedItem();
+            filterElectiveDisciplines(text, criterion);
+        });
+
+        searchField.addActionListener(e -> {
+            String text = searchField.getText();
+            String criterion = (String) searchCriteriaCombo.getSelectedItem();
+            filterElectiveDisciplines(text, criterion);
+        });
+
 
         electiveButtonsPanel.add(enrollElectiveButton);
         electiveButtonsPanel.add(dropElectiveButton);
@@ -1193,41 +1208,49 @@ private void initializeInitialDataM(int selectedCourse) {
         enrollmentSystem.addDiscipline(new Discipline("318368", "Управління комплексними проєктами/Deliveri Management", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
     }
 }
-
     // --- Update Discipline Lists in GUI ---
     private void updateDisciplineLists() {
         mandatoryListModel.clear();
-        electiveListModel.clear(); // Очищаємо перед оновленням
+        electiveListModel.clear();
         enrolledElectiveListModel.clear();
-
         int studentCourse = currentStudent.getCourse();
-
         for (Discipline disc : enrollmentSystem.getMandatoryDisciplines(studentCourse)) {
             mandatoryListModel.addElement(disc);
         }
 
         List<Discipline> studentEnrolledDisciplines = currentStudent.getEnrolledDisciplines();
-
-        String searchText = searchField.getText().toLowerCase(); // Беремо текст пошуку
+        String searchText = searchField.getText().trim().toLowerCase();
+        String selectedCriterion = (String) searchCriteriaCombo.getSelectedItem();
 
         for (Discipline disc : enrollmentSystem.getElectiveDisciplines(studentCourse)) {
-            // Перевіряємо, чи дисципліна відповідає пошуковому запиту (якщо він є)
-            boolean matchesSearch = searchText.isEmpty() || disc.getName().toLowerCase().contains(searchText);
+            boolean matchesSearch;
+
+            if (searchText.isEmpty()) {
+                matchesSearch = true;
+            } else {
+                matchesSearch = switch (selectedCriterion) {
+                    case "за назвою" -> disc.getName().toLowerCase().contains(searchText);
+                    case "за кодом" -> disc.getDisciplineId().toLowerCase().contains(searchText);
+                    case "за викладачем_кою" -> disc.getInstructor().toLowerCase().contains(searchText);
+                    default -> false;
+                };
+            }
 
             if (studentEnrolledDisciplines.contains(disc)) {
                 enrolledElectiveListModel.addElement(disc);
-            } else if (matchesSearch) { // Додаємо до списку доступних, тільки якщо відповідає пошуку
+            } else if (matchesSearch) {
                 electiveListModel.addElement(disc);
             }
         }
 
         electiveDisciplineList.repaint();
         enrolledElectiveList.repaint();
-        updateStudentInfoDisplay(); // Update student info with new credit count
+        updateStudentInfoDisplay();
         updateConfirmButtonState();
     }
 
-    private void filterElectiveDisciplines(String searchText) {
+
+    private void filterElectiveDisciplines(String searchText, String criterion) {
         updateDisciplineLists();
     }
 
@@ -1409,14 +1432,12 @@ private void initializeInitialDataM(int selectedCourse) {
 
             appendOutput("Запис завершено! Подальші зміни неможливі.\n");
 
-            // Повідомлення про проходження першого рівня
             JOptionPane.showMessageDialog(this,
                     "Вітаємо! Перший рівень пройдено!",
                     "Запис завершено",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            // Закриття вікна програми
-            dispose(); // Закриває поточне вікно
+            dispose();
             System.exit(0); // Завершує виконання програми
         } else {
             JOptionPane.showMessageDialog(this,
@@ -1445,7 +1466,7 @@ private void initializeInitialDataM(int selectedCourse) {
                         StringBuilder infoBuilder = new StringBuilder();
                         infoBuilder.append("Код: ").append(selectedDiscipline.getDisciplineId()).append("\n");
                         infoBuilder.append("Назва: ").append(selectedDiscipline.getName()).append("\n");
-                        infoBuilder.append("Викладач: ").append(selectedDiscipline.getInstructor()).append("\n");
+                        infoBuilder.append("Викладач_ка: ").append(selectedDiscipline.getInstructor()).append("\n");
                         infoBuilder.append("Кількість кредитів: ").append(selectedDiscipline.getCredits()).append("\n");
 
                         if (selectedDiscipline.isMandatory()) {
