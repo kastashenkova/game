@@ -7,11 +7,13 @@ import java.io.IOException;
 public class MusicPlayer {
     private Clip clip;
 
+
     public void playMusic(String filePath) {
         try {
             File musicPath = new File(filePath);
 
             if (musicPath.exists()) {
+                stopMusic();
                 AudioInputStream audioInput = AudioSystem.getAudioInputStream(musicPath);
                 clip = AudioSystem.getClip();
                 clip.open(audioInput);
@@ -54,4 +56,27 @@ public class MusicPlayer {
             e.printStackTrace();
         }
     }
+    public void playButtonClick() {
+        try {
+            File soundFile = new File("src/main/resources/assets/Sounds/select2.wav");
+
+            if (soundFile.exists()) {
+                AudioInputStream audioInput = AudioSystem.getAudioInputStream(soundFile);
+                Clip effectClip = AudioSystem.getClip();
+                effectClip.open(audioInput);
+                effectClip.start();
+
+                effectClip.addLineListener(event -> {
+                    if (event.getType() == LineEvent.Type.STOP) {
+                        effectClip.close();
+                    }
+                });
+            } else {
+                System.out.println("Файл звукового ефекту не знайдено: ");
+            }
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

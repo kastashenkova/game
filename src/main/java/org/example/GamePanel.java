@@ -1,6 +1,10 @@
 package org.example;
 
+import gui.LoadingFrame;
+import mainstage.MainFrame;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +35,8 @@ public class GamePanel extends JPanel implements ActionListener {
     private final double SCALE_SPEED = 0.1;
 
     private JPanel heroActionsPanel;
+
+    private JButton goToWorldButton;
 
     private long lastMessageTime;
     private final long MESSAGE_INTERVAL_MIN = 500;
@@ -112,7 +118,7 @@ public class GamePanel extends JPanel implements ActionListener {
     };
 
     private enum GameState {
-        PLAYING, GAME_OVER
+        PLAYING, GAME_OVER, GAME_PAUSED
     }
     private GameState currentGameState;
 
@@ -145,13 +151,12 @@ public class GamePanel extends JPanel implements ActionListener {
         this.parentFrame = parentFrame;
         setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.LIGHT_GRAY);
-
         currentGameState = GameState.PLAYING;
-
         setLayout(null);
 
         // Initialize MusicPlayer (assuming default sound path or specific path if needed)
         musicPlayer = new MusicPlayer();
+        musicPlayer.playMusic("src/main/resources/assets/Sounds/Background.wav");
 
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -362,6 +367,9 @@ public class GamePanel extends JPanel implements ActionListener {
         });
 
         positionUserChatElements();
+        goToWorldButton = getGoToWorldButton();
+       goToWorldButton.setBounds(10, 600, 100, 70);
+        add(goToWorldButton);
     }
 
     @Override
@@ -581,5 +589,34 @@ public class GamePanel extends JPanel implements ActionListener {
         nextMessageInterval = generateRandomMessageInterval();
         floatingMessages.clear();
         repaint();
+    }
+
+    private JButton getGoToWorldButton(){
+        goToWorldButton = new JButton("Вийти у світ");
+        goToWorldButton.setBackground(new Color(78, 90, 205));
+        goToWorldButton.setForeground(Color.WHITE);
+        goToWorldButton.setFont(new Font("Arial", Font.BOLD, 16));
+        goToWorldButton.setFocusPainted(false);
+        goToWorldButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        goToWorldButton.setBorder(new LineBorder(Color.WHITE, 2, true)); // true = округлі кути
+        goToWorldButton.addActionListener(e ->{
+                    musicPlayer.playButtonClick();
+                    musicPlayer.stopMusic();
+                    parentFrame.dispose();
+                    currentGameState=GameState.GAME_PAUSED;
+                    SwingUtilities.invokeLater(() -> {
+                        Window gameWindow = SwingUtilities.getWindowAncestor(this);
+                        if (gameWindow != null) {
+                            gameWindow.dispose();
+                        }
+                        LoadingFrame loading = new LoadingFrame();
+                        loading.startLoading(() -> {
+                            MainFrame mainFrame = new MainFrame(this.parentFrame);
+                            mainFrame.setVisible(true);
+                        });
+                    });
+
+        });
+        return goToWorldButton;
     }
 }
