@@ -2,6 +2,7 @@ package org.example;
 
 import gui.LoadingFrame;
 import mainstage.GameBoard;
+import studies.Student;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

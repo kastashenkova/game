@@ -1,5 +1,7 @@
 package studies;
 
+import org.example.Discipline;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

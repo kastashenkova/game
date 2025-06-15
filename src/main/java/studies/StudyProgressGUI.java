@@ -2,6 +2,7 @@ package studies;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.example.Discipline;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

@@ -1,6 +1,7 @@
 package org.example;
 
 import mainstage.GameBoard;
+import studies.Student;
 
 import javax.swing.*;
 import java.awt.*;
