@@ -23,6 +23,7 @@ public class Student implements Serializable {
     private Map<String, Integer> trimesterScores;
     private Map<String, Integer> zalikAttempts = new HashMap<>();
     private int electiveCount;
+    private boolean expelled;
 
     public Student(String studentId, String name, int course, String major) {
         this.studentId = studentId;
@@ -149,6 +150,14 @@ public class Student implements Serializable {
 
     public void incrementZalikAttempts(String disciplineId) {
         zalikAttempts.put(disciplineId, getZalikAttempts(disciplineId) + 1);
+    }
+
+    public void expel() {
+        this.expelled = true;
+    }
+
+    public boolean isExpelled() {
+        return expelled;
     }
 
     @Override
