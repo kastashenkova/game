@@ -2,11 +2,15 @@ package gui;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import studies.MusicPlayer;
+import org.example.MusicPlayer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
 
 public class OptionsFrame extends JFrame {
     private JSlider volumeSlider;
@@ -23,12 +27,13 @@ public class OptionsFrame extends JFrame {
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
             JPanel panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.setLayout(new BorderLayout());
             panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
             panel.setBackground(new Color(241, 227, 253));
 
             JLabel volumeLabel = new JLabel("Гучність музики:");
             volumeSlider = new JSlider(0, 100, currentVolume);
+            volumeSlider.setUI(new CustomSlider(volumeSlider));
             volumeSlider.setPaintTicks(true);
             volumeSlider.setMajorTickSpacing(25);
             volumeSlider.setMinorTickSpacing(5);
@@ -62,21 +67,17 @@ public class OptionsFrame extends JFrame {
                 }
                 SwingUtilities.updateComponentTreeUI(this);
                 JOptionPane.showMessageDialog(this,
-                        isDark ? "Темна тема активована!" : "Світла тема активована!");
+                        isDark ? "Темна тема активована!" : "Світла тема активована!", "THEME UPDATED", JOptionPane.INFORMATION_MESSAGE);
 
             });
 
 
             panel.add(volumeLabel);
-            panel.add(volumeSlider);
-            panel.add(Box.createRigidArea(new Dimension(0, 10)));
-            panel.add(themeButton);
+            panel.add(volumeSlider, BorderLayout.CENTER);
+            panel.add(themeButton, BorderLayout.NORTH);
 
             instructionButton = getInstructionButton();
-            panel.add(Box.createRigidArea(new Dimension(0,20)));
-            panel.add(instructionButton);
-
-
+            panel.add(instructionButton, BorderLayout.PAGE_END);
             add(panel);
 
         }
@@ -175,5 +176,39 @@ class InstructionDialog extends JDialog {
 
         add(scrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+}
+class CustomSlider extends BasicSliderUI {
+    Image im;
+
+    public CustomSlider(JSlider js) {
+        super(js);
+    }
+
+    @Override
+    public void paintThumb(Graphics g) {
+        try {
+            if (im == null) {
+                URL url = getClass().getResource("/button/slider.png");
+                if (url != null) {
+                    im = ImageIO.read(url);
+                } else {
+                    System.err.println("Не знайдено ресурс /button/slider.png");
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        Rectangle thumb = thumbRect;
+        int width = thumb.width;
+        int height = thumb.height;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(im, thumb.x, thumb.y, width, height, null);
+        g2.dispose();
     }
 }

@@ -56,7 +56,7 @@ public class BuildingManager {
         buildings[3] = corpus1;
 
         Building shop = new Building();
-        shop.name = "corpus1";
+        shop.name = "shop";
         shop.width = 155;
         shop.height = 125;
         shop.collision = true;

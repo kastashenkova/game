@@ -1,21 +1,19 @@
-package studies;
+package org.example;
 
 import mainstage.GameBoard;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public class GameFrame extends JFrame {
-    public Hero getHero() {
-        return hero;
-    }
 
-    public void setHero(Hero hero) {
-        this.hero = hero;
-    }
 
     private Hero hero;
+    Hero newHero;
     private GamePanel gamePanel;
+    private Student student;
 
     private final String initialHeroName;
     private final String initialHeroImagePath;
@@ -24,23 +22,29 @@ public class GameFrame extends JFrame {
     private final int initialHeroY;
     private final double initialScaleFactor;
 
-    public GameFrame(String heroName, String heroImagePath) {
+    public GameFrame(Hero hero) {
         setTitle("NaUKMA Sims");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
 
-        this.initialHeroName = heroName;
-        this.initialHeroImagePath = heroImagePath;
+        this.initialHeroName = hero.getName();
+        this.initialHeroImagePath = hero.getHeroResourcePath();
         this.initialDiamondImagePath = "assets/Models/Hero/diamond.png";
         this.initialHeroX = 350;
         this.initialHeroY = 150;
         this.initialScaleFactor = 0.4;
 
         // Створюємо героя з переданими шляхами до ресурсів
-        hero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
+        newHero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
+        student = new Student(generateRandomID(), initialHeroName, hero.getCourse(), hero.getSpecialty().toString());
 
-        gamePanel = new GamePanel(hero, this);
+        newHero.setBudget(150);
+        newHero.setSpecialty(hero.getSpecialty());
+        newHero.setCourse(hero.getCourse());
+      newHero.setSelectedName(hero.getSelectedName());
+
+        gamePanel = new GamePanel(newHero, this);
         add(gamePanel, BorderLayout.CENTER);
 
         gamePanel.setFocusable(true);
@@ -69,9 +73,11 @@ public class GameFrame extends JFrame {
         this.initialHeroY = 150;
         this.initialScaleFactor = 0.4;
 
-         hero = gameBoard.player.hero;
-      //  hero = gameBoard.player.hero;
-        gamePanel = new GamePanel(hero, this);
+        if(gameBoard.player.hero!=null){
+            newHero = gameBoard.player.hero;
+        }
+
+        gamePanel = new GamePanel(newHero, this);
         add(gamePanel, BorderLayout.CENTER);
 
         gamePanel.setFocusable(true);
@@ -91,5 +97,18 @@ public class GameFrame extends JFrame {
     public void handleGameOver(String reason) {
         dispose();
         SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
+    }
+
+    private String generateRandomID(){
+        RandomGenerator randomGenerator = new Random();
+        int in = randomGenerator.nextInt(120000, 990000);
+        return "RH" + in;
+    }
+    public Hero getHero() {
+        return newHero;
+    }
+
+    public void setHero(Hero hero) {
+        this.hero = hero;
     }
 }

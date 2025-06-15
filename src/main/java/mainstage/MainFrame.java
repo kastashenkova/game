@@ -1,8 +1,8 @@
 package mainstage;
 
 import gui.PauseAction;
-import studies.GameFrame;
-import studies.MusicPlayer;
+import org.example.GameFrame;
+import org.example.MusicPlayer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -70,6 +70,8 @@ private void initUI() throws IOException {
     BufferedImage icon = ImageIO.read(getClass().getResourceAsStream("/logo.png"));
     setIconImage(icon);
     resumeButton.setFocusable(false);
+    gameBoard.requestFocus();
+
 
 }
 

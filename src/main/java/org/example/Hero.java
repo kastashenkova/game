@@ -1,6 +1,5 @@
-package studies;
+package org.example;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -16,10 +15,20 @@ public class Hero {
     private int knowledge; // Новий атрибут: Знання, від 0 до 100
     private int level; // Новий атрибут: Поточний рівень героя (1 або 2)
     private boolean canLevelUp; // Новий атрибут: Чи може герой перейти на новий рівень
+    private int budget;
+    private int course;
+
+    private String selectedName;
+
+
+    private Student student; //створюємо віртуальну версію студента для можливості запису на сазі та подальшої активності на університетських сервісах
+
+    private Specialty specialty;
 
     public int x;
     public int initialY;
     public int y;
+
 
     public String heroResourcePath;
 
@@ -56,7 +65,7 @@ public class Hero {
         this.name = name;
         this.energy = 100;
         this.mood = 70;
-        this.hunger = 0;
+        this.hunger = 30;
         this.knowledge = 0; // Ініціалізація знань
         this.level = 1; // Починаємо з рівня 1
         this.canLevelUp = false; // За замовчуванням герой не може перейти на новий рівень
@@ -161,12 +170,12 @@ public class Hero {
 
     public void eat() {
         if (hunger <= 0) {
-            setMessage(name + " не хоче їсти.");
+            setMessage(selectedName + " не хоче їсти.");
             return;
         }
         hunger = Math.max(0, hunger - 30);
         mood = Math.min(100, mood + 15);
-        setMessage(name + " поїла."); // Додано повідомлення
+        setMessage(selectedName + " поїла."); // Додано повідомлення
     }
 
     public void sleep() {
@@ -177,20 +186,20 @@ public class Hero {
             isGameOverDueToEnergy = false; // Important: Reset game over state
             energy = Math.min(100, energy + 40);
             mood = Math.min(100, mood + 10);
-            setMessage(name + " поспала."); // Додано повідомлення
+            setMessage(selectedName + " поспала."); // Додано повідомлення
         } else {
-            setMessage(name + " не хоче спати.");
+            setMessage(selectedName + " не хоче спати.");
         }
     }
 
     public void study() {
         if (energy < 20) {
-            setMessage(name + " не має енергії для навчання.");
+            setMessage(selectedName + " не має енергії для навчання.");
             return;
         }
         // Якщо герой вже на рівні сесії і знання повні, не дозволяємо вчитися далі
         if (level >= 2 && knowledge >= 100) {
-            setMessage(name + " вже готова до сесії!");
+            setMessage(selectedName + " вже готова до сесії!");
             return;
         }
 
@@ -201,15 +210,15 @@ public class Hero {
         // Перевіряємо, чи може герой перейти на новий рівень
         if (knowledge >= 100 && level == 1) { // Тільки якщо знання досягли 100 і ми на 1 рівні
             canLevelUp = true;
-            setMessage(name + " готова до сесії! Натисніть 'Підвищити рівень'."); // Повідомлення про готовність до сесії
+            setMessage(selectedName + " готова до сесії! Натисніть 'Підвищити рівень'."); // Повідомлення про готовність до сесії
         } else {
-            setMessage(name + " повчилася. Знання: " + knowledge + "%.");
+            setMessage(selectedName+ " повчилася. Знання: " + knowledge + "%.");
         }
     }
 
     public void relax() {
         if (mood >= 100 && energy >= 100) {
-            setMessage(name + " не може більше відпочивати.");
+            setMessage(selectedName + " не може більше відпочивати.");
             return;
         }
         mood = Math.min(100, mood + 20);
@@ -228,11 +237,11 @@ public class Hero {
             canLevelUp = false; // Скидаємо можливість переходу
             energy = Math.min(100, energy + 20); // Трохи енергії після переходу
             mood = Math.min(100, mood + 10); // Покращуємо настрій
-            setMessage(name + " успішно перейшла на рівень 2 (сесія)!");
+            setMessage(selectedName + " успішно перейшла на рівень 2 (сесія)!");
         } else if (level >= 2) {
-            setMessage(name + " вже на рівні сесії.");
+            setMessage(selectedName+ " вже на рівні сесії.");
         } else {
-            setMessage(name + " ще не готова до сесії (потрібно більше знань).");
+            setMessage(selectedName + " ще не готова до сесії (потрібно більше знань).");
         }
     }
 
@@ -259,13 +268,13 @@ public class Hero {
             if (!lowEnergyWarningActive) {
                 lowEnergyWarningActive = true;
                 lowEnergyWarningStartTime = currentTime;
-                setMessage(name + " потребує сну! Залишилося " + (GAME_OVER_TIME_LIMIT / 1000) + " сек.");
+                setMessage(selectedName + " потребує сну! Залишилося " + (GAME_OVER_TIME_LIMIT / 1000) + " сек.");
             } else {
                 if (currentTime - lowEnergyWarningStartTime >= GAME_OVER_TIME_LIMIT) {
                     isGameOverDueToEnergy = true;
                 } else {
                     long timeLeft = (GAME_OVER_TIME_LIMIT - (currentTime - lowEnergyWarningStartTime)) / 1000;
-                    setMessage(name + " не має сил! Залишилося " + timeLeft + " сек.");
+                    setMessage(selectedName + " не має сил! Залишилося " + timeLeft + " сек.");
                 }
             }
         } else {
@@ -422,6 +431,16 @@ public class Hero {
         g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
         g2d.drawString("Знання: " + knowledge + "%", initialTopRightX, currentTopRightY - 5);
 
+        currentTopRightY += (statsBarHeight + statsPadding + 10);
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.fillRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.setColor(new Color(200, 50, 150));
+        g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (budget / 1000.0)), statsBarHeight);
+        g2d.setColor(Color.BLACK);
+        g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
+        g2d.drawString("Бюджет: " + budget + "₴", initialTopRightX, currentTopRightY - 5);
+
+        //
         // Відображення поточного рівня
         currentTopRightY += (statsBarHeight + statsPadding + 10);
         g2d.setColor(Color.BLACK);
@@ -440,5 +459,61 @@ public class Hero {
     }
     public void setName(String name){
         this.name = name;
+    }
+
+    public void decreaseHunger(int nutrition) {
+
+        this.hunger -= nutrition;
+        if(hunger<=0) this.hunger = 0;
+    }
+
+
+    public int getBudget() {
+        return budget;
+    }
+
+    public void setBudget(int budget) {
+        this.budget = budget;
+    }
+
+    public void decreaseBudget(int decrease){
+        this.budget -= decrease;
+    }
+    public Specialty getSpecialty() {
+        return specialty;
+    }
+
+    public void setSpecialty(Specialty specialty) {
+        this.specialty = specialty;
+    }
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+    public String getHeroResourcePath() {
+        return heroResourcePath;
+    }
+
+    public void setHeroResourcePath(String heroResourcePath) {
+        this.heroResourcePath = heroResourcePath;
+    }
+
+    public int getCourse() {
+        return course;
+    }
+
+    public void setCourse(int course) {
+        this.course = course;
+    }
+
+    public String getSelectedName() {
+        return selectedName;
+    }
+
+    public void setSelectedName(String selectedName) {
+        this.selectedName = selectedName;
     }
 }

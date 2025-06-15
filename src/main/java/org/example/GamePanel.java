@@ -1,10 +1,11 @@
-package studies;
+package org.example;
 
 import gui.LoadingFrame;
 import mainstage.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -367,8 +368,16 @@ public class GamePanel extends JPanel implements ActionListener {
 
         positionUserChatElements();
         goToWorldButton = getGoToWorldButton();
-       goToWorldButton.setBounds(10, 600, 100, 70);
+        goToWorldButton.setBounds(10, 600, 100, 70);
         add(goToWorldButton);
+
+        JPanel panel = heroInfoPanel(hero);
+        panel.setBounds(10, 10, 230, 150);
+        add(panel);
+
+        JPanel panel1 = infoPanel();
+        panel1.setBounds(10, 180, 230, 250);
+        add(panel1);
     }
 
     @Override
@@ -591,6 +600,78 @@ public class GamePanel extends JPanel implements ActionListener {
         floatingMessages.clear();
         repaint();
     }
+
+    private JPanel heroInfoPanel(Hero hero) {
+        String name = hero.getSelectedName();
+        int course = hero.getCourse();
+        Specialty specialty = hero.getSpecialty();
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(240, 250, 255));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(120, 150, 200), 2),
+                "Інформація про героя",
+                TitledBorder.CENTER,
+                TitledBorder.TOP,
+                new Font("Inter", Font.BOLD, 14),
+                new Color(60, 90, 150)
+        ));
+        panel.setLayout(new GridLayout(3, 1, 5, 5));
+
+        JLabel nameLabel = new JLabel("Ім’я: " + name);
+        nameLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        nameLabel.setForeground(new Color(30, 30, 30));
+
+        JLabel courseLabel = new JLabel("Курс: " + course);
+        courseLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        courseLabel.setForeground(new Color(30, 30, 30));
+
+        JLabel specialtyLabel = new JLabel("<html><body style='width: 150px'>Спеціальність: " + specialty.toString() + "</body></html>");
+        specialtyLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        specialtyLabel.setForeground(new Color(30, 30, 30));
+
+        panel.add(nameLabel);
+        panel.add(courseLabel);
+        panel.add(specialtyLabel);
+
+        return panel;
+    }
+    private JPanel infoPanel() {
+
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(250, 250, 155));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(120, 150, 250), 2),
+                "Коротка інструкція",
+                TitledBorder.CENTER,
+                TitledBorder.TOP,
+                new Font("Inter", Font.BOLD, 14),
+                new Color(60, 90, 150)
+        ));
+        panel.setLayout(new BorderLayout());
+
+
+
+        JLabel label = new JLabel("<html><body style='width: 150px'>Виходьте у світ!</body></html>");
+        label.setFont(new Font("MONOSPACED", Font.BOLD, 16));
+        label.setForeground(new Color(30, 30, 30));
+
+        panel.add(label, BorderLayout.NORTH);
+
+        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів - шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
+        label1.setFont(new Font("Inter", Font.ITALIC, 12));
+        label1.setForeground(new Color(30, 30, 30));
+
+        panel.add(label1, BorderLayout.CENTER);
+
+        JLabel label2 = new JLabel("<html><body style='width: 150px'>Для підтримання життєздатності не забувайте підкріплюватись у маркеті SimsPo або кафе швидкого приготування!</body></html>");
+        label2.setFont(new Font("Inter", Font.ITALIC, 12));
+        label2.setForeground(new Color(30, 30, 30));
+
+        panel.add(label2, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
 
     private JButton getGoToWorldButton(){
         goToWorldButton = new JButton("Вийти у світ");

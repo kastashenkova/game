@@ -1,8 +1,10 @@
 package mainstage;
 
-import studies.GameFrame;
-import studies.Hero;
-import studies.MusicPlayer;
+import gui.PauseAction;
+import org.example.GameFrame;
+import org.example.GamePanel;
+import org.example.Hero;
+import org.example.MusicPlayer;
 
 import javax.swing.*;
 import java.awt.*;

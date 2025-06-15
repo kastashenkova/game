@@ -1,11 +1,15 @@
 package gui;
 import mainstage.GameBoard;
-import studies.GameFrame;
-import studies.MusicPlayer;
+import org.example.GameFrame;
+import org.example.MusicPlayer;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 
@@ -44,6 +48,7 @@ public class DeDialogPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             MusicPlayer.getInstance().playButtonClick();
             gameBoard.setPaused(false);
+            gameBoard.requestFocus();
             Window win = SwingUtilities.getWindowAncestor((Component) e.getSource());
             win.dispose();
         }

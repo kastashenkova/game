@@ -1,6 +1,6 @@
 package mainstage;
 
-import studies.Hero;
+import org.example.Hero;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

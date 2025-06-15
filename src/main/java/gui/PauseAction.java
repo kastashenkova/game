@@ -1,7 +1,8 @@
 package gui;
 
+import gui.DeDialogPanel;
 import mainstage.GameBoard;
-import studies.MusicPlayer;
+import org.example.MusicPlayer;
 
 import javax.swing.*;
 import java.awt.*;
