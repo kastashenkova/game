@@ -1,0 +1,154 @@
+{
+  "studentId": "І 005/24 бп",
+  "name": "Студент",
+  "course": 1,
+  "major": "121 Інженерія програмного забезпечення",
+  "enrolledDisciplines": [
+    {
+      "disciplineId": "315283",
+      "name": "Основи вебтехнологій",
+      "instructor": "ст. викл. Зважій Д. В. ",
+      "credits": 3.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1,
+      "controlType": "Екзамен"
+    },
+    {
+      "disciplineId": "315199",
+      "name": "Основи матаналізу",
+      "instructor": "ст. викл. Іванюк А. О.",
+      "credits": 5.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315200",
+      "name": "Лінійна алгебра та аналітична геометрія",
+      "instructor": "доц. Чорней Р. К., ас. Сарана М.",
+      "credits": 5.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315277",
+      "name": "Основи мережевих технологій",
+      "instructor": "ст. викл. Вознюк О. М., ст. викл. Вознюк Я. І.",
+      "credits": 4.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1,
+      "controlType": "Екзамен"
+    },
+    {
+      "disciplineId": "315275",
+      "name": "Вступ до програмування",
+      "instructor": "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.",
+      "credits": 5.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315231",
+      "name": "Комп\u0027ютерні архітектури",
+      "instructor": "ст. викл. Медвідь С. О.",
+      "credits": 4.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315203",
+      "name": "Алгоритми і структури даних",
+      "instructor": "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.",
+      "credits": 5.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1,
+      "controlType": "Екзамен"
+    },
+    {
+      "disciplineId": "315204",
+      "name": "Практика навчальна",
+      "instructor": "ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.",
+      "credits": 3.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315223",
+      "name": "Моделі обчислень в програмній інженерії",
+      "instructor": "доц. Проценко В. С.",
+      "credits": 4.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315213",
+      "name": "Диференціальні рівняння",
+      "instructor": "доц. Митник Ю. В., ст. викл. Силенко І. В.",
+      "credits": 3.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "315202",
+      "name": "Основи дискретної математики",
+      "instructor": "ст. викл. Щеглов М. В.",
+      "credits": 4.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "314810",
+      "name": "Українська мова",
+      "instructor": "доц. Сегін Л. В., ст. викл. Калиновська О. М.",
+      "credits": 5.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "314804",
+      "name": "Фізичне виховання",
+      "instructor": "викл. Жуков В. О.",
+      "credits": 4.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    },
+    {
+      "disciplineId": "314809",
+      "name": "Англійська мова",
+      "instructor": "ст. викл. Гісем С. О.",
+      "credits": 7.0,
+      "maxCapacity": 65,
+      "currentEnrollment": 65,
+      "isMandatory": true,
+      "targetCourse": 1
+    }
+  ],
+  "trimesterScores": {},
+  "zalikAttempts": {},
+  "electiveCount": 0
+}
