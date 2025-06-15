@@ -42,7 +42,7 @@ public class EnrollmentSystemGUI extends JFrame {
     private JComboBox<String> searchCriteriaCombo;
 
     //ЗМІНИТИ!!!
-    private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");
+    private Student currentStudent = new Student("І 001/24", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");
 
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
@@ -991,7 +991,7 @@ public class EnrollmentSystemGUI extends JFrame {
         }
 
         else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 4)){
-            enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4, "Екзамен"));
+            enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
             enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 4, "Екзамен"));
 
             enrollmentSystem.addDiscipline(new Discipline("316213", "Основи фінансової математики / Basics of Financial Mathematics (англ. мовою)", "доц. Щестюк Н. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 4));
@@ -1112,7 +1112,7 @@ private void initializeInitialDataM(int selectedCourse) {
         enrollmentSystem.addDiscipline(new Discipline("318376", "Динамічні системи", "проф. Авраменко О. В.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
         enrollmentSystem.addDiscipline(new Discipline("318404", "Машинне навчання / Machine Learning (англ. мовою)", "доц. Швай Н. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
         enrollmentSystem.addDiscipline(new Discipline("318382", "Теорія складности алгоритмів", "ст. викл. Морозов Д. І.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-        enrollmentSystem.addDiscipline(new Discipline("318386", "Технології чисельного моделювання", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
+        enrollmentSystem.addDiscipline(new Discipline("318386", "Технології чисельного моделювання", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
         enrollmentSystem.addDiscipline(new Discipline("319980", "Практика науково-дослідна", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
         enrollmentSystem.addDiscipline(new Discipline("318388", "Прикладна алгебра та теорія чисел", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
 
@@ -1139,7 +1139,7 @@ private void initializeInitialDataM(int selectedCourse) {
         enrollmentSystem.addDiscipline(new Discipline("318383", "Стохастична фінансова математика / Stochastic Financial Mathematics (англ.мовою)", "доц. Щестюк Н. Ю.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
         enrollmentSystem.addDiscipline(new Discipline("320086", "Педагогіка і психологія вищої школи", "проф. Власенко К. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
         enrollmentSystem.addDiscipline(new Discipline("318500", "Теорія оптимального керування", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
-        enrollmentSystem.addDiscipline(new Discipline("318377", "Нелінійні процеси та моделі", "проф. Авраменко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
+        enrollmentSystem.addDiscipline(new Discipline("318377", "Нелінійні процеси та моделі", "проф. Авраменко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
 
         enrollmentSystem.addDiscipline(new Discipline("310430", "Квантова криптографія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
         enrollmentSystem.addDiscipline(new Discipline("310431", "Алгоритми на графах", "доц. Сидоренко П. П.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));

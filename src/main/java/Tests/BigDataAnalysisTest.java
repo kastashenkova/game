@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class MathsAnalysysTest extends JFrame {
+public class BigDataAnalysisTest extends JFrame {
 
     private Question[] questions;
     private int currentQuestionIndex = 0;
@@ -46,8 +46,8 @@ public class MathsAnalysysTest extends JFrame {
         }
     }
 
-    public MathsAnalysysTest() {
-        setTitle("Тест із Математичного аналізу");
+    public BigDataAnalysisTest() {
+        setTitle("Тест з Аналізу великих даних");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -127,36 +127,36 @@ public class MathsAnalysysTest extends JFrame {
 
     private void initializeQuestions() {
         questions = new Question[] {
-                new Question("1. Що таке границя функції в точці?",
-                        new String[]{"Максимальне значення", "Похідна у точці", "Значення, до якого прямує функція при наближенні аргументу до певної точки", "Межа області визначення"}, 2),
-                new Question("2. Яка з наведених формул є означенням похідної?",
-                        new String[]{"f(x+h) – f(x)", "lim(h→0) [(f(x+h) – f(x)) / h]", "f(x) + f’(x)", "∫f(x)dx"}, 1),
-                new Question("3. Що таке неперервна функція?",
-                        new String[]{"Функція з розривами", "Функція, яка всюди диференційовна", "Функція, значення якої змінюється стрибком", "Функція без розривів у заданій області"}, 3),
-                new Question("4. Яка похідна функції f(x) = sin(x)?",
-                        new String[]{"cos(x)", "–cos(x)", "–sin(x)", "tg(x)"}, 0),
-                new Question("5. Обчисліть похідну функції f(x) = x².",
-                        new String[]{"2", "x", "2x", "x²"}, 2),
-                new Question("6. Що таке визначений інтеграл?",
-                        new String[]{"Площа під графіком на певному проміжку", "Граничне значення функції", "Графік похідної", "Нескінченна сума"}, 0),
-                new Question("7. Який з методів обчислення визначеного інтеграла є чисельним?",
-                        new String[]{"Метод ланцюгового правила", "Метод Ньютона", "Метод прямокутників", "Метод підстановки"}, 2),
-                new Question("8. Що таке розклад функції в ряд Тейлора?",
-                        new String[]{"Множення функцій", "Інтеграл від функції", "Розклад у степеневий ряд біля точки", "Добуток похідних"}, 2),
-                new Question("9. У якій точці функція f(x) = x³ – 3x має екстремум?",
-                        new String[]{"x = 0", "x = ±1", "x = ±√3", "x = 3"}, 1),
-                new Question("10. Що таке необхідна умова екстремуму?",
-                        new String[]{"f(x) = 0", "f’(x) = 0", "f''(x) > 0", "f(x) > 0"}, 1),
-                new Question("11. Чи може функція мати похідну, але не бути неперервною?",
-                        new String[]{"Так", "Ні", "Тільки при x = 0", "Залежить від області"}, 1),
-                new Question("12. Що таке рівномірна збіжність ряду функцій?",
-                        new String[]{"Збіжність при фіксованому x", "Збіжність похідної", "Однакова швидкість збіжності для всіх x з області", "Інтегрування по частинах"}, 2),
-                new Question("13. Який інтеграл називають невласним?",
-                        new String[]{"Інтеграл, де підінтегральна функція неперервна", "Інтеграл з нескінченними межами або розривами", "Інтеграл з нульовими межами", "Інтеграл, що дорівнює нулю"}, 1),
-                new Question("14. Що таке диференціальне рівняння?",
-                        new String[]{"Рівняння з похідною", "Рівняння з логарифмами", "Рівняння з модулем", "Система лінійних рівнянь"}, 0),
-                new Question("15. Яке з рівнянь є лінійним диференціальним рівнянням першого порядку?",
-                        new String[]{"y'' + y = 0", "y' + y = x", "y² + y' = 0", "y = sin(x)"}, 1)
+                new Question("1. Що таке великі дані (Big Data)?",
+                        new String[]{"Будь-які числові дані", "Дані, що не піддаються обробці традиційними методами через обсяг, швидкість або різноманіття", "Файли великих розмірів", "Тільки відео і аудіо файли"}, 1),
+                new Question("2. Які основні характеристики визначають Big Data? (модель 3V)",
+                        new String[]{"Volume, Velocity, Variety", "Volume, Version, Value", "Value, Visibility, Volume", "Visualization, Volume, Validity"}, 0),
+                new Question("3. Яка платформа є однією з найпоширеніших у обробці великих даних?",
+                        new String[]{"TensorFlow", "MySQL", "Hadoop", "Jupyter"}, 2),
+                new Question("4. Що таке HDFS у Hadoop?",
+                        new String[]{"Формат даних", "Графічний інтерфейс", "Розподілена файлова система", "Тип БД"}, 2),
+                new Question("5. Яка з систем баз даних належить до NoSQL?",
+                        new String[]{"PostgreSQL", "MongoDB", "Oracle", "MySQL"}, 1),
+                new Question("6. Що таке MapReduce?",
+                        new String[]{"Алгоритм стиснення", "Модель обробки даних у два етапи: Map і Reduce", "Тип машинного навчання", "Формат JSON"}, 1),
+                new Question("7. Який фреймворк є розширенням Hadoop для обчислень у пам’яті?",
+                        new String[]{"Hive", "Pig", "Spark", "Storm"}, 2),
+                new Question("8. Який компонент Spark використовується для роботи з даними SQL-подібного типу?",
+                        new String[]{"Spark Core", "Spark SQL", "Spark Streaming", "Spark MLlib"}, 1),
+                new Question("9. Яка задача добре вирішується за допомогою кластеризації в Big Data?",
+                        new String[]{"Пошук шкідливого ПЗ", "Групування клієнтів за поведінкою", "Аналіз графіків функцій", "Перетворення форматів файлів"}, 1),
+                new Question("10. Який тип даних є прикладом потокових даних?",
+                        new String[]{"Архівовані файли", "Логи в реальному часі", "CSV-файл", "SQL-запити"}, 1),
+                new Question("11. Який з наведених інструментів використовують для обробки потокових даних?",
+                        new String[]{"Spark SQL", "Apache Kafka", "MapReduce", "HDFS"}, 1),
+                new Question("12. Що таке шардінг (sharding) у базах даних?",
+                        new String[]{"Метод обробки SQL-запитів", "Розподіл даних на окремі частини між вузлами", "Компресія даних", "Тип пам’яті"}, 1),
+                new Question("13. Який формат даних є найбільш придатним для обробки в Hadoop?",
+                        new String[]{"XLSX", "CSV", "Parquet", "DOCX"}, 2),
+                new Question("14. У чому перевага розподілених обчислень у Big Data?",
+                        new String[]{"Зменшення пам’яті", "Використання лише одного процесора", "Паралельна обробка великих обсягів даних", "Ручне керування"}, 2),
+                new Question("15. Який з інструментів дозволяє будувати пайплайни машинного навчання на великих даних?",
+                        new String[]{"NumPy", "Spark MLlib", "Excel", "Pandas"}, 1)
         };
     }
 
@@ -258,7 +258,7 @@ public class MathsAnalysysTest extends JFrame {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 int confirm = JOptionPane.showConfirmDialog(
-                        MathsAnalysysTest.this,
+                        BigDataAnalysisTest.this,
                         "Ви дійсно хочете вийти з тесту?",
                         "Підтвердження виходу",
                         JOptionPane.YES_NO_OPTION,
@@ -329,7 +329,7 @@ public class MathsAnalysysTest extends JFrame {
         // Показуємо результат в JOptionPane
         String message = "Ваш результат: " + score + " з " + questions.length + " балів.";
         if (passed) {
-            message += "\nВітаємо! Ви успішно пройшли тест із Математичного аналізу.";
+            message += "\nВітаємо! Ви успішно пройшли тест з Аналізу великих даних.";
             showResultPanel(score);
         } else {
             message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
@@ -425,7 +425,7 @@ public class MathsAnalysysTest extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи з Математичного аналізу!",
+                    "Вітаємо з успішним проходженням контрольної роботи з Аналізу великих даних!",
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -452,7 +452,7 @@ public class MathsAnalysysTest extends JFrame {
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
-                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Математичного аналізу</h1>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Аналізу великих даних</h1>" +
                 "<p>Ласкаво просимо до тесту!</p>" +
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
@@ -525,7 +525,7 @@ public class MathsAnalysysTest extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new MathsAnalysysTest().setVisible(true);
+                new BigDataAnalysisTest().setVisible(true);
             }
         });
     }
