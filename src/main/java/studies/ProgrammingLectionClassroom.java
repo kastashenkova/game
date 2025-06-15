@@ -1,11 +1,9 @@
-package org.example;
+package studies;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 
 public class ProgrammingLectionClassroom extends JPanel {
 

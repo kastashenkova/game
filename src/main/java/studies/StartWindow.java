@@ -1,8 +1,6 @@
-package org.example;
+package studies;
 
-import com.formdev.flatlaf.FlatLightLaf;
 import gui.LoadingFrame;
-import mainstage.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;

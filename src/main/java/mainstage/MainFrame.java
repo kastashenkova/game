@@ -1,8 +1,8 @@
 package mainstage;
 
 import gui.PauseAction;
-import org.example.GameFrame;
-import org.example.MusicPlayer;
+import studies.GameFrame;
+import studies.MusicPlayer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

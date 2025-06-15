@@ -1,4 +1,4 @@
-package org.example;
+package Tests;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class NetTechTest extends JFrame {
+public class MathsAnalysysTest extends JFrame {
 
     private Question[] questions;
     private int currentQuestionIndex = 0;
@@ -46,17 +46,19 @@ public class NetTechTest extends JFrame {
         }
     }
 
-    public NetTechTest() {
-        setTitle("Тест з Мережевих технологій");
+    public MathsAnalysysTest() {
+        setTitle("Тест із Математичного аналізу");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // Встановлюємо український текст для кнопок "OK" та "Скасувати"
         UIManager.put("OptionPane.okButtonText", "ОК");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
 
+        // Задаємо глобальні шрифти для JOptionPane та інших компонентів
         UIManager.put("OptionPane.messageFont", new Font("Arial", Font.PLAIN, 16));
         UIManager.put("OptionPane.buttonFont", new Font("Arial", Font.BOLD, 14));
         UIManager.put("Label.font", new Font("Arial", Font.PLAIN, 16));
@@ -125,128 +127,38 @@ public class NetTechTest extends JFrame {
 
     private void initializeQuestions() {
         questions = new Question[] {
-                new Question("1. Що таке IP-адреса?",
-                        new String[]{
-                                "Унікальний ідентифікатор мережевого пристрою",
-                                "Тип мережевого кабелю",
-                                "Протокол передачі даних",
-                                "Мережевий комутатор"
-                        }, 0),
-
-                new Question("2. Яка основна функція протоколу TCP?",
-                        new String[]{
-                                "Передача відеопотоку",
-                                "Забезпечення надійності передачі даних",
-                                "Маршрутизація пакетів",
-                                "Кодування даних"
-                        }, 1),
-
-                new Question("3. Що таке DNS?",
-                        new String[]{
-                                "Система доменних імен, що перетворює домен на IP",
-                                "Протокол бездротового з'єднання",
-                                "Рядок HTTP‑запиту",
-                                "Сервер для зберігання файлів"
-                        }, 0),
-
-                new Question("4. Яка модель описує сім рівнів мережевої взаємодії?",
-                        new String[]{
-                                "TCP/IP",
-                                "OSI‑модель",
-                                "Ethernet‑структура",
-                                "HTTP‑архітектура"
-                        }, 1),
-
-                new Question("5. Що таке MAC-адреса?",
-                        new String[]{
-                                "Логічний адрес в мережі Інтернет",
-                                "Фізична адреса мережевого інтерфейсу",
-                                "Тип маршрутизатора",
-                                "Протокол шифрування"
-                        }, 1),
-
-                new Question("6. Яку роль виконує маршрутизатор?",
-                        new String[]{
-                                "Забезпечує бездротовий доступ",
-                                "Розподіляє IP‑адреси через DHCP",
-                                "Маршрутизує пакети між різними мережами",
-                                "Шифрує трафік"
-                        }, 2),
-
-                new Question("7. Який протокол використовується для отримання IP-адреси автоматично?",
-                        new String[]{
-                                "FTP",
-                                "SMTP",
-                                "DHCP",
-                                "ICMP"
-                        }, 2),
-
-                new Question("8. Що таке підмережа (subnet)?",
-                        new String[]{
-                                "Частина локальної мережі, визначена маскою підмережі",
-                                "Тип маршрутизатора",
-                                "Рівень у моделі OSI",
-                                "Протокол надійної передачі"
-                        }, 0),
-
-                new Question("9. Для чого потрібен протокол ARP?",
-                        new String[]{
-                                "Для пошуку IP-адреси по доменному імені",
-                                "Для прив’язки IP‑адреси до MAC-адреси",
-                                "Для передачі електронної пошти",
-                                "Для резервного копіювання"
-                        }, 1),
-
-                new Question("10. Який порт за умовчанням використовує HTTP?",
-                        new String[]{
-                                "21",
-                                "80",
-                                "443",
-                                "25"
-                        }, 1),
-
-                new Question("11. Що таке протокол HTTPS?",
-                        new String[]{
-                                "HTTP з шифруванням TLS/SSL",
-                                "Бездротовий мережевий стандарт",
-                                "Протокол передачі файлів",
-                                "Система доменних імен"
-                        }, 0),
-
-                new Question("12. Який протокол використовується для передачі електронної пошти між серверами?",
-                        new String[]{
-                                "FTP",
-                                "HTTP",
-                                "SMTP",
-                                "DHCP"
-                        }, 2),
-
-                new Question("13. Що таке топологія «Зірка» (Star)?",
-                        new String[]{
-                                "Кожен вузол підключений до центрального пристрою",
-                                "Усі вузли підключені послідовно одне до одного",
-                                "Вузли утворюють кільце",
-                                "Мережа на базі бездротових access point"
-                        }, 0),
-
-                new Question("14. Який протокол забезпечує безпомилкову передачу даних на канальному рівні?",
-                        new String[]{
-                                "UDP",
-                                "TCP",
-                                "Ethernet",
-                                "PPP"
-                        }, 3),
-
-                new Question("15. Що таке NAT?",
-                        new String[]{
-                                "Протокол безпеки",
-                                "Механізм трансляції внутрішніх IP-адрес у зовнішні",
-                                "Тип кабелю",
-                                "Мережевий комутатор"
-                        }, 1)
+                new Question("1. Що таке границя функції в точці?",
+                        new String[]{"Максимальне значення", "Похідна у точці", "Значення, до якого прямує функція при наближенні аргументу до певної точки", "Межа області визначення"}, 2),
+                new Question("2. Яка з наведених формул є означенням похідної?",
+                        new String[]{"f(x+h) – f(x)", "lim(h→0) [(f(x+h) – f(x)) / h]", "f(x) + f’(x)", "∫f(x)dx"}, 1),
+                new Question("3. Що таке неперервна функція?",
+                        new String[]{"Функція з розривами", "Функція, яка всюди диференційовна", "Функція, значення якої змінюється стрибком", "Функція без розривів у заданій області"}, 3),
+                new Question("4. Яка похідна функції f(x) = sin(x)?",
+                        new String[]{"cos(x)", "–cos(x)", "–sin(x)", "tg(x)"}, 0),
+                new Question("5. Обчисліть похідну функції f(x) = x².",
+                        new String[]{"2", "x", "2x", "x²"}, 2),
+                new Question("6. Що таке визначений інтеграл?",
+                        new String[]{"Площа під графіком на певному проміжку", "Граничне значення функції", "Графік похідної", "Нескінченна сума"}, 0),
+                new Question("7. Який з методів обчислення визначеного інтеграла є чисельним?",
+                        new String[]{"Метод ланцюгового правила", "Метод Ньютона", "Метод прямокутників", "Метод підстановки"}, 2),
+                new Question("8. Що таке розклад функції в ряд Тейлора?",
+                        new String[]{"Множення функцій", "Інтеграл від функції", "Розклад у степеневий ряд біля точки", "Добуток похідних"}, 2),
+                new Question("9. У якій точці функція f(x) = x³ – 3x має екстремум?",
+                        new String[]{"x = 0", "x = ±1", "x = ±√3", "x = 3"}, 1),
+                new Question("10. Що таке необхідна умова екстремуму?",
+                        new String[]{"f(x) = 0", "f’(x) = 0", "f''(x) > 0", "f(x) > 0"}, 1),
+                new Question("11. Чи може функція мати похідну, але не бути неперервною?",
+                        new String[]{"Так", "Ні", "Тільки при x = 0", "Залежить від області"}, 1),
+                new Question("12. Що таке рівномірна збіжність ряду функцій?",
+                        new String[]{"Збіжність при фіксованому x", "Збіжність похідної", "Однакова швидкість збіжності для всіх x з області", "Інтегрування по частинах"}, 2),
+                new Question("13. Який інтеграл називають невласним?",
+                        new String[]{"Інтеграл, де підінтегральна функція неперервна", "Інтеграл з нескінченними межами або розривами", "Інтеграл з нульовими межами", "Інтеграл, що дорівнює нулю"}, 1),
+                new Question("14. Що таке диференціальне рівняння?",
+                        new String[]{"Рівняння з похідною", "Рівняння з логарифмами", "Рівняння з модулем", "Система лінійних рівнянь"}, 0),
+                new Question("15. Яке з рівнянь є лінійним диференціальним рівнянням першого порядку?",
+                        new String[]{"y'' + y = 0", "y' + y = x", "y² + y' = 0", "y = sin(x)"}, 1)
         };
     }
-
 
     private void createUI() {
         mainPanel = new JPanel();
@@ -346,7 +258,7 @@ public class NetTechTest extends JFrame {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 int confirm = JOptionPane.showConfirmDialog(
-                        NetTechTest.this,
+                        MathsAnalysysTest.this,
                         "Ви дійсно хочете вийти з тесту?",
                         "Підтвердження виходу",
                         JOptionPane.YES_NO_OPTION,
@@ -417,7 +329,7 @@ public class NetTechTest extends JFrame {
         // Показуємо результат в JOptionPane
         String message = "Ваш результат: " + score + " з " + questions.length + " балів.";
         if (passed) {
-            message += "\nВітаємо! Ви успішно пройшли тест із Мережевих технологій.";
+            message += "\nВітаємо! Ви успішно пройшли тест із Математичного аналізу.";
             showResultPanel(score);
         } else {
             message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
@@ -513,7 +425,7 @@ public class NetTechTest extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи з Мережевих технологій!",
+                    "Вітаємо з успішним проходженням контрольної роботи з Математичного аналізу!",
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -540,7 +452,7 @@ public class NetTechTest extends JFrame {
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
-                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Мережевих технологій</h1>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Математичного аналізу</h1>" +
                 "<p>Ласкаво просимо до тесту!</p>" +
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
@@ -613,7 +525,7 @@ public class NetTechTest extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new NetTechTest().setVisible(true);
+                new MathsAnalysysTest().setVisible(true);
             }
         });
     }

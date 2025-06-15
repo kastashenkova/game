@@ -1,4 +1,4 @@
-package org.example;
+package Tests;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class AlgorithmsTest extends JFrame {
+public class LPTest extends JFrame {
 
     private Question[] questions;
     private int currentQuestionIndex = 0;
@@ -46,8 +46,8 @@ public class AlgorithmsTest extends JFrame {
         }
     }
 
-    public AlgorithmsTest() {
-        setTitle("Тест з Алгоритмів і структур даних");
+    public LPTest() {
+        setTitle("Тест із Логічного програмування");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -127,48 +127,36 @@ public class AlgorithmsTest extends JFrame {
 
     private void initializeQuestions() {
         questions = new Question[] {
-                new Question("1. Яка основна функція компілятора?",
-                        new String[]{"Виконання програми", "Перетворення вихідного коду у машинозрозумілий код", "Відлагодження програми", "Управління пам'яттю"}, 1),
-                new Question("2. Що таке змінна в програмуванні?",
-                        new String[]{"Постійне значення", "Ім'я для комірки пам'яті, що зберігає дані", "Тип даних", "Оператор порівняння"}, 1),
-                new Question("3. Який тип циклу використовується, коли кількість ітерацій відома заздалегідь?",
-                        new String[]{"While", "Do-While", "For", "ForEach"}, 2),
-                new Question("4. Що таке синтаксична помилка?",
-                        new String[]{
-                                "Помилка в логіці програми",
-                                "Помилка, яка виникає під час виконання програми",
-                                "Помилка, що порушує правила написання коду мови програмування",
-                                "Помилка, пов'язана з неправильним використанням пам'яті"}, 2),
-                new Question("5. Який оператор використовується для перевірки рівності двох значень у більшості мов?",
-                        new String[]{"=", "==", ":=", "==="}, 1),
-                new Question("6. Що таке функція (метод) у програмуванні?",
-                        new String[]{"Змінна для зберігання тексту", "Блок коду, призначений для виконання певного завдання", "Тип даних", "Структура даних"}, 1),
-                new Question("7. Яка структура даних є LIFO (Last-In, First-Out)?",
-                        new String[]{"Черга (Queue)", "Стек (Stack)", "Список (List)", "Масив (Array)"}, 1),
-                new Question("8. Яка концепція ООП дозволяє створювати нові класи на основі наявних?",
-                        new String[]{"Інкапсуляція", "Поліморфізм", "Наслідування", "Абстракція"}, 2),
-                new Question("9. Для чого призначений оператор 'if-else'?",
-                        new String[]{"Для повторення блоку коду", "Для виконання коду на основі умови", "Для оголошення змінних", "Для створення об'єктів"}, 1),
-                new Question("10. Що таке 'алгоритм'?",
-                        new String[]{"Мова програмування", "Набір інструкцій для розв'язання задачі", "Тип комп'ютера", "Програма для малювання"}, 1),
-                new Question("11. Який оператор логічного 'І' (AND) використовується в Java/C++/C#?",
-                        new String[]{"||", "!", "&&", "|"}, 2),
-                new Question("12. Що таке 'масив'?",
-                        new String[]{"Змінна для одного значення", "Колекція однотипних елементів, що зберігаються послідовно", "Функція", "Оператор"}, 1),
-                new Question("13. Який з цих термінів НЕ є основним компонентом ООП?",
-                        new String[]{
-                                "Інкапсуляція",
-                                "Наслідування",
-                                "Компіляція",
-                                "Поліморфізм"}, 2),
-                new Question("14. Що повертає булева змінна?",
-                        new String[]{"Ціле число", "Рядок тексту", "Правда або хибність (true/false)", "Список значень"}, 2),
-                new Question("15. Який алгоритм сортування є найпростішим для розуміння і реалізації, але не найефективнішим?",
-                        new String[]{
-                                "Швидке сортування (QuickSort)",
-                                "Сортування злиттям (MergeSort)",
-                                "Бульбашкове сортування (Bubble Sort)",
-                                "Сортування вибором (Selection Sort)"}, 2)
+                new Question("1. Що таке логічне програмування?",
+                        new String[]{"Парадигма, заснована на логіці предикатів", "Програмування графіки", "Робота з апаратним забезпеченням", "Програмування алгоритмів сортування"}, 0),
+                new Question("2. Яка мова є основною для логічного програмування?",
+                        new String[]{"Java", "Prolog", "Python", "C++"}, 1),
+                new Question("3. Який оператор в Prolog означає логічне слідування (правило)?",
+                        new String[]{":-", "->", "=>", "<-"}, 0),
+                new Question("4. Що таке факт у Prolog?",
+                        new String[]{"Змінна", "Визначення істинного твердження", "Імпорт модуля", "Оператор обчислення"}, 1),
+                new Question("5. Що таке правило в Prolog?",
+                        new String[]{"Інструкція повторення", "Опис збережених значень", "Логічне твердження з умовою", "Оператор додавання"}, 2),
+                new Question("6. Що таке уніфікація в логічному програмуванні?",
+                        new String[]{"Вивід результатів", "Процес перевірки типів", "Процес зіставлення термів", "Сортування значень"}, 2),
+                new Question("7. Як називаються запити до бази знань у Prolog?",
+                        new String[]{"Предикати", "Цілі", "Факти", "Масиви"}, 1),
+                new Question("8. Яке значення повертає Prolog у разі успішного виконання запиту?",
+                        new String[]{"false", "null", "true", "1"}, 2),
+                new Question("9. Яка структура даних є базовою в Prolog?",
+                        new String[]{"Масив", "Список", "Матриця", "Стек"}, 1),
+                new Question("10. Що таке рекурсія у логічному програмуванні?",
+                        new String[]{"Тип змінної", "Виклик правил самим собою", "Обробка файлів", "Налаштування логіки"}, 1),
+                new Question("11. Яке ключове слово в Prolog використовується для запиту?",
+                        new String[]{"query", "ask", ":-", "?-"}, 3),
+                new Question("12. Який принцип застосовується у висновку в логічному програмуванні?",
+                        new String[]{"Індукція", "Інкапсуляція", "Модус поненс", "Дедукція"}, 3),
+                new Question("13. Як позначають змінні в Prolog?",
+                        new String[]{"З великої літери", "З маленької літери", "З символу @", "У лапках"}, 0),
+                new Question("14. Що відбудеться, якщо Prolog не знайде рішення для запиту?",
+                        new String[]{"Виведе помилку", "Програма завершиться", "Поверне false", "Згенерує випадкове значення"}, 2),
+                new Question("15. Як Prolog шукає рішення?",
+                        new String[]{"За принципом стеку", "З допомогою жадібного алгоритму", "Зліва направо з backtracking", "Випадково"}, 2)
         };
     }
 
@@ -270,7 +258,7 @@ public class AlgorithmsTest extends JFrame {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 int confirm = JOptionPane.showConfirmDialog(
-                        AlgorithmsTest.this,
+                        LPTest.this,
                         "Ви дійсно хочете вийти з тесту?",
                         "Підтвердження виходу",
                         JOptionPane.YES_NO_OPTION,
@@ -341,7 +329,7 @@ public class AlgorithmsTest extends JFrame {
         // Показуємо результат в JOptionPane
         String message = "Ваш результат: " + score + " з " + questions.length + " балів.";
         if (passed) {
-            message += "\nВітаємо! Ви успішно пройшли тест з Алгоритмів і структур даних.";
+            message += "\nВітаємо! Ви успішно пройшли тест із Логічного програмування.";
             showResultPanel(score);
         } else {
             message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
@@ -437,7 +425,7 @@ public class AlgorithmsTest extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи з Алгоритмів і структур даних!",
+                    "Вітаємо з успішним проходженням контрольної роботи з Логічного програмування!",
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -464,7 +452,7 @@ public class AlgorithmsTest extends JFrame {
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
-                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Алгоритмів та структур даних</h1>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Логічного програмування</h1>" +
                 "<p>Ласкаво просимо до тесту!</p>" +
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
@@ -537,7 +525,7 @@ public class AlgorithmsTest extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new AlgorithmsTest().setVisible(true);
+                new LPTest().setVisible(true);
             }
         });
     }

@@ -1,13 +1,11 @@
 package gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.MusicPlayer;
-import org.example.StartWindow;
+import studies.MusicPlayer;
+import studies.StartWindow;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import java.awt.*;
         import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,9 +22,9 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     BufferedImage icon;
 
     public WelcomeFrame() {
-        setTitle("Sims NaUKMA");
+        setTitle("NaUKMA Sims");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 700);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 

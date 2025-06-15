@@ -1,4 +1,4 @@
-package org.example;
+package studies;
 
 import mainstage.GameBoard;
 

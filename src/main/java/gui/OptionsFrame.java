@@ -2,7 +2,7 @@ package gui;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.MusicPlayer;
+import studies.MusicPlayer;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;

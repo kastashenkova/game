@@ -1,7 +1,7 @@
 package mainstage;
 
 import gui.LoadingFrame;
-import org.example.StartWindow;
+import studies.StartWindow;
 
 import javax.swing.*;
 import java.awt.*;

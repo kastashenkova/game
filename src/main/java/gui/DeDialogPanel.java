@@ -1,15 +1,11 @@
 package gui;
 import mainstage.GameBoard;
-import org.example.GameFrame;
-import org.example.MusicPlayer;
+import studies.GameFrame;
+import studies.MusicPlayer;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 
