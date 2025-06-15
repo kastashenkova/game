@@ -493,7 +493,7 @@ public class StudyProgressGUI extends JFrame {
                     }
                 } else {
                     JOptionPane.showMessageDialog(StudyProgressGUI.this,
-                            "Бал " + ((currentDisplayedScore != null) ? currentDisplayedScore : "0") + " недостатній для допуску до сесії з " + selectedDiscipline.getName() + ". Потрібно мінімум 40 балів.",
+                            "Бал " + ((currentDisplayedScore != null) ? currentDisplayedScore : "0") + " недостатній для допуску до екзамену. Потрібно щонайменше 40 балів!",
                             "Недопущено",
                             JOptionPane.WARNING_MESSAGE);
                 }
