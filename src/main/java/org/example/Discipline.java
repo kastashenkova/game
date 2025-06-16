@@ -1,5 +1,7 @@
 package org.example;
 
+import Tests.Question;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -16,6 +18,8 @@ public class Discipline implements Serializable {
     private int targetCourse;
     private String controlType;
     private boolean isZalik;
+
+    public Question[] questions;
 
     public static final String CONTROL_TYPE_ZALIK = "Залік";
     public static final String CONTROL_TYPE_EXAM = "Екзамен";
@@ -62,6 +66,9 @@ public class Discipline implements Serializable {
             this.controlType = CONTROL_TYPE_ZALIK;
         }
         this.isZalik = isZalik;
+    }
+    public Discipline (String name){
+        this.name = name;
     }
 
     // Гетери

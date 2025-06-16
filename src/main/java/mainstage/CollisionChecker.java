@@ -1,5 +1,6 @@
 package mainstage;
 
+import Tests.TestManager;
 import gui.LoadingFrame;
 import org.example.EnrollmentSystemGUI;
 import org.example.Hero;
@@ -77,6 +78,8 @@ public class CollisionChecker {
                             EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
                             enrollmentSystemGUI.setVisible(true);
                         } else if(level==2){
+                            hero.setLevel(3);
+                            TestManager testManager = new TestManager(hero);
 
                         }
                     });
