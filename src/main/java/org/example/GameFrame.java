@@ -40,10 +40,11 @@ public class GameFrame extends JFrame {
         newHero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
         student = new Student(generateRandomID(), initialHeroName, hero.getCourse(), hero.getSpecialty().toString());
 
-        newHero.setBudget(150);
+        newHero.setBudget(hero.getBudget());
         newHero.setSpecialty(hero.getSpecialty());
         newHero.setCourse(hero.getCourse());
       newHero.setSelectedName(hero.getSelectedName());
+      newHero.setLevel(hero.getLevel());
 
         gamePanel = new GamePanel(newHero, this);
         add(gamePanel, BorderLayout.CENTER);
