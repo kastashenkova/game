@@ -1,6 +1,5 @@
 package org.example;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,16 +15,17 @@ public class EnrollmentSystem {
     private Map<String, Discipline> disciplines;
     private Random random = new Random();
 
-    // Видаляємо MAX_ELECTIVES_PER_STUDENT
-    // public static final int MAX_ELECTIVES_PER_STUDENT = 5;
-    public static final int ELECTIVE_CAPACITY = 15;
+    public static final int UNLIMITED_CAPACITY = -1;
+    public static final int ELECTIVE_CAPACITY = 10;
+    public static final int MANDATORY_DISCIPLINE_CAPACITY = 65;
 
     // Credit limits per course
     private static final Map<Integer, Integer> COURSE_CREDIT_LIMITS = new HashMap<>();
     static {
+        COURSE_CREDIT_LIMITS.put(1, 61);
         COURSE_CREDIT_LIMITS.put(2, 62);
-        COURSE_CREDIT_LIMITS.put(3, 63);
-        COURSE_CREDIT_LIMITS.put(4, 60);
+        COURSE_CREDIT_LIMITS.put(3, 62);
+        COURSE_CREDIT_LIMITS.put(4, 62);
     }
 
     // Мінімальна кількість кредитів для завершення вибору
@@ -33,7 +33,7 @@ public class EnrollmentSystem {
 
     // New variables for tracking virtual students
     private int virtualStudentsEnrolledCount = 0;
-    public static final int MAX_VIRTUAL_STUDENTS_TO_ENROLL = 65;
+    public static final int MAX_VIRTUAL_STUDENTS_TO_ENROLL = 30;
     private Map<String, Integer> virtualStudentElectiveCounts;
     private Map<String, Set<String>> virtualStudentEnrolledElectives;
 
@@ -48,9 +48,9 @@ public class EnrollmentSystem {
     public String addStudent(Student student) {
         if (!students.containsKey(student.getStudentId())) {
             students.put(student.getStudentId(), student);
-            return "Студент '" + student.getName() + "' (ID: " + student.getStudentId() + ") успішно доданий.";
+            return "Студент " + student.getName() + " (ID: " + student.getStudentId() + ") успішно доданий.";
         } else {
-            return "Помилка: Студент з ID '" + student.getStudentId() + "' вже існує.";
+            return "Помилка. Студент з ID '" + student.getStudentId() + "' вже існує.";
         }
     }
 
@@ -59,7 +59,7 @@ public class EnrollmentSystem {
             disciplines.put(discipline.getDisciplineId(), discipline);
             return "Дисципліна '" + discipline.getName() + "' (ID: " + discipline.getDisciplineId() + ") успішно додана.";
         } else {
-            return "Помилка: Дисципліна з ID '" + discipline.getDisciplineId() + "' вже існує.";
+            return "Помилка. Дисципліна з ID '" + discipline.getDisciplineId() + "' вже існує.";
         }
     }
 
@@ -119,7 +119,7 @@ public class EnrollmentSystem {
         if (electives.isEmpty()) return;
 
         // Probability that a "virtual student" attempts to enroll
-        if (random.nextDouble() < 0.3) {
+        if (random.nextDouble() < 0.1) {
             String virtualStudentId = "VirtualStudent_" + random.nextInt(MAX_VIRTUAL_STUDENTS_TO_ENROLL * 2);
             virtualStudentElectiveCounts.putIfAbsent(virtualStudentId, 0);
             virtualStudentEnrolledElectives.putIfAbsent(virtualStudentId, new HashSet<>());
@@ -160,47 +160,52 @@ public class EnrollmentSystem {
         Optional<Discipline> disciplineOpt = getDisciplineById(disciplineId);
 
         if (studentOpt.isEmpty()) {
-            return "Помилка запису: Студента з ID '" + studentId + "' не знайдено.";
+            return "Помилка запису. Студента з ID '" + studentId + "' не знайдено.";
         }
         if (disciplineOpt.isEmpty()) {
-            return "Помилка запису: Дисципліни з ID '" + disciplineId + "' не знайдено.";
+            return "Помилка запису. Дисципліни з ID '" + disciplineId + "' не знайдено.";
         }
 
         Student student = studentOpt.get();
         Discipline discipline = disciplineOpt.get();
 
-        // 1. Mandatory disciplines cannot be manually selected
+        // 1. Обов'язкові дисципліни не можуть бути обрані вручну
         if (discipline.isMandatory()) {
-            return "Помилка: Обов'язкові дисципліни не можуть бути обрані вручну. Студенти автоматично зараховуються на них.";
+            return "Помилка. Обов'язкові дисципліни не можуть бути обрані вручну. Студенти автоматично зараховуються на них.";
         }
 
-        // 2. Check if already enrolled
+        // 2. Перевірка, чи студент вже записаний
         if (student.getEnrolledDisciplines().contains(discipline)) {
-            return "Помилка запису: Ви вже записані на дисципліну " + discipline.getName() + ".";
+            return "Помилка запису. Ви вже записані на дисципліну " + discipline.getName() + ".";
         }
 
-        // 3. Check credit limit
-        int currentTotalCredits = student.getEnrolledDisciplines().stream()
-                .mapToInt(Discipline::getCredits)
-                .sum();
-        int newTotalCredits = currentTotalCredits + discipline.getCredits();
-        int courseCreditLimit = COURSE_CREDIT_LIMITS.getOrDefault(student.getCourse(), Integer.MAX_VALUE); // Get limit for current course
+        // 3. Перевірка ліміту кредитів
+        int sum = 0;
+        for (Discipline enrolledDisc : student.getEnrolledDisciplines()) {
+            sum += enrolledDisc.getCredits();
+        }
+        double currentTotalCredits = sum;
+        double newTotalCredits = currentTotalCredits + discipline.getCredits();
+        int courseCreditLimit = COURSE_CREDIT_LIMITS.getOrDefault(student.getCourse(), Integer.MAX_VALUE);
 
         if (newTotalCredits > courseCreditLimit) {
-            return "Помилка запису: Запис на дисципліну '" + discipline.getName() + "' призведе до перевищення сумарної кількості кредитів (" + courseCreditLimit + ") для " + student.getCourse() + "-го курсу. Поточна сума: " + currentTotalCredits + ", з цією дисципліною: " + newTotalCredits + ".";
+            return "Помилка запису. Запис на дисципліну '" + discipline.getName() + "' призведе до перевищення сумарної кількості кредитів (" + courseCreditLimit + ") для " + student.getCourse() + "-го курсу. Поточна сума: " + currentTotalCredits + ", з цією дисципліною: " + newTotalCredits + ".";
         }
 
-        // 4. Check available slots (scenario "Unfortunately, you were too late")
-        if (!discipline.hasAvailableSlots()) {
-            return "На жаль, Ви не встигли. На дисципліну " + discipline.getName() + " записалася максимальна кількість студентів.";
-        }
-
-        // If all checks pass, proceed with enrollment
-        if (discipline.enrollStudent()) { // Increment enrolled student counter for the discipline
-            student.enrollDiscipline(discipline); // Add discipline to student's list
+        // 4. Логіка запису для вибіркових дисциплін (з обмеженою та необмеженою кількістю місць)
+        if (discipline.getMaxCapacity() == UNLIMITED_CAPACITY) {
+            student.enrollDiscipline(discipline);
+            discipline.enrollStudent();
             return "Успішний запис! Ви записані на вибіркову дисципліну " + discipline.getName() + ".";
         }
-        return "Невідома помилка під час спроби запису на дисципліну.";
+        else if (!discipline.hasAvailableSlots()) {
+            return "На жаль, Ви не встигли. На дисципліну " + discipline.getName() + " записана максимальна кількість студентів.";
+        }
+        else {
+            student.enrollDiscipline(discipline);
+            discipline.enrollStudent();
+            return "Успішний запис! Ви записані на вибіркову дисципліну " + discipline.getName() + ".";
+        }
     }
 
     /**
@@ -214,10 +219,10 @@ public class EnrollmentSystem {
         Optional<Discipline> disciplineOpt = getDisciplineById(disciplineId);
 
         if (studentOpt.isEmpty()) {
-            return "Помилка відписки: Студента з ID '" + studentId + "' не знайдено.";
+            return "Помилка виписки. Студента з ID '" + studentId + "' не знайдено.";
         }
         if (disciplineOpt.isEmpty()) {
-            return "Помилка відписки: Дисципліни з ID '" + disciplineId + "' не знайдено.";
+            return "Помилка виписки. Дисципліни з ID '" + disciplineId + "' не знайдено.";
         }
 
         Student student = studentOpt.get();
@@ -225,18 +230,18 @@ public class EnrollmentSystem {
 
         // 1. Cannot unenroll from mandatory disciplines
         if (discipline.isMandatory()) {
-            return "Помилка виписки: з обов'язкових дисциплін не можна виписатися вручну.";
+            return "Помилка виписки. з обов'язкових дисциплін не можна виписатися вручну.";
         }
 
         // 2. Check if the student is actually enrolled in this discipline
         if (!student.getEnrolledDisciplines().contains(discipline)) {
-            return "Помилка відписки: Ви не записані на дисципліну " + discipline.getName() + ".";
+            return "Помилка виписки. Ви не записані на дисципліну " + discipline.getName() + ".";
         }
 
         // If all checks pass, proceed with unenrollment
         if (discipline.dropStudent()) { // Decrement enrolled student counter for the discipline
             student.dropDiscipline(discipline); // Remove discipline from student's list
-            return "Успішна виписка: Ви виписані з дисципліни " + discipline.getName() + ".";
+            return "Успішна виписка! Ви виписані з дисципліни " + discipline.getName() + ".";
         }
         return "Невідома помилка під час спроби виписки з дисципліни.";
     }

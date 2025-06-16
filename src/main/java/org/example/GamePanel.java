@@ -1,6 +1,11 @@
 package org.example;
 
+import gui.LoadingFrame;
+import mainstage.MainFrame;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,26 +37,25 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private JPanel heroActionsPanel;
 
+    private JButton goToWorldButton;
+
     private long lastMessageTime;
-    private final long MESSAGE_INTERVAL_MIN = 2000;
-    private final long MESSAGE_INTERVAL_MAX = 6000;
+    private final long MESSAGE_INTERVAL_MIN = 500;
+    private final long MESSAGE_INTERVAL_MAX = 2000;
     private long nextMessageInterval;
     private Random random = new Random();
 
     // --- Для спливаючих повідомлень чату ---
     private List<FloatingMessage> floatingMessages;
-    private final int FLOATING_MESSAGE_DISPLAY_DURATION = 3500; // 3.5 секунди
+    private final int FLOATING_MESSAGE_DISPLAY_DURATION = 3300;
     private final int MESSAGE_OFFSET_Y = 5; // Відступ між повідомленнями
     private final int MESSAGE_MARGIN_X = 20; // Відступ від правого краю
     private final int MESSAGE_BOTTOM_START_Y = 50; // Відступ від нижнього краю для першого повідомлення
 
-    // --- Закоментовані рядки для звуку, як у наданому коді користувача ---
-    //private Clip messageSoundClip;
-    //private final String MESSAGE_SOUND_PATH = "assets/Sounds/Message.wav";// Шлях до звукового файлу
-
-    // --- Нове: Для введення повідомлень користувачем ---
     private JTextField userMessageInputField;
     private JButton sendUserMessageButton;
+
+
 
     private String[] studentNames = {"Ксенія", "Катя", "Петро", "Женя", "Ольга", "Тарас", "Стас", "Дмитро"};
     private String[] kmaMessages = {
@@ -76,7 +80,6 @@ public class GamePanel extends JPanel implements ActionListener {
             "Ура, здали всі лаби з матаналізу!",
             "Думаю про те, як поєднати навчання і роботу.",
             "Що не так із САЗом???",
-            "Вже скучив за бурсою...",
             "Що робити, якщо я вже всьо?..",
             "Хеееееелп",
             "Чому цей персонаж так швидко знову хоче їсти???",
@@ -86,11 +89,36 @@ public class GamePanel extends JPanel implements ActionListener {
             "Ля-ля-ля",
             "Туць-туць-туць",
             "i want to break free",
-            "Можна не спамити тут???"
+            "Можна не спамити тут???",
+            "Чому на 3 курсі кожна пара — як фінальний босс?",
+            "Невже хтось уже написав курсову з ML? Поділіться натхненням!",
+            "Як це «використайте API», якщо я ще чайник у ньому?",
+            "Чи є в когось старі лаби з системного програмування?",
+            "Мені здається, що інтеліджі мене ненавидить...",
+            "У когось є гайд по нормальному сну під час сесії?",
+            "Які кафешки працюють після 9 вечора біля кампусу?",
+            "Чому компілюється, але не працює?!",
+            "Що брати з собою на ІТ-хакатон? Крім паніки.",
+            "Хто хоче зібратись і разом подебажити алгоритми перед заліком?",
+            "Скільки ще можна мучити ту джаву...",
+            "Коли дедлайн — це твій особистий ворог номер один...",
+            "Хтось іде сьогодні на англійську?",
+            "Нащо мені це все, якщо я просто хочу писати гемблінг?",
+            "Можна, будь ласка, ще один тиждень перед сесією...",
+            "Є хто з бакалаврату, хто пережив лаби з ОС? Поділіться секретами.",
+            "Це вже навіть не баг, це фіча життя, пхпхахх",
+            "А можна просто скласти сесію, нічого не вивчивши, і жити далі?",
+            "Моя мотивація зараз десь між «поспати» і «поплакати»",
+            "Гуглю, як здати лабу, якщо ти програміст тільки в серці",
+            "Тільки я один починаю курсову в день дедлайну, чи це вже факультетська традиція?",
+            "Моя клавіатура вже сама друкує 'git commit -m 'panic fix'",
+            "Чому з кожним семестром кави треба все більше, а віри — все менше?",
+            "Знову прослухав всю пару, думаючи, чи то я тупий, чи то тема складна",
+            "Я тут, я читаю, я нічого не розумію, але я тут"
     };
 
     private enum GameState {
-        PLAYING, GAME_OVER
+        PLAYING, GAME_OVER, GAME_PAUSED
     }
     private GameState currentGameState;
 
@@ -121,17 +149,18 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel(Hero hero, GameFrame parentFrame) {
         this.hero = hero;
         this.parentFrame = parentFrame;
-        setPreferredSize(new Dimension(1200, 800)); // Змінено розмір для кращого розміщення чату
+        setPreferredSize(new Dimension(1200, 800));
         setBackground(Color.LIGHT_GRAY);
-
         currentGameState = GameState.PLAYING;
-
         setLayout(null);
+
+        // Initialize MusicPlayer (assuming default sound path or specific path if needed)
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
 
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         statsLabel.setForeground(Color.BLACK);
-        updateStatsDisplay();
         statsLabel.setBounds(10, 10, 200, 100);
         add(statsLabel);
 
@@ -147,7 +176,6 @@ public class GamePanel extends JPanel implements ActionListener {
         eatButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.eat();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(eatButton);
@@ -157,7 +185,6 @@ public class GamePanel extends JPanel implements ActionListener {
         sleepButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.sleep();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(sleepButton);
@@ -167,7 +194,6 @@ public class GamePanel extends JPanel implements ActionListener {
         studyButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.study();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(studyButton);
@@ -177,7 +203,6 @@ public class GamePanel extends JPanel implements ActionListener {
         relaxButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.relax();
-                updateStatsDisplay();
             }
         });
         heroActionsPanel.add(relaxButton);
@@ -204,15 +229,13 @@ public class GamePanel extends JPanel implements ActionListener {
         ActionListener sendMessageAction = e -> {
             String message = userMessageInputField.getText().trim();
             if (!message.isEmpty()) {
-                showFloatingMessage("Ви", message); // Відображаємо повідомлення
+                MusicPlayer.getInstance().setMusicEnabled(true);
+                MusicPlayer.getInstance().playEffect("/assets/Sounds/message_send.wav");
                 userMessageInputField.setText(""); // Очищаємо поле
             }
         };
         sendUserMessageButton.addActionListener(sendMessageAction);
         userMessageInputField.addActionListener(sendMessageAction); // Відправлення по Enter
-
-        // --- Завантаження звукового файлу при ініціалізації панелі (якщо не закоментовано) ---
-        //loadMessageSound();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -342,55 +365,19 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
             }
         });
-        // Переміщено виклик positionUserChatElements в кінець конструктора
-        // після того, як компоненти були додані до панелі та GamePanel ініціалізовано.
+
         positionUserChatElements();
-    }
+        goToWorldButton = getGoToWorldButton();
+        goToWorldButton.setBounds(10, 600, 100, 70);
+        add(goToWorldButton);
 
-    // --- Метод для завантаження звукового файлу (закоментований) ---
-    /*private void loadMessageSound() {
-        try {
-            URL soundUrl = getClass().getClassLoader().getResource(MESSAGE_SOUND_PATH);
-            if (soundUrl != null) {
-                AudioInputStream audioStream = null;
-                try {
-                    audioStream = AudioSystem.getAudioInputStream(soundUrl);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                messageSoundClip = AudioSystem.getClip();
-                messageSoundClip.open(audioStream);
-                System.out.println("Sound loaded: " + MESSAGE_SOUND_PATH);
-            } else {
-                System.err.println("Error: Sound file not found in classpath: " + MESSAGE_SOUND_PATH);
-            }
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            System.err.println("Error loading sound file: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }*/
+        JPanel panel = heroInfoPanel(hero);
+        panel.setBounds(10, 10, 230, 150);
+        add(panel);
 
-    // --- Метод для відтворення звуку (закоментований) ---
-    /*private void playMessageSound() {
-        if (messageSoundClip != null) {
-            messageSoundClip.stop(); // Зупиняємо, якщо звук вже грає
-            messageSoundClip.setFramePosition(0); // Перемотуємо на початок
-            messageSoundClip.start(); // Запускаємо звук
-        }
-    }*/
-
-
-    private void updateStatsDisplay() {
-        String stats = String.format(
-                "<html><b>%s</b><br>" +
-                        "Енергія: %d<br>" +
-                        "Настрій: %d<br>" +
-                        "Голод: %d</html>",
-                hero.getName(),
-                hero.getEnergy(),
-                hero.getMood(), hero.getHunger()
-        );
-        statsLabel.setText(stats);
+        JPanel panel1 = infoPanel();
+        panel1.setBounds(10, 180, 230, 250);
+        add(panel1);
     }
 
     @Override
@@ -404,7 +391,6 @@ public class GamePanel extends JPanel implements ActionListener {
         FontMetrics fm = g.getFontMetrics(messageFont);
 
         // Позиціонування повідомлень знизу вгору, з урахуванням поля вводу
-        // Зміщення, якщо поле вводу видно. (inputFieldHeight + 10 = висота поля + відступ)
         int currentY = getHeight() - MESSAGE_BOTTOM_START_Y - (userMessageInputField.isVisible() ? userMessageInputField.getHeight() + 10 : 0);
         List<FloatingMessage> messagesToRemove = new ArrayList<>();
 
@@ -479,7 +465,6 @@ public class GamePanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (currentGameState == GameState.PLAYING) {
             hero.update();
-            updateStatsDisplay();
 
             if (hero.isGameOverDueToEnergy()) {
                 currentGameState = GameState.GAME_OVER;
@@ -491,6 +476,9 @@ public class GamePanel extends JPanel implements ActionListener {
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastMessageTime >= nextMessageInterval) {
                 generateRandomChatMessages();
+
+                MusicPlayer.getInstance().setMusicEnabled(true);
+                MusicPlayer.getInstance().playEffect("/assets/Sounds/message_received.wav");
                 lastMessageTime = currentTime;
                 nextMessageInterval = generateRandomMessageInterval();
             }
@@ -565,8 +553,6 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void showFloatingMessage(String sender, String message) {
-        // playMessageSound(); // Цей рядок закоментовано, як у вашому попередньому коді
-
         Font messageFont = new Font("Segoe UI", Font.BOLD, 10);
         JLabel tempLabel = new JLabel("<html><b>" + sender + ":</b> " + message + "</html>");
         tempLabel.setFont(messageFont);
@@ -580,7 +566,7 @@ public class GamePanel extends JPanel implements ActionListener {
         // враховуючи наявність поля вводу повідомлень
         int startY = getHeight() - MESSAGE_BOTTOM_START_Y;
 
-        // Зміщуємо всі існуючі повідомлення вгору
+        // Зміщуємо всі наявні повідомлення вгору
         for (FloatingMessage msg : floatingMessages) {
             msg.updateY(msg.currentY - (messageHeight + MESSAGE_OFFSET_Y));
         }
@@ -597,10 +583,6 @@ public class GamePanel extends JPanel implements ActionListener {
             gameTimer.stop();
         }
         parentFrame.handleGameOver(reason);
-        // Забезпечуємо зупинку звуку, якщо він грав (закоментовано)
-        /*if (messageSoundClip != null && messageSoundClip.isRunning()) {
-            messageSoundClip.stop();
-        }*/
     }
 
     public void setHero(Hero newHero) {
@@ -612,20 +594,111 @@ public class GamePanel extends JPanel implements ActionListener {
         sceneOffsetY = 0;
         sceneScale = 1.0;
         hideHeroActionsPanel();
-        updateStatsDisplay();
         gameTimer.start();
         lastMessageTime = System.currentTimeMillis();
         nextMessageInterval = generateRandomMessageInterval();
         floatingMessages.clear();
-        // Забезпечуємо зупинку та перезавантаження звуку при перезапуску (закоментовано)
-        //if (messageSoundClip != null) {
-        //if (messageSoundClip.isRunning()) {
-        //messageSoundClip.stop();
-        //}
-        //messageSoundClip.close();
-        //messageSoundClip = null;
-        //loadMessageSound();
-        //}
         repaint();
+    }
+
+    private JPanel heroInfoPanel(Hero hero) {
+        String name = hero.getSelectedName();
+        int course = hero.getCourse();
+        Specialty specialty = hero.getSpecialty();
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(240, 250, 255));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(120, 150, 200), 2),
+                "Інформація про героя",
+                TitledBorder.CENTER,
+                TitledBorder.TOP,
+                new Font("Inter", Font.BOLD, 14),
+                new Color(60, 90, 150)
+        ));
+        panel.setLayout(new GridLayout(3, 1, 5, 5));
+
+        JLabel nameLabel = new JLabel("Ім’я: " + name);
+        nameLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        nameLabel.setForeground(new Color(30, 30, 30));
+
+        JLabel courseLabel = new JLabel("Курс: " + course);
+        courseLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        courseLabel.setForeground(new Color(30, 30, 30));
+
+        JLabel specialtyLabel = new JLabel("<html><body style='width: 150px'>Спеціальність: " + specialty.toString() + "</body></html>");
+        specialtyLabel.setFont(new Font("Inter", Font.PLAIN, 14));
+        specialtyLabel.setForeground(new Color(30, 30, 30));
+
+        panel.add(nameLabel);
+        panel.add(courseLabel);
+        panel.add(specialtyLabel);
+
+        return panel;
+    }
+    private JPanel infoPanel() {
+
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(250, 250, 155));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(120, 150, 250), 2),
+                "Коротка інструкція",
+                TitledBorder.CENTER,
+                TitledBorder.TOP,
+                new Font("Inter", Font.BOLD, 14),
+                new Color(60, 90, 150)
+        ));
+        panel.setLayout(new BorderLayout());
+
+
+
+        JLabel label = new JLabel("<html><body style='width: 150px'>Виходьте у світ!</body></html>");
+        label.setFont(new Font("MONOSPACED", Font.BOLD, 16));
+        label.setForeground(new Color(30, 30, 30));
+
+        panel.add(label, BorderLayout.NORTH);
+
+        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів, шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
+        label1.setFont(new Font("Inter", Font.ITALIC, 12));
+        label1.setForeground(new Color(30, 30, 30));
+
+        panel.add(label1, BorderLayout.CENTER);
+
+        JLabel label2 = new JLabel("<html><body style='width: 150px'>Для підтримки життєздатности не забувайте підкріплюватись у маркеті «SimsPo» або кафе швидкого приготування!</body></html>");
+        label2.setFont(new Font("Inter", Font.ITALIC, 12));
+        label2.setForeground(new Color(30, 30, 30));
+
+        panel.add(label2, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+
+    private JButton getGoToWorldButton(){
+        goToWorldButton = new JButton("Вийти у світ");
+        goToWorldButton.setBackground(new Color(78, 90, 205));
+        goToWorldButton.setForeground(Color.WHITE);
+        goToWorldButton.setFont(new Font("Arial", Font.BOLD, 16));
+        goToWorldButton.setFocusPainted(false);
+        goToWorldButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        goToWorldButton.setBorder(new LineBorder(Color.WHITE, 2, true)); // true = округлі кути
+        goToWorldButton.addActionListener(e ->{
+                  MusicPlayer.getInstance().playButtonClick();
+                  MusicPlayer.getInstance().setMusicEnabled(false);
+                     parentFrame.dispose();
+                    currentGameState=GameState.GAME_PAUSED;
+                    SwingUtilities.invokeLater(() -> {
+                        Window gameWindow = SwingUtilities.getWindowAncestor(this);
+                        if (gameWindow != null) {
+                            gameWindow.dispose();
+                        }
+                        LoadingFrame loading = new LoadingFrame();
+                        loading.startLoading(() -> {
+                            MainFrame mainFrame = new MainFrame(this.parentFrame);
+                            mainFrame.setVisible(true);
+                        });
+                    });
+
+        });
+        return goToWorldButton;
     }
 }

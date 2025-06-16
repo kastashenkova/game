@@ -1,14 +1,19 @@
 package org.example;
 
+import gui.LoadingFrame;
+import mainstage.GameBoard;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
 import java.util.Random;
+
+import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
+
+import static java.awt.Color.*;
+import static org.example.EnrollmentSystem.MANDATORY_DISCIPLINE_CAPACITY;
 
 public class EnrollmentSystemGUI extends JFrame {
 
@@ -31,9 +36,20 @@ public class EnrollmentSystemGUI extends JFrame {
     private JTextField searchField;
     private JButton searchButton;
 
-    private Student currentStudent;
+    private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");;
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
+
+    private Hero hero;
+
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+    private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
+    private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
+    private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
 
     // Internal class for customizing list item display in JList
     static class DisciplineListRenderer extends DefaultListCellRenderer {
@@ -42,24 +58,38 @@ public class EnrollmentSystemGUI extends JFrame {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof Discipline) {
                 Discipline disc = (Discipline) value;
-                if (!disc.isMandatory()) {
-                    label.setText(disc.getName() + " (Зайнято місць: " + disc.getCurrentEnrollment() + "/" + disc.getMaxCapacity() + ")");
-                    if (!disc.hasAvailableSlots()) {
-                        label.setForeground(Color.RED.darker());
-                    } else if (disc.getCurrentEnrollment() > disc.getMaxCapacity() * 0.75) {
-                        label.setForeground(new Color(200, 100, 0)); // Orange for nearing capacity
-                    } else {
-                        label.setForeground(list.getForeground());
-                    }
+                String capacityText;
+
+                if (disc.isMandatory()) {
+                    // Для обов'язкових показуємо конкретну кількість студентів на курсі
+                    capacityText = "Зайнято місць: " + disc.getMaxCapacity() + "/" + disc.getMaxCapacity();
+                    label.setForeground(list.getForeground());
                 } else {
-                    label.setText(disc.getName());
+                    // Для вибіркових
+                    if (disc.getMaxCapacity() == UNLIMITED_CAPACITY) {
+                        capacityText = "Зайнято місць: " + disc.getCurrentEnrollment() + "/необмежено";
+                        label.setForeground(new Color(0, 100, 0)); // Темно-зелений для необмежених
+                    } else {
+                        capacityText = "Зайнято місць: " + disc.getCurrentEnrollment() + "/" + disc.getMaxCapacity();
+                        // Колірна логіка для обмежених вибіркових
+                        if (!disc.hasAvailableSlots()) {
+                            label.setForeground(RED.darker());
+                        } else if (disc.getCurrentEnrollment() > disc.getMaxCapacity() * 0.75) {
+                            label.setForeground(new Color(200, 100, 0)); // Orange for nearing capacity
+                        } else {
+                            label.setForeground(list.getForeground());
+                        }
+                    }
                 }
+                label.setText(disc.getName() + " (" + capacityText + ")");
             }
             return label;
         }
     }
 
-    public EnrollmentSystemGUI() {
+    public EnrollmentSystemGUI(Hero hero) {
+
+            this.hero = hero;
         // Налаштування шрифтів для JOptionPane та інших стандартних компонентів
         UIManager.put("OptionPane.messageFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("OptionPane.buttonFont", new Font("Segoi UI", Font.BOLD, 12));
@@ -70,19 +100,40 @@ public class EnrollmentSystemGUI extends JFrame {
         super("Система автоматизованого запису на дисципліни (САЗ)");
         enrollmentSystem = new EnrollmentSystem();
 
-        // --- Course Selection ---
-        int selectedCourse = showCourseSelectionDialog();
-        if (selectedCourse == -1) { // User cancelled
+        // Встановлюємо український текст для кнопок "OK" та "Скасувати" перед викликом діалогів
+        UIManager.put("OptionPane.okButtonText", "ОК");
+        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+
+        showInstructionsDialog();
+
+        // --- Degree and Course Selection ---
+        String selectedDegree = showDegreeSelectionDialog();
+        if (selectedDegree == null) { // User cancelled degree selection
             System.exit(0);
         }
 
-        // Initialize data based on selected course
-        initializeInitialData(selectedCourse);
+        int selectedCourse = showCourseSelectionDialog(selectedDegree);
+        if (selectedCourse == -1) { // User cancelled course selection
+            System.exit(0);
+        }
 
-        currentStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
-        if (currentStudent == null) {
-            JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
+        showStartAnimation();
+
+        // Initialize data based on selected course
+        if (selectedDegree.equals("Бакалаврат")) {
+            initializeInitialDataB(selectedCourse);
+            currentStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
+            if (currentStudent == null) {
+                JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
+        } else if (selectedDegree.equals("Магістратура")) {
+            initializeInitialDataM(selectedCourse);
+            currentStudent = enrollmentSystem.getStudentById("І 005/24 мп").orElse(null);
+            if (currentStudent == null) {
+                JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
+                System.exit(1);
+            }
         }
 
         // Automatically enroll currentStudent in all mandatory disciplines for their course
@@ -90,7 +141,7 @@ public class EnrollmentSystemGUI extends JFrame {
             currentStudent.enrollDiscipline(mandatoryDisc);
         }
 
-        setSize(1200, 800); // Збільшено розмір для кращого відображення
+        setSize(1200, 800);
         setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
@@ -103,7 +154,7 @@ public class EnrollmentSystemGUI extends JFrame {
         studentInfoPanel.add(studentInfoLabel);
         mainPanel.add(studentInfoPanel, BorderLayout.NORTH);
 
-        // Панель для верхньої частини (вибіркові та обрані вибіркові)
+        // Панель для верхньої частини (вибіркові та обрані дисципліни)
         JPanel topContentPanel = new JPanel(new BorderLayout());
         topContentPanel.setBorder(new EmptyBorder(0, 0, 10, 0)); // Додаємо невеликий відступ знизу
 
@@ -114,7 +165,7 @@ public class EnrollmentSystemGUI extends JFrame {
         electiveDisciplineList = new JList<>(electiveListModel);
         electiveDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         electiveDisciplineList.setCellRenderer(new DisciplineListRenderer());
-        electiveDisciplineList.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JList
+        electiveDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         electivePanel.add(new JScrollPane(electiveDisciplineList), BorderLayout.CENTER);
         electiveDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
 
@@ -134,7 +185,7 @@ public class EnrollmentSystemGUI extends JFrame {
         dropElectiveButton = new JButton("Виписатися з вибіркової");
         dropElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JButton
         confirmSelectionButton = new JButton("Готово (Кредитів: 0)");
-        confirmSelectionButton.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Шрифт для кнопки "Готово"
+        confirmSelectionButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для кнопки "Готово"
         confirmSelectionButton.setEnabled(false);
 
         enrollElectiveButton.addActionListener(e -> attemptEnrollment());
@@ -151,12 +202,12 @@ public class EnrollmentSystemGUI extends JFrame {
 
         // Panel for Enrolled Electives
         JPanel enrolledElectivePanel = new JPanel(new BorderLayout(5, 5));
-        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Ваші обрані вибіркові дисципліни")); // UIManager встановить шрифт
+        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни")); // UIManager встановить шрифт
         enrolledElectiveListModel = new DefaultListModel<>();
         enrolledElectiveList = new JList<>(enrolledElectiveListModel);
         enrolledElectiveList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         enrolledElectiveList.setCellRenderer(new DisciplineListRenderer());
-        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
+        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         enrolledElectivePanel.add(new JScrollPane(enrolledElectiveList), BorderLayout.CENTER);
         enrolledElectiveList.addMouseListener(new DisciplineInfoMouseAdapter());
 
@@ -166,7 +217,32 @@ public class EnrollmentSystemGUI extends JFrame {
         electiveSplitPane.setLeftComponent(electivePanel);
         electiveSplitPane.setRightComponent(enrolledElectivePanel);
 
-        // Додаємо electiveSplitPane до верхньої панелі
+        if ("Бакалаврат".equals(selectedDegree) && selectedCourse == 1) {
+            enrollElectiveButton.setEnabled(false);
+            dropElectiveButton.setEnabled(false);
+            searchField.setEnabled(false);
+            searchButton.setEnabled(false);
+
+            JLabel noElectivesMessage = new JLabel("На першому курсі бакалаврату немає можливості обирати додаткові дисципліни", SwingConstants.CENTER);
+            noElectivesMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            noElectivesMessage.setForeground(RED.darker());
+
+            electivePanel.removeAll();
+            electivePanel.setLayout(new BorderLayout());
+            electivePanel.add(noElectivesMessage, BorderLayout.CENTER);
+            electivePanel.add(electiveButtonsPanel, BorderLayout.SOUTH); // Додаємо панель кнопок знов, щоб confirmSelectionButton була видима
+            electivePanel.setBorder(BorderFactory.createTitledBorder("Вибіркові дисципліни (недоступно)"));
+
+            enrolledElectivePanel.removeAll();
+            enrolledElectivePanel.setLayout(new BorderLayout());
+            enrolledElectivePanel.add(new JLabel("Ваші обрані вибіркові дисципліни будуть відображені з 2-го курсу", SwingConstants.CENTER), BorderLayout.CENTER);
+            ((JLabel) enrolledElectivePanel.getComponent(0)).setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            ((JLabel) enrolledElectivePanel.getComponent(0)).setForeground(BLACK.darker());
+            enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни"));
+
+            updateConfirmButtonState();
+        }
+
         topContentPanel.add(electiveSplitPane, BorderLayout.CENTER);
 
         // Mandatory Disciplines Panel
@@ -177,9 +253,39 @@ public class EnrollmentSystemGUI extends JFrame {
         mandatoryDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mandatoryDisciplineList.setCellRenderer(new DisciplineListRenderer());
         mandatoryDisciplineList.setEnabled(false); // Обов'язкові не змінюються
-        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Шрифт для JList
+        mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
         mandatoryPanel.add(new JScrollPane(mandatoryDisciplineList), BorderLayout.CENTER);
         mandatoryDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
+
+        Color simsPink = new Color(255, 233, 243, 255);
+        Color simsAccent = new Color(66, 244, 180);
+        Color simsLightPink = new Color(255, 251, 253);
+
+        // Основне тло
+        mainPanel.setBackground(simsPink);
+        studentInfoPanel.setBackground(simsPink);
+        searchPanel.setBackground(simsPink);
+        electiveButtonsPanel.setBackground(simsPink);
+        mandatoryPanel.setBackground(simsPink);
+        electivePanel.setBackground(simsPink);
+        enrolledElectivePanel.setBackground(simsPink);
+        topContentPanel.setBackground(simsPink);
+
+        // Кнопки
+        enrollElectiveButton.setBackground(simsAccent);
+        dropElectiveButton.setBackground(simsAccent);
+        confirmSelectionButton.setBackground(simsAccent);
+        searchButton.setBackground(simsAccent);
+
+        // Списки
+        electiveDisciplineList.setBackground(simsLightPink);
+        enrolledElectiveList.setBackground(simsLightPink);
+        mandatoryDisciplineList.setBackground(simsLightPink);
+
+        // Заголовки меж
+        ((javax.swing.border.TitledBorder) electivePanel.getBorder()).setTitleColor(BLACK);
+        ((javax.swing.border.TitledBorder) enrolledElectivePanel.getBorder()).setTitleColor(BLACK);
+        ((javax.swing.border.TitledBorder) mandatoryPanel.getBorder()).setTitleColor(BLACK);
 
         // Головна панель (mainPanel) тепер організовує розташування
         mainPanel.add(topContentPanel, BorderLayout.CENTER); // Вибіркові у центрі
@@ -206,28 +312,110 @@ public class EnrollmentSystemGUI extends JFrame {
         });
         autoEnrollTimer.start();
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                autoEnrollTimer.stop();
-                System.exit(0);
+            public void windowClosing(WindowEvent windowEvent) {
+                UIManager.put("OptionPane.yesButtonText", "Так");
+                UIManager.put("OptionPane.noButtonText", "Ні");
+
+                boolean wasTimerRunning = (autoEnrollTimer != null && autoEnrollTimer.isRunning());
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        EnrollmentSystemGUI.this,
+                        "Ви дійсно хочете завершити поточну гру та повернутися на початок?",
+                        "Вийти",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if (autoEnrollTimer != null) {
+                        autoEnrollTimer.stop();
+                    }
+                    EnrollmentSystemGUI.this.dispose();
+                    //SwingUtilities.invokeLater(() -> new ShopFrame().setVisible(true));
+                    //ЗМІНИТИ ТУТ!!!
+                }
             }
         });
     }
 
-    // --- Course Selection Dialog ---
-    // --- Course Selection Dialog ---
-    private int showCourseSelectionDialog() {
-        String[] courses = {"2", "3", "4"};
+    private void showInstructionsDialog() {
+        String instructions = "<html>" +
+                "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до запису на вибіркові дисципліни</h1>" +
+                "<p>Ласкаво просимо до Системи автоматизованого запису (САЗ) НаУКМА!</p>" +
+                "<p>Будь ласка, дотримуйтеся цих кроків для успішного запису!</p>" +
+                "<ol>" +
+                "<li><b>Виберіть свій освітній ступінь</b> (Бакалаврат/Магістратура).</li>" +
+                "<li><b>Виберіть свій курс</b> відповідно до обраного ступеня.</li>" +
+                "<li>У лівому списку <b>«Вибіркові дисципліни»</b> Ви знайдете предмети, доступні для запису.</li>" +
+                "<li>Виберіть дисципліну з переліку і натисніть <b>«Записатися»</b>, щоб додати її до своїх обраних.</li>" +
+                "<li>У правому списку <b>«Обрані вибіркові дисципліни»</b> Ви побачите предмети, на які вже записалися.</li>" +
+                "<li>Щоб виписатися з дисципліни, виберіть її з правого списку та натисніть <b>«Виписатися»</b>.</li>" +
+                "<li><b>Обов'язкові дисципліни</b> відображаються в нижньому списку, вони записуються автоматично і не можуть бути змінені.</li>" +
+                "<li>Ваша <b>загальна кількість кредитів</b> відображається у верхній частині вікна та на кнопці «Готово».</li>" +
+                "<li>Вам потрібно набрати мінімум 55 кредитів</b>. Кнопка «Готово» стане активною, коли ви досягнете цього мінімуму.</li>" +
+                "<li>Натисніть <b>«Готово»</b>, щоб підтвердити свій вибір.</li>" +
+                "</ol>" +
+                "<p><b>Успішного запису!</b></p>" +
+                "</body></html>";
 
-        // Встановлюємо український текст для кнопок "OK" та "Cancel"
-        UIManager.put("OptionPane.okButtonText", "ОК");
-        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+        JEditorPane editorPane = new JEditorPane("text/html", instructions);
+        editorPane.setEditable(false);
+        editorPane.setBackground(SIMS_LIGHT_PINK);
+        editorPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setPreferredSize(new Dimension(600, 450));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
+
+
+    }
+
+    private String toHex(Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    private String showDegreeSelectionDialog() {
+        String[] degrees = {"Бакалаврат", "Магістратура"};
+
+        String selectedDegreeStr = (String) JOptionPane.showInputDialog(
+                this, // Використовуємо 'this' оскільки метод знаходиться в класі JFrame
+                "Будь ласка, оберіть Ваш освітній ступінь!",
+                "Вибір освітнього ступеня",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                degrees,
+                degrees[0]);
+        return selectedDegreeStr;
+    }
+
+    private int showCourseSelectionDialog(String degree) {
+        String[] courses;
+        String dialogTitle;
+        String dialogMessage;
+
+        if ("Бакалаврат".equals(degree)) {
+            courses = new String[]{"1", "2", "3", "4"};
+            dialogTitle = "Вибір курсу (Бакалаврат)";
+            dialogMessage = "Будь ласка, оберіть Ваш курс бакалаврату!";
+        } else if ("Магістратура".equals(degree)) {
+            courses = new String[]{"1", "2"};
+            dialogTitle = "Вибір курсу (Магістратура)";
+            dialogMessage = "Будь ласка, оберіть Ваш курс магістратури!";
+        } else {
+            JOptionPane.showMessageDialog(this, "Неправильний освітній ступінь.", "Помилка", JOptionPane.ERROR_MESSAGE);
+            return -1;
+        }
 
         String selectedCourseStr = (String) JOptionPane.showInputDialog(
-                this,
-                "Будь ласка, оберіть Ваш курс!",
-                "Вибір курсу",
+                this, // Використовуємо 'this' оскільки метод знаходиться в класі JFrame
+                dialogMessage,
+                dialogTitle,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 courses,
@@ -238,175 +426,780 @@ public class EnrollmentSystemGUI extends JFrame {
                 return Integer.parseInt(selectedCourseStr);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Неправильний формат курсу. Спробуйте ще раз.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                return showCourseSelectionDialog(); // Re-prompt on error
+                // Повторно запитуємо, якщо виникла помилка формату
+                return showCourseSelectionDialog(degree);
             }
         }
-        return -1; // User cancelled
+        return -1;
+    }
+
+    private void showStartAnimation() {
+        JDialog animationDialog = new JDialog(this, true);
+        animationDialog.setUndecorated(true);
+
+        Color simsPink = new Color(255, 168, 205, 255);
+        Color simsAccent1 = new Color(66, 244, 180);
+        Color simsAccent2 = new Color(34, 149, 107);
+        Color simsAccent3 = new Color(66, 244, 191);
+
+        animationDialog.getContentPane().setBackground(simsPink);
+
+        JLabel animationLabel = new JLabel("", SwingConstants.CENTER);
+        animationLabel.setFont(new Font("Segoe UI", Font.BOLD, 80));
+        animationLabel.setForeground(simsAccent1);
+
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        contentPanel.setOpaque(false);
+        contentPanel.add(animationLabel);
+
+        animationDialog.setContentPane(contentPanel);
+        animationDialog.setSize(400, 200);
+        animationDialog.setLocationRelativeTo(this);
+
+        final String[] phases = {"Старт!", "Увага!", "Руш!"};
+        final Color[] textColors = {simsAccent1, simsAccent2, simsAccent3};
+        final int[] currentPhase = {0};
+
+        Timer timer = new Timer(150, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (currentPhase[0] < phases.length) {
+                    animationLabel.setText(phases[currentPhase[0]]);
+                    animationLabel.setForeground(textColors[currentPhase[0]]);
+                    currentPhase[0]++;
+                } else {
+                    ((Timer) e.getSource()).stop();
+                    animationDialog.dispose();
+                }
+            }
+        });
+        timer.setInitialDelay(50);
+        timer.start();
+
+        animationDialog.setVisible(true);
     }
 
     // Method to initialize test data based on selected course
-    // ТРЕБА ВІДРЕДАГУВАТИ ВИКЛАДАЧІВ, ОБОВ'ЯЗКОВІСТЬ І КУРСИ
-    private void initializeInitialData(int selectedCourse) {
-        enrollmentSystem.addStudent(new Student("І 005/24 бп", "Студент", selectedCourse, "Інженерія програмного забезпечення"));
+    private void initializeInitialDataB(int selectedCourse) {
+        enrollmentSystem.addStudent(new Student("І 005/24 бп", "Студент", selectedCourse, currentStudent.getMajor()));
 
-        enrollmentSystem.addDiscipline(new Discipline("315212", "Алгебра і теорія чисел", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315212", "Алгебра і теорія чисел", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315212", "Алгебра і теорія чисел", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
+            enrollmentSystem.addDiscipline(new Discipline("315203", "Алгоритми і структури даних", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Вступ до програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315213", "Диференціальні рівняння", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315231", "Комп'ютерні архітектури", "ст. викл. Медвідь С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Лінійна алгебра та аналітична геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315223", "Моделі обчислень в програмній інженерії", "доц. Проценко В. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315283", "Основи вебтехнологій", "ст. викл. Зважій Д. В. ", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315202", "Основи дискретної математики", "ст. викл. Щеглов М. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Основи матаналізу", "ст. викл. Іванюк А. О.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315277", "Основи мережевих технологій", "ст. викл. Вознюк О. М., ст. викл. Вознюк Я. І.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Українська мова", "доц. Сегін Л. В., ст. викл. Калиновська О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315204", "Практика навчальна", "ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("319948", "Базові алгоритми обробки природної мови", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("319948", "Базові алгоритми обробки природної мови", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("319948", "Базові алгоритми обробки природної мови", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
+            enrollmentSystem.addDiscipline(new Discipline("340214", "Англійська мова (за проф. спрямуванням)", "проф. Дерев'янко А. С.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340447", "Бази даних", "ст. викл. Кушнір О. В.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340443", "Вступ до тестування програмного забезпечення", "доц. Сидоров М. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340418", "Об'єктно-орієнтоване програмування", "проф. Бублик В. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340370", "Основи комп'ютерних алгоритмів", "проф. Іванов Л. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340362", "Побудова і використання комунікаційних мереж", "ст. викл. Черкасов Д. І., ст. викл. Савченко Т. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340356", "Процедурне програмування (на базі Сі/Сі++) (ПІ)", "проф. Бублик В. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340377", "Теорія алгоритмів і математична логіка", "проф. Сахаров Г. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315366", "Практика дослідницька", "ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
 
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 45, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 54, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 62, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 59, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 2));
 
-        enrollmentSystem.addDiscipline(new Discipline("315264", "Електроніка та цифрова електроніка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315264", "Електроніка та цифрова електроніка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315264", "Електроніка та цифрова електроніка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        } else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 3)) {
+            enrollmentSystem.addDiscipline(new Discipline("315429", "Функціональне програмування", "проф. Математикус А. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315225", "Системне програмування", "доц. Жежерун О. П.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315425", "Логічне програмування", "ст. викл. В.І. Системний", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315218", "Теорія ймовірностей", "ст. викл. Братик М. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315217", "Вебпрограмування", "ст. викл. Олецький О. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315198", "Курсова робота", "ст. викл. Логік Т.О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315271", "Історія розвитку кібернетики в Україні", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315271", "Історія розвитку кібернетики в Україні", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315271", "Історія розвитку кібернетики в Україні", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316208", "Вступ до загальної топології", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 47, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316210", "Загальна топологія", "ст. викл. Козеренко С.О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316156", "Актуарна математика", "ст. викл. Братик М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("317933", "Обчислюваність", "проф. Олійник Б. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316192", "Статистичні основи вебаналітики", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315490", "Дані та суспільство", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Експлуатація розподіленої хмарної інфраструктури та сервісів (DevOps)", "ст. викл. Сидорчук Л. Н.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316195", "Візуалізація та комп'ютерна графіка", "доц. Крюковчук Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 45, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 54, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 62, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 59, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 52, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 46, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 61, false, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315237", "Математичні методи обробки зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315237", "Математичні методи обробки зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315237", "Математичні методи обробки зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
+        } else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 4)) {
+            enrollmentSystem.addDiscipline(new Discipline("315263", "Багатозадачне та паралельне програмування", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315222", "Проєктування програмних систем", "ст. викл. Афонін А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315230", "Об'єктно-орієнтований аналіз і дизайн", "ст. викл. Мобільний Д. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315233", "Структура програмних проєктів", "проф. Керівник В. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315224", "Інтелектуальні системи", "ст. викл. Жежерун О. П.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315215", "Забезпечення якости програмних продуктів", "ст. викл. Афонін А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
 
-        enrollmentSystem.addDiscipline(new Discipline("315193", "Обробка зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315193", "Обробка зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315193", "Обробка зображень", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316213", "Основи фінансової математики / Basics of Financial Mathematics (англ. мовою)", "доц. Щестюк Н. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315991", "Системи та методи ухвалення рішеннь", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316208", "Вступ до загальної топології", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 47, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316210", "Загальна топологія", "ст. викл. Козеренко С.О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316156", "Актуарна математика", "ст. викл. Братик М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("317933", "Обчислюваність", "проф. Олійник Б. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316192", "Статистичні основи вебаналітики", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315490", "Дані та суспільство", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Експлуатація розподіленої хмарної інфраструктури та сервісів (DevOps)", "ст. викл. Сидорчук Л. Н.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316195", "Візуалізація та комп'ютерна графіка", "доц. Крюковчук Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 45, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 54, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 62, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 59, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 52, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 46, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 61, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("313821", "Стандарти обміну даних в Інтернет", "д. е. н., доц. Гладких Д. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316472", "Методи та засоби офісного програмування", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 25, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "ст. викл. Чередарчук А. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315221", "Технологія XML", "ст. викл. Захоженко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315241", "Розробка Frontend-додатків на JavaScript", "проф. Глибовець А. М., ст. викл. Бабич Т. А.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("318273", "Алгоритми комп'ютерної алгебри", "ст. викл. Смиш О. Р.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "ст. викл. Франків О. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315464", "Кваліфікаційна робота", "проф. Глибовець А. М.", 12, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
 
+        } else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 1)){
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315213", "Історія математики", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315202", "Дискретна математика", "ст. викл. Щеглов М. В.", 6, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 11, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Українська мова", "доц. Сегін Л. В., ст. викл. Калиновська О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("315209", "Основи комп`ютерних алгоритмів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315209", "Основи комп`ютерних алгоритмів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315209", "Основи комп`ютерних алгоритмів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 2)){
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 3.5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 11, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315434", "Бази даних та інформаційні системи", "проф. Глибовець А. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316215", "Випадкові процеси", "доц. Чорней Р.К., ас. Тищенко С.В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316214", "Теорія ймовірностей", "доц. Чорней Р.К., ас. Тищенко С.В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315213", "Диференціальні рівняння", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
 
+            enrollmentSystem.addDiscipline(new Discipline("340469", "Комп'ютерні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340468", "Процедурне програмування (на базі Ci/Сi++)", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 49, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340467", "Об`єктно-орієнтоване програмування", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 25, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 13, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 58, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY,  UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY,  UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 17, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 2));
 
-        enrollmentSystem.addDiscipline(new Discipline("315305", "Програмування на Python для Big Data та Data Science", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315305", "Програмування на Python для Big Data та Data Science", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315305", "Програмування на Python для Big Data та Data Science", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        }
 
+        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 3)){
+            enrollmentSystem.addDiscipline(new Discipline("316149", "Методи оптимізації та дослідження операцій", "доц. Михалевич В. М., ас. Тищенко С. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316148", "Теорія алгоритмів та математична логіка", "ст. викл. Прокоф'єв П. Г.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316209", "Теорія функції комплексної змінної", "доц. Кашпіровський О. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316157", "Чисельні методи", "доц. Кашпіровський О. І., ст. викл. Прокоф'єв П. Г.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316165", "Математична статистика", "доц. Шпортюк В. Г.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315198", "Курсова робота", "ст. викл. Логік Т.О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316147", "Рівняння математичної фізики", "проф. Авраменко О. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316149", "Методи оптимізації та дослідження операцій", "доц. Михалевич В. М., ас. Тищенко С. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315205", "Практика дослідницька", "доц. Шпортюк В. Г.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("319959", "Соціальна інженерія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("319959", "Соціальна інженерія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("319959", "Соціальна інженерія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340469", "Комп'ютерні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340468", "Процедурне програмування (на базі Ci/Сi++)", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340467", "Об`єктно-орієнтоване програмування", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 3));
 
+            enrollmentSystem.addDiscipline(new Discipline("340469", "Комп'ютерні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340468", "Процедурне програмування (на базі Ci/Сi++)", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340467", "Об'єктно-орієнтоване програмування", "проф. Глибовець А. М.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316208", "Вступ до загальної топології", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316210", "Загальна топологія", "ст. викл. Козеренко С.О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316156", "Актуарна математика", "ст. викл. Братик М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("317933", "Обчислюваність", "проф. Олійник Б. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316192", "Статистичні основи вебаналітики", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315490", "Дані та суспільство", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Експлуатація розподіленої хмарної інфраструктури та сервісів (DevOps)", "ст. викл. Сидорчук Л. Н.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316195", "Візуалізація та комп'ютерна графіка", "доц. Крюковчук Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315296", "Машинне навчання та доповнена реальність на мобільних пристроях на базі iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315296", "Машинне навчання та доповнена реальність на мобільних пристроях на базі iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315296", "Машинне навчання та доповнена реальність на мобільних пристроях на базі iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY,  UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY,  UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 17, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315298", "Мова програмування Swift", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315298", "Мова програмування Swift", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315298", "Мова програмування Swift", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("315307", "Мова програмування Rust", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315307", "Мова програмування Rust", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315307", "Мова програмування Rust", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 4)){
+            enrollmentSystem.addDiscipline(new Discipline("316150", "Теорія керування", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316819", "Економетрика", "к. е. н., доц. Семко Р. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316141", "Функціональний аналіз", "доц. Кашпіровський О. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316151", "Аналіз даних", "доц. Щестюк Н. Ю., ас. Тищенко С. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316197", "Математичні методи машинного навчання", "ас. Сарана М. П.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316199", "Практика переддипломна", "ст. викл. Афонін А. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
 
-        enrollmentSystem.addDiscipline(new Discipline("315294", "Низькорівневі вразливості програмного забезпечення", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315294", "Низькорівневі вразливості програмного забезпечення", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315294", "Низькорівневі вразливості програмного забезпечення", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316213", "Основи фінансової математики / Basics of Financial Mathematics (англ. мовою)", "доц. Щестюк Н. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315991", "Системи та методи ухвалення рішеннь", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 48, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340350", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340352", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340353", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340355", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 34, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 34, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("313821", "Стандарти обміну даних в Інтернет", "д. е. н., доц. Гладких Д. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316472", "Методи та засоби офісного програмування", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "ст. викл. Чередарчук А. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315221", "Технологія XML", "ст. викл. Захоженко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315241", "Розробка Frontend-додатків на JavaScript", "проф. Глибовець А. М., ст. викл. Бабич Т. А.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("318273", "Алгоритми комп'ютерної алгебри", "ст. викл. Смиш О. Р.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "ст. викл. Франків О. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315464", "Кваліфікаційна робота", "проф. Глибовець А. М.", 12, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
 
-        enrollmentSystem.addDiscipline(new Discipline("319983", "Big Data та аналітика", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("319983", "Big Data та аналітика", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("319983", "Big Data та аналітика", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("322608", "Computer Vision", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("322608", "Computer Vision", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("322608", "Computer Vision", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 1)){
+            enrollmentSystem.addDiscipline(new Discipline("315203", "Алгоритми і структури даних", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314835", "Архітектура обчислювальних систем", "ст. викл. Медвідь С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314827", "Історія української кібернетики", "проф. Глибовець А. М.", 2, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315453", "Організація та обробка електронної інформації", "ст. викл. Сініцина Р. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315202", "Дискретна математика", "ст. викл. Щеглов М. В.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Мови програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("316204", "Алгоритми на графах", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("316204", "Алгоритми на графах", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("316204", "Алгоритми на графах", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 2)){
+            enrollmentSystem.addDiscipline(new Discipline("340214", "Англійська мова (за проф. спрямуванням)", "проф. Дерев'янко А. С.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340447", "Бази даних", "ст. викл. Кушнір О. В.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340443", "Вступ до тестування програмного забезпечення", "доц. Сидоров М. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340418", "Об'єктно-орієнтоване програмування", "проф. Бублик В. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340370", "Основи комп'ютерних алгоритмів", "проф. Іванов Л. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340362", "Побудова і використання комунікаційних мереж", "ст. викл. Черкасов Д. І., ст. викл. Савченко Т. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340356", "Процедурне програмування (на базі Сі/Сі++) (ПІ)", "проф. Бублик В. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340377", "Теорія алгоритмів і математична логіка", "проф. Сахаров Г. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315366", "Практика дослідницька", "ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
 
-        enrollmentSystem.addDiscipline(new Discipline("316151", "Аналіз даних", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("316151", "Аналіз даних", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("316151", "Аналіз даних", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 48, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 17, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340333", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340334", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340335", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 2));
+            enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 2));
 
-        enrollmentSystem.addDiscipline(new Discipline("322548", "Архітектура програмних систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("322548", "Архітектура програмних систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("322548", "Архітектура програмних систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("315263", "Багатозадачне та паралельне програмування", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315263", "Багатозадачне та паралельне програмування", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315263", "Багатозадачне та паралельне програмування", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 3)){
+            enrollmentSystem.addDiscipline(new Discipline("315429", "Функціональне програмування", "проф. Математикус А. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315225", "Методи розробки програмних систем", "доц. Жежерун О. П.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315425", "Основи штучного інтелекту", "ст. викл. В.І. Системний", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315218", "Аналіз великих даних (Big Data)", "ст. викл. Братик М. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315217", "Машинне навчання", "ст. викл. Олецький О. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315198", "Системний аналіз", "ст. викл. Логік Т.О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Практика виробнича", "ст. викл. Логік Т.О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316208", "Вступ до загальної топології", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316210", "Загальна топологія", "ст. викл. Козеренко С.О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316156", "Актуарна математика", "ст. викл. Братик М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("317933", "Обчислюваність", "проф. Олійник Б. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 55, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316192", "Статистичні основи вебаналітики", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 13, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315490", "Дані та суспільство", "доц. Крюкова Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 15, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314810", "Експлуатація розподіленої хмарної інфраструктури та сервісів (DevOps)", "ст. викл. Сидорчук Л. Н.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316195", "Візуалізація та комп'ютерна графіка", "доц. Крюковчук Г. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 63, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 46, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 58, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 49, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 23, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 60, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 34, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 41, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 26, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 36, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 50, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 54, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 47, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 25, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 59, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 62, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 17, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 48, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 53, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 14, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 3));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 61, false, 3));
 
-        enrollmentSystem.addDiscipline(new Discipline("315215", "Забезпечення якості програмних продуктів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315215", "Забезпечення якості програмних продуктів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315215", "Забезпечення якості програмних продуктів", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        }
 
-        enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 4)){
+            enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 4));
 
-        enrollmentSystem.addDiscipline(new Discipline("315224", "Інтелектуальні системи", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315224", "Інтелектуальні системи", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315224", "Інтелектуальні системи", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316213", "Основи фінансової математики / Basics of Financial Mathematics (англ. мовою)", "доц. Щестюк Н. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315991", "Системи та методи ухвалення рішеннь", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315491", "Обчислювальне суспільствознавство", "проф. Глибовець А. М.", 2.5, EnrollmentSystem.ELECTIVE_CAPACITY, 59, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344466", "Вступ до ігрової розробки", "проф. Глибовець А. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344467", "Комп'ютерна мережа Інтернет", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("344468", "Локальні мережі", "ст. викл. Вознюк Я. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340466", "Архітектура ПЕОМ", "проф. Глибовець А. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316200", "Додаткові розділи теорії графів", "ст. викл. Козеренко С. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 12, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("319949", "Основи теорії груп", "ст. викл. Козеренко С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 47, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315185", "Спектральна теорія графів", "ст. викл. Тимошкевич Л. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 56, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340456", "Математичне мислення", "ст. викл. Щеглов М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 18, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320163", "Обчислювальна геометрія", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 35, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("320012", "Мова розмітки LaTeX", "ст. викл. Зважій Д. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 43, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316847", "Математичні методи в хімії", "доц. Будзінська В. Л., ас. Носач В. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316161", "Символьні обчислення", "ст. викл. Прокоф'єв П. Г.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340446", "Додаткові розділи алгебри", "доц. Чорней Р. К.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 51, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340445", "Додаткові розділи дискретної математики", "ст. викл. Щеглов М. В.", 5, EnrollmentSystem.ELECTIVE_CAPACITY, 63, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проєктами мовою Java", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315191", "Методи та засоби збору чутливої інформації", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315306", "Мова програмування Kotlin", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315261", "Програмування на C#", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 54, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "проф. Гришко О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 48, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Управління цифровим продуктом", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 31, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Обробка зображень", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 16, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Життя у цифровому світі", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 22, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315293", "Інформаційна безпека вебзастосунків", "ст. викл. Бабич Т. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 42, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315279", "Інструменти та принципи веброзробки", "ст. викл. Зважій Д. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 57, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340351", "Архітектура високонавантажених систем", "ст. викл. Ведель К. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315245", "Пошукова оптимізація вебзастосувань", "ст. викл. Цуд В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 55, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316198", "Комп'ютерна вірусологія", "ст. викл. Кирієнко О. В., ст. викл. Пєчкурова О. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 33, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340384", "Архітектура прикладних програм рівня підприємства", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340303", "Глобальні мережі", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 46, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("314833", "Низькорівневі вразливості програмного забезпечення", "ст. викл. Коренчук А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315253", "Кібербезпека", "ст. викл. Вознюк Я. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 62, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315284", "Практичні аспекти роботи з базами даних в Spring Boot", "ст. викл. Андрощук М. В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 30, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("340321", "Технології обчислювального експерименту", "ст. викл. Міхновський О. Л.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 21, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315211", "Програмування на основі .NET", "ст. викл. Борозенний С. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 49, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315280", "Backend-розробка на базі NodeJS", "ст. викл. Петлюра С. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 29, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("322535", "Алгоритми паралельних обчислень", "доц. Винниченко В. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 48, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315246", "Технології електронних видань", "ст. викл. Афонін А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 32, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315838", "Дизайн вебінтерфейсів", "ст. викл. Яковлєв М.В.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 24, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 37, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 20, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("313821", "Стандарти обміну даних в Інтернет", "д. е. н., доц. Гладких Д. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("316472", "Методи та засоби офісного програмування", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "ст. викл. Чередарчук А. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315221", "Технологія XML", "ст. викл. Захоженко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 38, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315241", "Розробка Frontend-додатків на JavaScript", "проф. Глибовець А. М., ст. викл. Бабич Т. А.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("318273", "Алгоритми комп'ютерної алгебри", "ст. викл. Смиш О. Р.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 46, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315297", "Вибрані фреймворки для iOS", "ст. викл. Франків О. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 27, false, 4));
+            enrollmentSystem.addDiscipline(new Discipline("315464", "Кваліфікаційна робота", "проф. Глибовець А. М.", 12, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
 
-        enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315295", "Інформаційна безпека цільових систем", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-        enrollmentSystem.addDiscipline(new Discipline("315443", "Комп`ютерна вірусологія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315443", "Комп`ютерна вірусологія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315443", "Комп`ютерна вірусологія", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-        enrollmentSystem.addDiscipline(new Discipline("315206", "Комп`ютерна графіка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315206", "Комп`ютерна графіка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315206", "Комп`ютерна графіка", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-        enrollmentSystem.addDiscipline(new Discipline("315230", "Об`єктно-орієнтований аналіз і дизайн", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315230", "Об`єктно-орієнтований аналіз і дизайн", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315230", "Об`єктно-орієнтований аналіз і дизайн", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-        enrollmentSystem.addDiscipline(new Discipline("315269", "Основи IT-права", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315269", "Основи IT-права", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315269", "Основи IT-права", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-        enrollmentSystem.addDiscipline(new Discipline("315299", "Реактивне програмування в iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-        enrollmentSystem.addDiscipline(new Discipline("315299", "Реактивне програмування в iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 3));
-        enrollmentSystem.addDiscipline(new Discipline("315299", "Реактивне програмування в iOS", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 4));
-
-
-        // Course-specific disciplines
-        if (selectedCourse == 2) {
-            enrollmentSystem.addDiscipline(new Discipline("340214", "Англійська мова (за проф. спрямуванням)", "Проф. А.С. Дерев'янко", 6, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340447", "Бази даних", "Викл. О.В. Кушнір", 4, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340443", "Вступ до тестування програмного забезпечення", "Доц. М.І. Сидоров", 5, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340418", "Об`єктно-орієнтоване програмування", "Проф. В.П. Залізняк", 5, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340370", "Основи комп`ютерних алгоритмів", "Проф. Л.М. Іванов", 6, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340362", "Побудова і використання комунікаційних мереж", "Доц. Р.Т. Коваленко", 4, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340356", "Процедурне програмування (на базі Сі/Сі++) (ПІ)", "Проф. Г.М. Сахаров", 6, 0, true, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340377", "Теорія алгоритмів і математична логіка", "Проф. Г.М. Сахаров", 6, 0, true, 2));
-
-            enrollmentSystem.addDiscipline(new Discipline("340439", "Автоматизація роботи з програмними проектами мовою Java", "Викл. П.О. Прокопенко", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340393", "Інформаційний пошук", "Доц. А.В. Мельничук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340317", "Методи та засоби збору чутливої інформації", "Проф. С.В. Кравченко", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340464", "Мова програмування Kotlin", "Викл. Д.І. Бондар", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("E005", "Мова програмування С#", "Доц. Н.П. Осадча", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340402", "Розробка клієнт-серверних застосувань", "Проф. О.М. Гришко", 4, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-            enrollmentSystem.addDiscipline(new Discipline("340351", "Управління цифровим продуктом", "Викл. І.Ю. Сидорук", 3, EnrollmentSystem.ELECTIVE_CAPACITY, false, 2));
-
-        } else if (selectedCourse == 3) {
-            enrollmentSystem.addDiscipline(new Discipline("C3M01", "Вища математика III", "Проф. А.Б. Математикус", 6, 0, true, 3));
-            enrollmentSystem.addDiscipline(new Discipline("C3M02", "Комп'ютерні мережі", "Доц. О.П. Мережевик", 5, 0, true, 3));
-            enrollmentSystem.addDiscipline(new Discipline("C3M03", "Операційні системи", "Викл. В.І. Системний", 5, 0, true, 3));
-            enrollmentSystem.addDiscipline(new Discipline("C3M04", "Чисельні методи", "Проф. К.Л. Обчислювач", 4, 0, true, 3));
-            enrollmentSystem.addDiscipline(new Discipline("C3M05", "Архітектура комп'ютерів", "Доц. П.Р. Залізяка", 4, 0, true, 3));
-            enrollmentSystem.addDiscipline(new Discipline("C3M06", "Дискретна математика", "Викл. Т.О. Логік", 4, 0, true, 3));
-
-
-        } else if (selectedCourse == 4) {
-            enrollmentSystem.addDiscipline(new Discipline("C4M01", "Штучний інтелект", "Проф. Г.М. Розумний", 6, 0, true, 4));
-            enrollmentSystem.addDiscipline(new Discipline("C4M02", "Машинне навчання", "Доц. М.В. Алгоритмов", 5, 0, true, 4));
-            enrollmentSystem.addDiscipline(new Discipline("C4M03", "Розробка мобільних застосунків", "Викл. Д.С. Мобільний", 5, 0, true, 4));
-            enrollmentSystem.addDiscipline(new Discipline("C4M04", "Проектний менеджмент в ІТ", "Проф. В.В. Керівник", 4, 0, true, 4));
-            enrollmentSystem.addDiscipline(new Discipline("C4M05", "Безпека інформаційних систем", "Доц. Р.Р. Захисник", 4, 0, true, 4));
         }
     }
+
+private void initializeInitialDataM(int selectedCourse) {
+    enrollmentSystem.addStudent(new Student("І 005/24 мп", "Студент", selectedCourse, currentStudent.getMajor()));
+
+    if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
+        enrollmentSystem.addDiscipline(new Discipline("317203", "Архітектура інформаційних систем", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317809", "Моделі і методи розробки програмного забезпечення", "ст. викл. Гісем С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317275", "Паралельне програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317213", "Проєктування програмних систем", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317598", "Структури даних та аналіз алгоритмів", "ст. викл. Медвідь С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317200", "Практика науково-дослідницька", "доц. Чорней Р. К., ас. Сарана М.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317223", "Забезпечення якости програмного продукту", "доц. Проценко В. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317283", "Патерни проєктування та дизайн АРІ", "ст. викл. Зважій Д. В. ", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317202", "Побудова високонавантажених систем", "ст. викл. Щеглов М. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317199", "Розподілені бази даних та знань", "ст. викл. Іванюк А. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317277", "Управління проєктами в інженерії програмного забезпечення", "ст. викл. Вознюк О. М., ст. викл. Вознюк Я. І.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317810", "Практика науково-дослідницька", "доц. Сегін Л. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317804", "Практика науково-дослідницька", "викл. Жуков В. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+
+        enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317393", "Математична теорія ігор", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317191", "Моделі та алгоритми інформаційного пошуку", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317306", "Хмарні технології", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+    }
+
+    else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
+        enrollmentSystem.addDiscipline(new Discipline("318214", "Аналіз даних великого розміру (Big Data)", "проф. А.С. Дерев'янко", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318447", "Методологія наукових досліджень в програмній інженерії", "ст. викл. О.В. Кушнір", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318443", "Магістерська робота", "доц. М.І. Сидоров", 20, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+
+        enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317393", "Математична теорія ігор", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317191", "Моделі та алгоритми інформаційного пошуку", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317306", "Хмарні технології", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318402", "Алгоритми розподіленого обміну криптовалют на основі smart-контрактів (DeFi)", "проф. Гришко О. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318351", "Архітектура сучасних комп'ютерних мереж", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318352", "Бізнес-аналітика", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318353", "Ділова комунікація для інженерів програмного забезпечення", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318354", "Доставка цифрового продукту", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318355", "Криптографія в децентралізованих системах", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318356", "Програмна розробка інтелектуальних систем", "ст. викл. Сидорук І. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318357", "Системне адміністрування", "доц. Сидоренко А. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318358", "Дані та суспільство", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318359", "Методика викладання інформатики у вищій школі", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318361", "Аджайл рівня організації", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318360", "DevOps та безперервна інтеграція", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318362", "Адміністрування інформаційних систем IaS", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318363", "Машинне навчання", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318364", "Моделі та методи програмування економічних задач", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318365", "Нереляційні бази даних", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318366", "Розробка smart-контрактів", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318367", "Технічні інструменти регуляції криптовалют на ринку", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318368", "Управління комплексними проєктами/Deliveri Management", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+    }
+    if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 1)){
+        enrollmentSystem.addDiscipline(new Discipline("318403", "Комп'ютерний зір / Computer Vision (англ. мовою)", "доц. Швай Н. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("318376", "Динамічні системи", "проф. Авраменко О. В.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("318404", "Машинне навчання / Machine Learning (англ. мовою)", "доц. Швай Н. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("318382", "Теорія складности алгоритмів", "ст. викл. Морозов Д. І.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("318386", "Технології чисельного моделювання", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("319980", "Практика науково-дослідна", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+        enrollmentSystem.addDiscipline(new Discipline("318388", "Прикладна алгебра та теорія чисел", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+
+        enrollmentSystem.addDiscipline(new Discipline("311433", "Математична біологія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311434", "Основи статистичного експерименту", "доц. Абраменко А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311435", "Теорія інформації", "ст. викл. Зваженко К. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311436", "Математичні методи економіки", "ст. викл. Шевченко О. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311437", "Прикладний статистичний аналіз", "проф. Шашкевич М. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311438", "Комплексний аналіз та його застосування", "ст. викл. Остроградський М. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311439", "Практичне застосування математичних моделей обернених задач", "ст. викл. Остроградський М. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311441", "Проблеми некласичної оптимізації", "ст. викл. Осиповський Т. Я.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311442", "Комбінаторний аналіз", "ст. викл. Осиповський Т. Я.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311443", "Алгебраїчна топологія", "доц. Кирієнко О. Л.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311444", "Навчання з підкріпленням", "доц. Кирієнко О. Л.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311445", "Математична теорія соціального вибору", "доц. Кирієнко О. Л.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311446", "Алгоритмічна геометрія", "ст. викл. Кравчук Л. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("311447", "Ймовірнісні графічні моделі / Probabilistic Graphical Models (англ.мовою)", "доц. Швай Н. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+    }
+
+    else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 2)){
+        enrollmentSystem.addDiscipline(new Discipline("318368", "Методика викладання математики та інформатики у вищій школі", "проф. Федосова І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("320170", "Практика асистентська", "ст. викл. О.В. Кушнір", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318492", "Науково-дослідний семінар", "доц. Михалевич В. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318383", "Стохастична фінансова математика / Stochastic Financial Mathematics (англ.мовою)", "доц. Щестюк Н. Ю.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("320086", "Педагогіка і психологія вищої школи", "проф. Власенко К. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318500", "Теорія оптимального керування", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318377", "Нелінійні процеси та моделі", "проф. Авраменко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+
+        enrollmentSystem.addDiscipline(new Discipline("310430", "Квантова криптографія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310431", "Алгоритми на графах", "доц. Сидоренко П. П.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310432", "Прикладні задачі аналізу", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310433", "Математична теорія ризику та страхова справа", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310434", "Розпізнавання образів", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310435", "Аналіз часових рядів", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310436", "Математичні основи захисту інформації", "доц. Чорней Р. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310437", "Прикладний функціональний аналіз", "ст. викл. Вознюк І. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310438", "Математичні основи криптографії", "ст. викл. Вознюк І. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310439", "Теорія автоматів", "ст. викл. Вознюк І. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310440", "Прикладна теорія випадкових процесів", "ст. викл. Козеренко Р. Р.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310441", "Символьні обчислення та комп'ютерна алгебра", "ст. викл. Сидоренко Є. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("310442", "Розпізнавання образів в аналізі даних", "проф. Шухевич Р. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311433", "Математична біологія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311434", "Основи статистичного експерименту", "доц. Абраменко А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311435", "Теорія інформації", "ст. викл. Зваженко К. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311436", "Математичні методи економіки", "ст. викл. Шевченко О. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311437", "Прикладний статистичний аналіз", "проф. Шашкевич М. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311438", "Комплексний аналіз та його застосування", "ст. викл. Остроградський М. І.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311439", "Практичне застосування математичних моделей обернених задач", "ст. викл. Остроградський М. І.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311441", "Проблеми некласичної оптимізації", "ст. викл. Осиповський Т. Я.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311442", "Комбінаторний аналіз", "ст. викл. Осиповський Т. Я.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311443", "Алгебраїчна топологія", "доц. Кирієнко О. Л.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311444", "Навчання з підкріпленням", "доц. Кирієнко О. Л.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311445", "Математична теорія соціального вибору", "доц. Кирієнко О. Л.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311446", "Алгоритмічна геометрія", "ст. викл. Кравчук Л. В.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("311447", "Ймовірнісні графічні моделі / Probabilistic Graphical Models (англ.мовою)", "доц. Швай Н. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+
+
+    }
+    else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 1)){
+        enrollmentSystem.addDiscipline(new Discipline("317722", "Математична теорія ігор", "проф. Глибовець А. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+
+        enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317393", "Математична теорія ігор", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317191", "Моделі та алгоритми інформаційного пошуку", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317306", "Хмарні технології", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+        enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
+    }
+    else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 2)){
+        enrollmentSystem.addDiscipline(new Discipline("317722", "Математична теорія ігор", "проф. Глибовець А. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
+
+        enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317393", "Математична теорія ігор", "доц. Мельничук  А. В.", 3.5, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317191", "Моделі та алгоритми інформаційного пошуку", "ст. викл. Бабич Т. А.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 40, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317306", "Хмарні технології", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318402", "Алгоритми розподіленого обміну криптовалют на основі smart-контрактів (DeFi)", "проф. Гришко О. М.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318351", "Архітектура сучасних комп'ютерних мереж", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318352", "Бізнес-аналітика", "ст. викл. Сидорук І. Ю.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318353", "Ділова комунікація для інженерів програмного забезпечення", "доц. Сидоренко А. К.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318354", "Доставка цифрового продукту", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318355", "Криптографія в децентралізованих системах", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318356", "Програмна розробка інтелектуальних систем", "ст. викл. Сидорук І. Ю.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318357", "Системне адміністрування", "доц. Сидоренко А. К.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318358", "Дані та суспільство", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318359", "Методика викладання інформатики у вищій школі", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318361", "Аджайл рівня організації", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318360", "DevOps та безперервна інтеграція", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318362", "Адміністрування інформаційних систем IaS", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318363", "Машинне навчання", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318364", "Моделі та методи програмування економічних задач", "ст. викл. Ведель К. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318365", "Нереляційні бази даних", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318366", "Розробка smart-контрактів", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318367", "Технічні інструменти регуляції криптовалют на ринку", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+        enrollmentSystem.addDiscipline(new Discipline("318368", "Управління комплексними проєктами/Deliveri Management", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
+    }
+}
 
     // --- Update Discipline Lists in GUI ---
     private void updateDisciplineLists() {
@@ -443,27 +1236,22 @@ public class EnrollmentSystemGUI extends JFrame {
 
     private void filterElectiveDisciplines(String searchText) {
         updateDisciplineLists();
-        appendOutput("Пошук дисциплін за запитом: '" + searchText + "'\n");
     }
 
     // --- Update Student Information Display ---
     private void updateStudentInfoDisplay() {
-        int totalCredits = currentStudent.getEnrolledDisciplines().stream()
-                .mapToInt(Discipline::getCredits)
-                .sum();
+        double totalCredits = 0;
+        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+            double credits = discipline.getCredits();
+            totalCredits += credits;
+        }
         int courseCreditLimit = 0;
         switch (currentStudent.getCourse()) {
-            case 2:
-                courseCreditLimit = 62;
-                break;
-            case 3:
-                courseCreditLimit = 63;
-                break;
-            case 4:
-                courseCreditLimit = 60;
+            case 1:
+                courseCreditLimit = 61;
                 break;
             default:
-                courseCreditLimit = Integer.MAX_VALUE;
+                courseCreditLimit = 62;
         }
 
         studentInfoLabel.setText("Студент (ID: " + currentStudent.getStudentId() +
@@ -474,10 +1262,12 @@ public class EnrollmentSystemGUI extends JFrame {
 
     // --- Update "Готово" button state based on total credits ---
     private void updateConfirmButtonState() {
-        int totalCredits = currentStudent.getEnrolledDisciplines().stream()
-                .mapToInt(Discipline::getCredits)
-                .sum();
-        confirmSelectionButton.setText("Готово (Кредитів: " + totalCredits + ")");
+        double totalCredits = 0;
+        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+            double credits = discipline.getCredits();
+            totalCredits += credits;
+        }
+        confirmSelectionButton.setText("Готово (кредитів: " + totalCredits + ")");
         confirmSelectionButton.setEnabled(totalCredits >= EnrollmentSystem.MIN_CREDITS_TO_CONFIRM);
     }
 
@@ -570,7 +1360,7 @@ public class EnrollmentSystemGUI extends JFrame {
         // Add confirmation dialog for dropping
         Object[] options = {"Так", "Ні"};
         int confirm = JOptionPane.showOptionDialog(this,
-                "Ви впевнені, що хочете виписатися з дисципліни '" + selectedDiscipline.getName() + "'?",
+                "Ви впевнені, що хочете виписатися з дисципліни " + selectedDiscipline.getName() + "?",
                 "Підтвердження виписки",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
@@ -603,9 +1393,11 @@ public class EnrollmentSystemGUI extends JFrame {
 
     // --- Handling completion of selection based on total credits ---
     private void confirmSelection() {
-        int totalCredits = currentStudent.getEnrolledDisciplines().stream()
-                .mapToInt(Discipline::getCredits)
-                .sum();
+        double totalCredits = 0;
+        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+            double credits = discipline.getCredits();
+            totalCredits += credits;
+        }
 
         if (totalCredits >= EnrollmentSystem.MIN_CREDITS_TO_CONFIRM) {
             // Зупиняємо таймер автоматичного запису
@@ -622,18 +1414,23 @@ public class EnrollmentSystemGUI extends JFrame {
             searchField.setEnabled(false);
             searchButton.setEnabled(false);
 
-            appendOutput("Вибір дисциплін завершено. Подальші зміни не можливі.\n");
+            appendOutput("Запис завершено! Подальші зміни неможливі.\n");
 
             // Повідомлення про проходження першого рівня
             JOptionPane.showMessageDialog(this,
-                    "Вітаємо! Ви успішно обрали дисципліни на " + totalCredits + " кредитів.\n" +
-                            "Перший рівень пройдено!",
-                    "Вибір завершено",
+                    "Вітаємо! Перший рівень пройдено!",
+                    "Запис завершено",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            // Закриття вікна програми
-            dispose(); // Закриває поточне вікно
-            System.exit(0); // Завершує виконання програми
+
+            dispose();
+            SwingUtilities.invokeLater(() -> {
+                LoadingFrame loading = new LoadingFrame();
+                loading.startLoading(() -> {
+                    hero.setLevel(2);
+                    new GameFrame(hero).setVisible(true);
+                });
+            });
         } else {
             JOptionPane.showMessageDialog(this,
                     "Ви повинні обрати дисципліни мінімум на " + EnrollmentSystem.MIN_CREDITS_TO_CONFIRM + " кредитів, щоб завершити вибір. Обрано: " + totalCredits + ".\n",
@@ -651,24 +1448,50 @@ public class EnrollmentSystemGUI extends JFrame {
         @Override
         public void mouseClicked(MouseEvent e) {
             JList<?> list = (JList<?>) e.getSource();
-            if (e.getClickCount() == 2) { // Double-click to show info
+            if (e.getClickCount() == 2) {
                 int index = list.locationToIndex(e.getPoint());
                 if (index != -1) {
-                    Discipline selectedDiscipline = (Discipline) list.getModel().getElementAt(index);
-                    String info = "Інформація про дисципліну:\n" +
-                            "Код: " + selectedDiscipline.getDisciplineId() + "\n" +
-                            "Назва: " + selectedDiscipline.getName() + "\n" +
-                            "Викладач: " + selectedDiscipline.getInstructor() + "\n" +
-                            "Кількість кредитів: " + selectedDiscipline.getCredits() + "\n" +
-                            "Максимальна кількість студентів: " + selectedDiscipline.getMaxCapacity() + "\n" +
-                            "Зараз записано: " + selectedDiscipline.getCurrentEnrollment();
-                    JOptionPane.showMessageDialog(EnrollmentSystemGUI.this, info, "Деталі курсу", JOptionPane.INFORMATION_MESSAGE);
+                    Object selectedObject = list.getModel().getElementAt(index);
+                    if (selectedObject instanceof Discipline) {
+                        Discipline selectedDiscipline = (Discipline) selectedObject;
+
+                        StringBuilder infoBuilder = new StringBuilder();
+                        infoBuilder.append("Код: ").append(selectedDiscipline.getDisciplineId()).append("\n");
+                        infoBuilder.append("Назва: ").append(selectedDiscipline.getName()).append("\n");
+                        infoBuilder.append("Викладач: ").append(selectedDiscipline.getInstructor()).append("\n");
+                        infoBuilder.append("Кількість кредитів: ").append(selectedDiscipline.getCredits()).append("\n");
+
+                        if (selectedDiscipline.isMandatory()) {
+                            infoBuilder.append("Тип: обов'язкова\n");
+                            infoBuilder.append("Кількість студентів на курсі: ").append(selectedDiscipline.getMaxCapacity()).append("\n");
+                            infoBuilder.append("Зараз записано: ").append(selectedDiscipline.getMaxCapacity());
+                        } else {
+                            infoBuilder.append("Тип: вибіркова\n");
+                            if (selectedDiscipline.getMaxCapacity() == UNLIMITED_CAPACITY) {
+                                infoBuilder.append("Кількість місць: необмежена\n");
+                                infoBuilder.append("Зараз записано: ").append(selectedDiscipline.getCurrentEnrollment()).append("\n");
+                            } else {
+                                infoBuilder.append("Максимальна кількість студентів: ").append(selectedDiscipline.getMaxCapacity()).append("\n");
+                                infoBuilder.append("Зараз записано: ").append(selectedDiscipline.getCurrentEnrollment()).append("\n");
+                            }
+                        }
+
+                        JOptionPane.showMessageDialog(EnrollmentSystemGUI.this, infoBuilder.toString(), "Деталі курсу", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
             }
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(EnrollmentSystemGUI::new);
-    }
+      /*  public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+            UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+            UIManager.put("control", SIMS_LIGHT_PINK);
+            UIManager.put("textForeground", SIMS_DARK_TEXT);
+
+            SwingUtilities.invokeLater(EnrollmentSystemGUI::new);
+        }
+
+       */
 }

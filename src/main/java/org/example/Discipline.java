@@ -1,26 +1,67 @@
 package org.example;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Discipline {
+import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
+
+public class Discipline implements Serializable {
     private String disciplineId;
     private String name;
     private String instructor; // Changed from 'lecturer' to 'instructor' for consistency
-    private int credits;
+    private double credits;
     private int maxCapacity;
     private int currentEnrollment;
     private boolean isMandatory;
     private int targetCourse;
+    private String controlType;
+    private boolean isZalik;
 
-    public Discipline(String disciplineId, String name, String instructor, int credits, int maxCapacity, boolean isMandatory, int targetCourse) {
+    public static final String CONTROL_TYPE_ZALIK = "Залік";
+    public static final String CONTROL_TYPE_EXAM = "Екзамен";
+
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse) {
         this.disciplineId = disciplineId;
         this.name = name;
-        this.instructor = instructor; // Changed
+        this.instructor = instructor;
         this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
         this.maxCapacity = maxCapacity;
         this.isMandatory = isMandatory;
         this.targetCourse = targetCourse;
-        this.currentEnrollment = 0; // Починаємо з 0 записаних
+    }
+
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse, String controlType) {
+        this.disciplineId = disciplineId;
+        this.name = name;
+        this.instructor = instructor;
+        this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
+        this.maxCapacity = maxCapacity;
+        this.isMandatory = isMandatory;
+        this.targetCourse = targetCourse;
+        if (controlType != null && (controlType.equals(CONTROL_TYPE_ZALIK) || controlType.equals(CONTROL_TYPE_EXAM))) {
+            this.controlType = controlType;
+        } else {
+            this.controlType = CONTROL_TYPE_ZALIK;
+        }
+    }
+
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse, String controlType, boolean isZalik) {
+        this.disciplineId = disciplineId;
+        this.name = name;
+        this.instructor = instructor;
+        this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
+        this.maxCapacity = maxCapacity;
+        this.isMandatory = isMandatory;
+        this.targetCourse = targetCourse;
+        if (controlType != null && (controlType.equals(CONTROL_TYPE_ZALIK) || controlType.equals(CONTROL_TYPE_EXAM))) {
+            this.controlType = controlType;
+        } else {
+            this.controlType = CONTROL_TYPE_ZALIK;
+        }
+        this.isZalik = isZalik;
     }
 
     // Гетери
@@ -36,7 +77,7 @@ public class Discipline {
         return instructor;
     }
 
-    public int getCredits() {
+    public double getCredits() {
         return credits;
     }
 
@@ -56,11 +97,16 @@ public class Discipline {
         return targetCourse;
     }
 
+    public String getControlType() {
+        return controlType; }
+
     // Методи для керування заповненням дисципліни (потокобезпечні)
     public synchronized boolean enrollStudent() {
         if (currentEnrollment < maxCapacity) {
             currentEnrollment++;
             return true;
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
+            currentEnrollment++;
         }
         return false;
     }
@@ -74,7 +120,12 @@ public class Discipline {
     }
 
     public boolean hasAvailableSlots() {
-        return currentEnrollment < maxCapacity;
+        if (currentEnrollment < maxCapacity) {
+            return currentEnrollment < maxCapacity;
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
+            return currentEnrollment < 64;
+        }
+        return false;
     }
 
     @Override
@@ -85,6 +136,10 @@ public class Discipline {
         } else {
             return name + " (Обов'язкова)";
         }
+    }
+
+    public boolean isZalik() {
+        return isZalik;
     }
 
     @Override
@@ -98,5 +153,9 @@ public class Discipline {
     @Override
     public int hashCode() {
         return Objects.hash(disciplineId);
+    }
+
+    public void setControlType(String controlType) {
+        this.controlType = controlType;
     }
 }
