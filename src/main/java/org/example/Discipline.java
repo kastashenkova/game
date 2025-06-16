@@ -16,7 +16,7 @@ public class Discipline implements Serializable {
     private int currentEnrollment;
     private boolean isMandatory;
     private int targetCourse;
-    private String controlType;
+    private String controlType = CONTROL_TYPE_ZALIK;
     private boolean isZalik;
 
     public Question[] questions;

@@ -3,6 +3,7 @@ package org.example;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import gui.LoadingFrame;
+import gui.PauseAction;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
     private Hero hero;
 
-    private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");
+    private Student student;
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
 
@@ -92,6 +93,11 @@ public class EnrollmentSystemGUI extends JFrame {
 
     public EnrollmentSystemGUI(Hero hero) {
         this.hero = hero;
+        this.student = hero.getStudent();
+
+
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/sessionBack.wav");
 
         UIManager.put("OptionPane.messageFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("OptionPane.buttonFont", new Font("Segoi UI", Font.BOLD, 12));
@@ -120,26 +126,30 @@ public class EnrollmentSystemGUI extends JFrame {
 
         showStartAnimation();
 
+        Student fooStudent;
+
         // Initialize data based on selected course
         if (selectedDegree.equals("Бакалаврат")) {
+
             initializeInitialDataB(selectedCourse);
-            currentStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
-            if (currentStudent == null) {
+            fooStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
+            if (fooStudent == null) {
                 JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
                 System.exit(1);
             }
         } else if (selectedDegree.equals("Магістратура")) {
+
             initializeInitialDataM(selectedCourse);
-            currentStudent = enrollmentSystem.getStudentById("І 005/24 мп").orElse(null);
-            if (currentStudent == null) {
+            fooStudent = enrollmentSystem.getStudentById("І 005/24 мп").orElse(null);
+            if (fooStudent == null) {
                 JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
                 System.exit(1);
             }
         }
 
-        // Automatically enroll currentStudent in all mandatory disciplines for their course
-        for (Discipline mandatoryDisc : enrollmentSystem.getMandatoryDisciplines(currentStudent.getCourse())) {
-            currentStudent.enrollDiscipline(mandatoryDisc);
+        // Automatically enroll student in all mandatory disciplines for their course
+        for (Discipline mandatoryDisc : enrollmentSystem.getMandatoryDisciplines(student.getCourse())) {
+            student.enrollDiscipline(mandatoryDisc);
         }
 
         setSize(1200, 800);
@@ -309,6 +319,25 @@ public class EnrollmentSystemGUI extends JFrame {
         mainPanel.add(mandatoryPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
+
+        PauseAction pauseAction = new PauseAction("");
+        JButton pauseButton = new JButton(pauseAction);
+        ImageIcon iconBtn = new ImageIcon(getClass().getResource( "/button/pause.png"));
+        Image scaledImage = iconBtn.getImage().getScaledInstance(140, 30, Image.SCALE_SMOOTH);
+        iconBtn = new ImageIcon(scaledImage);
+        pauseButton.setIcon(iconBtn);
+        pauseButton.setContentAreaFilled(false);
+        pauseButton.setBorderPainted(false);
+        pauseButton.setFocusPainted(false);
+        pauseButton.setOpaque(false);
+
+        JPanel topBar = new JPanel();
+        topBar.setOpaque(false);
+
+        topBar.add(pauseButton);
+
+        add(topBar, BorderLayout.NORTH);
+
         setVisible(true);
 
         updateDisciplineLists();
@@ -397,8 +426,15 @@ public class EnrollmentSystemGUI extends JFrame {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
+    private void showWarningDialog(){
+        MusicPlayer.getInstance().playError();
+        JOptionPane.showMessageDialog(this, "За намагання обдурити систему ваш сім втрачає 20 очок енергії!Обирайте правильні дані!", "ATTENTION", JOptionPane.WARNING_MESSAGE);
+        hero.setEnergy(hero.getEnergy()-20);
+
+    }
     private String showDegreeSelectionDialog() {
         String[] degrees = {"Бакалаврат", "Магістратура"};
+
 
         String selectedDegreeStr = (String) JOptionPane.showInputDialog(
                 this,
@@ -408,7 +444,21 @@ public class EnrollmentSystemGUI extends JFrame {
                 null,
                 degrees,
                 degrees[0]);
-        return selectedDegreeStr;
+        if (selectedDegreeStr.equals("Бакалаврат")) {
+            if (student.getCourse() > 4) {
+                showWarningDialog();
+                selectedDegreeStr = "Магістратура";
+            }
+        }
+        else if (selectedDegreeStr.equals("Магістратура")) {
+                if(student.getCourse()<=4){
+                    showWarningDialog();
+                    selectedDegreeStr = "Бакалаврат";
+                }
+        }
+        System.out.println(selectedDegreeStr);
+            return selectedDegreeStr;
+
     }
 
     private int showCourseSelectionDialog(String degree) {
@@ -438,16 +488,30 @@ public class EnrollmentSystemGUI extends JFrame {
                 courses,
                 courses[0]);
 
+        int selectedDegree = -1;
+
         if (selectedCourseStr != null) {
             try {
-                return Integer.parseInt(selectedCourseStr);
+                selectedDegree = Integer.parseInt(selectedCourseStr);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Неправильний формат курсу. Спробуйте ще раз.", "Помилка", JOptionPane.ERROR_MESSAGE);
                 // Повторно запитуємо, якщо виникла помилка формату
                 return showCourseSelectionDialog(degree);
             }
         }
-        return -1;
+        if(selectedDegree!=student.getCourse()) {
+            showWarningDialog();
+            if (student.getCourse() == 5) {
+                selectedDegree = 1;
+            } else if (student.getCourse() == 6) {
+                selectedDegree = 2;
+            } else {
+                selectedDegree = student.getCourse();
+            }
+
+        }
+        System.out.println(selectedDegree);
+        return selectedDegree;
     }
 
     private void showStartAnimation() {
@@ -498,9 +562,9 @@ public class EnrollmentSystemGUI extends JFrame {
 
     // Method to initialize test data based on selected course
     private void initializeInitialDataB(int selectedCourse) {
-        enrollmentSystem.addStudent(new Student("І 005/24 бп", "Студент", selectedCourse, currentStudent.getMajor()));
+        enrollmentSystem.addStudent(student);
 
-        if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
+        if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
             enrollmentSystem.addDiscipline(new Discipline("315203", "Алгоритми і структури даних", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("315275", "Вступ до програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
@@ -517,7 +581,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("315204", "Практика навчальна", "ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
         }
 
-        else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
+        else if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
             enrollmentSystem.addDiscipline(new Discipline("340214", "Англійська мова (за проф. спрямуванням)", "проф. Дерев'янко А. С.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
             enrollmentSystem.addDiscipline(new Discipline("340447", "Бази даних", "ст. викл. Кушнір О. В.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("340443", "Вступ до тестування програмного забезпечення", "доц. Сидоров М. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
@@ -555,7 +619,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("340336", "Введення у Хмарні технології", "ст. викл. Сидорчук Л. Н.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 44, false, 2));
             enrollmentSystem.addDiscipline(new Discipline("340337", "Мемологічні студії", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, 19, false, 2));
 
-        } else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 3)) {
+        } else if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 3)) {
             enrollmentSystem.addDiscipline(new Discipline("315429", "Функціональне програмування", "проф. Математикус А. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
             enrollmentSystem.addDiscipline(new Discipline("315225", "Системне програмування", "доц. Жежерун О. П.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("315425", "Логічне програмування", "ст. викл. В.І. Системний", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
@@ -616,7 +680,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("315479", "Інформаційна безпека мереж", "ст. викл. Коновалець Є. П.", 2, EnrollmentSystem.ELECTIVE_CAPACITY, 39, false, 3));
             enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 61, false, 3));
 
-        } else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 4)) {
+        } else if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 4)) {
             enrollmentSystem.addDiscipline(new Discipline("315263", "Багатозадачне та паралельне програмування", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("315222", "Проєктування програмних систем", "ст. викл. Афонін А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
             enrollmentSystem.addDiscipline(new Discipline("315230", "Об'єктно-орієнтований аналіз і дизайн", "ст. викл. Мобільний Д. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
@@ -688,7 +752,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, 28, false, 4));
             enrollmentSystem.addDiscipline(new Discipline("315464", "Кваліфікаційна робота", "проф. Глибовець А. М.", 12, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
 
-        } else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 1)){
+        } else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 1)){
             enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("315213", "Історія математики", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
@@ -699,7 +763,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
         }
 
-        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 2)){
+        else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 2)){
             enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 3.5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
             enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
             enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
@@ -741,7 +805,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         }
 
-        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 3)){
+        else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 3)){
             enrollmentSystem.addDiscipline(new Discipline("316149", "Методи оптимізації та дослідження операцій", "доц. Михалевич В. М., ас. Тищенко С. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("316148", "Теорія алгоритмів та математична логіка", "ст. викл. Прокоф'єв П. Г.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("316209", "Теорія функції комплексної змінної", "доц. Кашпіровський О. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
@@ -815,7 +879,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("316821", "Банківські комп'ютерні системи", "д. е. н., доц. Гладких Д. М.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 3));
         }
 
-        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 4)){
+        else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 4)){
             enrollmentSystem.addDiscipline(new Discipline("316150", "Теорія керування", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("316819", "Економетрика", "к. е. н., доц. Семко Р. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4));
             enrollmentSystem.addDiscipline(new Discipline("316141", "Функціональний аналіз", "доц. Кашпіровський О. І.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4, "Екзамен"));
@@ -881,7 +945,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 1)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 1)){
             enrollmentSystem.addDiscipline(new Discipline("315203", "Алгоритми і структури даних", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("314835", "Архітектура обчислювальних систем", "ст. викл. Медвідь С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("314827", "Історія української кібернетики", "проф. Глибовець А. М.", 2, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
@@ -894,7 +958,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 2)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 2)){
             enrollmentSystem.addDiscipline(new Discipline("340214", "Диференціальні рівняння", "проф. Дерев'янко А. С.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("340447", "Математична логіка та теорія алгоритмів", "ст. викл. Кушнір О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("340443", "Бази даних та інформаційні системи", "доц. Сидоров М. І.", 9, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
@@ -930,7 +994,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 3)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 3)){
             enrollmentSystem.addDiscipline(new Discipline("315429", "Функціональне програмування", "проф. Математикус А. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("315225", "Методи розробки програмних систем", "доц. Жежерун О. П.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3));
             enrollmentSystem.addDiscipline(new Discipline("315425", "Основи штучного інтелекту", "ст. викл. В.І. Системний", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 3, "Екзамен"));
@@ -994,7 +1058,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 4)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 4)){
             enrollmentSystem.addDiscipline(new Discipline("315470", "Інтелектуальні мережі", "ст. викл. Сідько А. А., ст. викл. Гречко А. В.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 4, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("315206", "Комп'ютерна графіка", "проф. Липинський І. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, false, 4, "Екзамен"));
 
@@ -1057,9 +1121,9 @@ public class EnrollmentSystemGUI extends JFrame {
     }
 
     private void initializeInitialDataM(int selectedCourse) {
-        enrollmentSystem.addStudent(new Student("І 005/24 мп", "Студент", selectedCourse, currentStudent.getMajor()));
+        enrollmentSystem.addStudent(student);
 
-        if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
+        if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 1)) {
             enrollmentSystem.addDiscipline(new Discipline("317203", "Архітектура інформаційних систем", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("317809", "Моделі і методи розробки програмного забезпечення", "ст. викл. Гісем С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("317275", "Паралельне програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
@@ -1081,7 +1145,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
         }
 
-        else if ((currentStudent.getMajor().equals("121 Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
+        else if ((student.getMajor().equals("Інженерія програмного забезпечення")) && (selectedCourse == 2)) {
             enrollmentSystem.addDiscipline(new Discipline("318214", "Аналіз даних великого розміру (Big Data)", "проф. А.С. Дерев'янко", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("318447", "Методологія наукових досліджень в програмній інженерії", "ст. викл. О.В. Кушнір", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("318443", "Магістерська робота", "доц. М.І. Сидоров", 20, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
@@ -1111,7 +1175,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("318367", "Технічні інструменти регуляції криптовалют на ринку", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
             enrollmentSystem.addDiscipline(new Discipline("318368", "Управління комплексними проєктами/Deliveri Management", "ст. викл. Ведель К. А.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
         }
-        if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 1)){
+        if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 1)){
             enrollmentSystem.addDiscipline(new Discipline("318403", "Комп'ютерний зір / Computer Vision (англ. мовою)", "доц. Швай Н. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("318376", "Динамічні системи", "проф. Авраменко О. В.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("318404", "Машинне навчання / Machine Learning (англ. мовою)", "доц. Швай Н. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
@@ -1136,7 +1200,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("311447", "Ймовірнісні графічні моделі / Probabilistic Graphical Models (англ.мовою)", "доц. Швай Н. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
         }
 
-        else if ((currentStudent.getMajor().equals("113 Прикладна математика")) && (selectedCourse == 2)){
+        else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 2)){
             enrollmentSystem.addDiscipline(new Discipline("318368", "Методика викладання математики та інформатики у вищій школі", "проф. Федосова І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("320170", "Практика асистентська", "ст. викл. О.В. Кушнір", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
             enrollmentSystem.addDiscipline(new Discipline("318492", "Науково-дослідний семінар", "доц. Михалевич В. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2));
@@ -1174,7 +1238,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("311447", "Ймовірнісні графічні моделі / Probabilistic Graphical Models (англ.мовою)", "доц. Швай Н. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 1)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 1)){
             enrollmentSystem.addDiscipline(new Discipline("317722", "Математична теорія ігор", "проф. Глибовець А. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
 
             enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
@@ -1184,7 +1248,7 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("317261", "Чистий код та чиста архітектура", "доц. Осадча Н. П.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
         }
 
-        else if ((currentStudent.getMajor().equals("122 Комп'ютерні науки")) && (selectedCourse == 2)){
+        else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 2)){
             enrollmentSystem.addDiscipline(new Discipline("317722", "Математична теорія ігор", "проф. Глибовець А. М.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 2, "Екзамен"));
 
             enrollmentSystem.addDiscipline(new Discipline("317439", "Інформаційна безпека", "ст. викл. Прокопенко П. О.", 3, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 2));
@@ -1219,12 +1283,12 @@ public class EnrollmentSystemGUI extends JFrame {
         mandatoryListModel.clear();
         electiveListModel.clear();
         enrolledElectiveListModel.clear();
-        int studentCourse = currentStudent.getCourse();
+        int studentCourse = student.getCourse();
         for (Discipline disc : enrollmentSystem.getMandatoryDisciplines(studentCourse)) {
             mandatoryListModel.addElement(disc);
         }
 
-        List<Discipline> studentEnrolledDisciplines = currentStudent.getEnrolledDisciplines();
+        List<Discipline> studentEnrolledDisciplines = student.getEnrolledDisciplines();
         String searchText = searchField.getText().trim().toLowerCase();
         String selectedCriterion = (String) searchCriteriaCombo.getSelectedItem();
 
@@ -1263,12 +1327,12 @@ public class EnrollmentSystemGUI extends JFrame {
     // --- Update Student Information Display ---
     private void updateStudentInfoDisplay() {
         double totalCredits = 0;
-        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+        for (Discipline discipline : student.getEnrolledDisciplines()) {
             double credits = discipline.getCredits();
             totalCredits += credits;
         }
         int courseCreditLimit = 0;
-        switch (currentStudent.getCourse()) {
+        switch (student.getCourse()) {
             case 1:
                 courseCreditLimit = 61;
                 break;
@@ -1276,8 +1340,8 @@ public class EnrollmentSystemGUI extends JFrame {
                 courseCreditLimit = 62;
         }
 
-        studentInfoLabel.setText("Студент (ID: " + currentStudent.getStudentId() +
-                ", курс: " + currentStudent.getCourse() +
+        studentInfoLabel.setText("Студент (ID: " + student.getStudentId() +
+                ", курс: " + student.getCourse() +
                 ", кредити: " + totalCredits + "/" + courseCreditLimit + ")");
     }
 
@@ -1285,7 +1349,7 @@ public class EnrollmentSystemGUI extends JFrame {
     // --- Update "Готово" button state based on total credits ---
     private void updateConfirmButtonState() {
         double totalCredits = 0;
-        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+        for (Discipline discipline : student.getEnrolledDisciplines()) {
             double credits = discipline.getCredits();
             totalCredits += credits;
         }
@@ -1296,6 +1360,7 @@ public class EnrollmentSystemGUI extends JFrame {
     // --- Simulate random glitches ---
     private boolean simulateGlitch() {
         if (randomGlitches.nextDouble() < 0.7) {
+            MusicPlayer.getInstance().playError();
             try {
                 int delay = 500 + randomGlitches.nextInt(1500);
                 appendOutput("Система тимчасово недоступна. Будь ласка, зачекайте...\n");
@@ -1327,6 +1392,7 @@ public class EnrollmentSystemGUI extends JFrame {
         Discipline selectedDiscipline = electiveDisciplineList.getSelectedValue();
 
         if (selectedDiscipline == null) {
+            MusicPlayer.getInstance().playError();
             JOptionPane.showMessageDialog(this,
                     "Будь ласка, оберіть вибіркову дисципліну для запису.",
                     "Помилка",
@@ -1337,7 +1403,7 @@ public class EnrollmentSystemGUI extends JFrame {
         new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws Exception {
-                return enrollmentSystem.enrollStudentToDiscipline(currentStudent.getStudentId(), selectedDiscipline.getDisciplineId());
+                return enrollmentSystem.enrollStudentToDiscipline(student.getStudentId(), selectedDiscipline.getDisciplineId());
             }
 
             @Override
@@ -1347,6 +1413,7 @@ public class EnrollmentSystemGUI extends JFrame {
                     appendOutput(result + "\n");
                     updateDisciplineLists(); // Refresh all lists
                 } catch (Exception ex) {
+                    MusicPlayer.getInstance().playError();
                     appendOutput("Виникла непередбачувана помилка під час виконання запису: " + ex.getMessage() + "\n");
                 }
             }
@@ -1371,7 +1438,7 @@ public class EnrollmentSystemGUI extends JFrame {
         }
 
         // Ensure the selected discipline is indeed one the student is currently enrolled in
-        if (!currentStudent.getEnrolledDisciplines().contains(selectedDiscipline)) {
+        if (!student.getEnrolledDisciplines().contains(selectedDiscipline)) {
             JOptionPane.showMessageDialog(this,
                     "Ви не записані на обрану дисципліну.",
                     "Помилка",
@@ -1394,7 +1461,7 @@ public class EnrollmentSystemGUI extends JFrame {
             new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
-                    return enrollmentSystem.dropStudentFromDiscipline(currentStudent.getStudentId(), selectedDiscipline.getDisciplineId());
+                    return enrollmentSystem.dropStudentFromDiscipline(student.getStudentId(), selectedDiscipline.getDisciplineId());
                 }
 
                 @Override
@@ -1404,6 +1471,7 @@ public class EnrollmentSystemGUI extends JFrame {
                         appendOutput(result + "\n");
                         updateDisciplineLists();
                     } catch (Exception ex) {
+                        MusicPlayer.getInstance().playError();
                         appendOutput("Виникла непередбачена помилка під час виконання виписки: " + ex.getMessage() + "\n");
                     }
                 }
@@ -1416,7 +1484,7 @@ public class EnrollmentSystemGUI extends JFrame {
     // --- Handling completion of selection based on total credits ---
     private void confirmSelection() {
         double totalCredits = 0;
-        for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
+        for (Discipline discipline : student.getEnrolledDisciplines()) {
             double credits = discipline.getCredits();
             totalCredits += credits;
         }
@@ -1437,17 +1505,28 @@ public class EnrollmentSystemGUI extends JFrame {
             appendOutput("Запис завершено! Подальші зміни неможливі.\n");
 
             saveEnrollmentDataJson();
-
+            MusicPlayer.getInstance().playSuccess();
             JOptionPane.showMessageDialog(this,
                     "Вітаємо! Перший рівень пройдено!",
                     "Запис завершено",
                     JOptionPane.INFORMATION_MESSAGE);
-            dispose();
-            System.exit(0);SwingUtilities.invokeLater(() -> {
+            dispose()
+            ;SwingUtilities.invokeLater(() -> {
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> {
                     hero.levelUp();
-                    new GameFrame(hero).setVisible(true);
+                    hero.setLevel(2);
+                    hero.setStudent(student);
+                    hero.decreaseEnergy(40);
+                    hero.decreaseHunger(-30);
+                    GameFrame gameFrame =  new GameFrame(hero);
+                    String nextHint = "Вітаємо з прозодженням 1-го рівня!\n" +
+                            "- Твій сім втомився - відпочинь\n" +
+                            "- Підкріпись чимось\n" +
+                            "- Почитай конспекти перед наступним рівнем\n" +
+                            "- Постарайся набрати бали і облегчити сесію";
+                    gameFrame.getGamePanel().hintPanel.setText(nextHint);
+                    gameFrame.setVisible(true);
                 });
             });
         } else {
@@ -1505,7 +1584,7 @@ public class EnrollmentSystemGUI extends JFrame {
     // --- Save enrolled disciplines to a file ---
     private void saveEnrollmentDataJson() {
         try (FileWriter writer = new FileWriter(ENROLLMENT_FILE)) {
-            gson.toJson(currentStudent, writer);
+            gson.toJson(student, writer);
         } catch (IOException e) {
             e.printStackTrace();
         }

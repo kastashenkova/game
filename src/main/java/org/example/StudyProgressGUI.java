@@ -107,7 +107,7 @@ public class StudyProgressGUI extends JFrame {
             currentStudent = gson.fromJson(reader, Student.class);
             if (currentStudent == null) {
                 System.err.println("Помилка: не вдалося завантажити дані студента з JSON. Можливо, файл порожній або пошкоджений.");
-                currentStudent = new Student("UNKNOWN", "Невідомий студент", 0, "Невідомо");
+                currentStudent = new Student("Невідомий студент", 0, "Невідомо");
             }
 
             if (currentStudent != null) {
@@ -125,7 +125,7 @@ public class StudyProgressGUI extends JFrame {
                     "Не вдалося завантажити дані студента. Буде створено порожнього студента.",
                     "Помилка завантаження",
                     JOptionPane.ERROR_MESSAGE);
-            currentStudent = new Student("NO_DATA", "Студент без даних", 0, "Н/Д");
+            currentStudent = new Student( "Студент без даних", 0, "Н/Д");
         }
         updateStudentInfoLabel();
     }

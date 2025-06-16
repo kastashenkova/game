@@ -107,6 +107,21 @@ public class MusicPlayer {
         }
     }
 
+    public void playError() {
+        playEffect("/assets/Sounds/error.wav");
+    }
+    public void playSuccess() {
+        playEffect("/assets/Sounds/success.wav");
+    }
+    public void playFail() {
+        playEffect("/assets/Sounds/fail.wav");
+    }
+    public void playSpin() {
+        playEffect("/assets/Sounds/spin.wav");
+    }
+
+
+
     public void playButtonClick() {
         playEffect("/assets/Sounds/select.wav");
     }

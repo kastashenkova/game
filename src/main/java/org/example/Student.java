@@ -22,14 +22,20 @@ public class Student implements Serializable {
     private boolean expelled;
 
 
-    public Student(String studentId, String name, int course, String major) {
-        this.studentId = studentId;
+    public Student(String name, int course, String major) {
+
         this.name = name;
         this.course = course;
+        this.studentId = course<=4 ?"І 005/24 бп" : "І 005/24 мп";
         this.major = major;
         this.enrolledDisciplines = new ArrayList<>();
+        this.examDisciplines = new ArrayList<>();
         this.electiveCount = 0;
         this.trimesterScores = new HashMap<>();
+    }
+
+    public Student() {
+
     }
 
     // --- Гетери ---
@@ -185,4 +191,9 @@ public class Student implements Serializable {
     public void setExamDisciplines(List<Discipline> examDisciplines) {
         this.examDisciplines = examDisciplines;
     }
+
+    public void setEnrolledDisciplines(List<Discipline> enrolledDisciplines) {
+    this.enrolledDisciplines = enrolledDisciplines;
+    }
+
 }

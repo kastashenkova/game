@@ -71,19 +71,19 @@ public class CollisionChecker {
                     if (gameWindow != null) {
                         gameWindow.dispose();
                     }
-                    LoadingFrame loading = new LoadingFrame();
-                    loading.startLoading(() -> {
                         if(level==1){
                             hero.levelUp();
-                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
-                            enrollmentSystemGUI.setVisible(true);
+                            LoadingFrame loading = new LoadingFrame();
+                            loading.startLoading(() -> {
+                                EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
+                                enrollmentSystemGUI.setVisible(true);
+                            });
                         } else if(level==2){
                             hero.setLevel(3);
                             TestManager testManager = new TestManager(hero);
-
+                            testManager.startTest();
                         }
                     });
-                });
             }
             else if(obj.name.equals("shop")){
                 java.util.List<Product> products = List.of(

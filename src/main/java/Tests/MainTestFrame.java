@@ -1,7 +1,10 @@
 package Tests;
 
 import Tests.Question;
+import gui.PauseAction;
 import org.example.Discipline;
+import org.example.Hero;
+import org.example.MusicPlayer;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -29,6 +32,9 @@ public class MainTestFrame  extends JFrame {
     private JPanel mainPanel;
     private JPanel resultPanel;
 
+    private Runnable onFinishCallback;
+
+    private TestManager testManager;
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
     private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
     private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
@@ -39,11 +45,34 @@ public class MainTestFrame  extends JFrame {
     private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
 
 
-    public MainTestFrame(Discipline discipline) {
+    public MainTestFrame(Discipline discipline, Runnable onFinishCallback) {
+
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/testBack.wav");
+
         setTitle(discipline.getName());
         setSize(1200, 800);
+        PauseAction pauseAction = new PauseAction("");
+        JButton pauseButton = new JButton(pauseAction);
+        ImageIcon iconBtn = new ImageIcon(getClass().getResource( "/button/pause.png"));
+        Image scaledImage = iconBtn.getImage().getScaledInstance(140, 30, Image.SCALE_SMOOTH);
+        iconBtn = new ImageIcon(scaledImage);
+        pauseButton.setIcon(iconBtn);
+        pauseButton.setContentAreaFilled(false);
+        pauseButton.setBorderPainted(false);
+        pauseButton.setFocusPainted(false);
+        pauseButton.setOpaque(false);
+
+        JPanel topBar = new JPanel();
+        topBar.setOpaque(false);
+
+        topBar.add(pauseButton);
+
+        add(topBar, BorderLayout.NORTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        this.onFinishCallback = onFinishCallback;
 
         generateTest(discipline);
         questions = discipline.questions;
@@ -217,7 +246,6 @@ public class MainTestFrame  extends JFrame {
             }
         });
 
-// Налаштування закриття вікна
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -295,7 +323,8 @@ public class MainTestFrame  extends JFrame {
         // Показуємо результат в JOptionPane
         String message = "Ваш результат: " + score + " з " + questions.length + " балів.";
         if (passed) {
-            message += "\nВітаємо! Ви успішно пройшли тест із Забезпечення якости доступу програмних продуктів.";
+            message += "\nВітаємо! Ви успішно пройшли тест із " + this.getTitle();
+           JOptionPane.showMessageDialog(this,message);
             showResultPanel(score);
         } else {
             message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
@@ -306,13 +335,9 @@ public class MainTestFrame  extends JFrame {
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.INFORMATION_MESSAGE
             );
-
-            if (option == JOptionPane.YES_OPTION) {
-                resetTest();
-            } else {
-                System.exit(0); // Вийти
-            }
         }
+        dispose();
+        if (onFinishCallback != null) onFinishCallback.run();
     }
 
     private void showResultPanel(int score) {
@@ -391,7 +416,7 @@ public class MainTestFrame  extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи із Забезпечення якости доступу програмних продуктів!",
+                    "Вітаємо з успішним проходженням контрольної роботи !",
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -486,8 +511,7 @@ public class MainTestFrame  extends JFrame {
                     new Question("15. Хто відповідає за забезпечення якості в команді?",
                             new String[]{"Лише тестувальник", "Менеджер проєкту", "Вся команда розробки", "Дизайнер"}, 2)
             };
-        else if(discipline.getName().equals("Основи штучного інтелекту")){
-            discipline.questions = new Question[] {
+else {            discipline.questions = new Question[] {
                     new Question("1. Що таке штучний інтелект (ШІ)?",
                             new String[]{"Програма для обробки відео", "Система, що імітує інтелектуальну поведінку людини", "Технологія збереження даних", "Середовище для програмування"}, 1),
                     new Question("2. Що таке інтелектуальний агент?",

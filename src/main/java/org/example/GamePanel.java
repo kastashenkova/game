@@ -1,5 +1,7 @@
 package org.example;
 
+
+import gui.HintPanel;
 import gui.LoadingFrame;
 import mainstage.MainFrame;
 
@@ -24,6 +26,9 @@ public class GamePanel extends JPanel implements ActionListener {
     private JLabel statsLabel;
     private Timer gameTimer;
     private GameFrame parentFrame;
+
+
+    HintPanel hintPanel;
 
     private Point lastMousePos;
     private boolean isHeroDragging = false;
@@ -150,13 +155,23 @@ public class GamePanel extends JPanel implements ActionListener {
         this.hero = hero;
         this.parentFrame = parentFrame;
         setPreferredSize(new Dimension(1200, 800));
-        setBackground(Color.LIGHT_GRAY);
+        setBackground(new Color(252, 234, 249));
         currentGameState = GameState.PLAYING;
         setLayout(null);
 
         // Initialize MusicPlayer (assuming default sound path or specific path if needed)
         MusicPlayer.getInstance().setMusicEnabled(true);
         MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
+
+        String nextHint = "Поточний етап: запис на дисципліни\n" +
+                "- Запасайся терпінням...\n" +
+                "- Готуй запасні дисципліни на випадок, якщо не встигнеш\n" +
+                "- Дій швидко!\n" +
+                "- Пауза, на жаль, тут не працює...";
+
+        hintPanel = new HintPanel(nextHint);
+        hintPanel.setBounds(900, 350, 280, 220);
+        add(hintPanel);
 
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -234,6 +249,8 @@ public class GamePanel extends JPanel implements ActionListener {
                 userMessageInputField.setText(""); // Очищаємо поле
             }
         };
+
+
         sendUserMessageButton.addActionListener(sendMessageAction);
         userMessageInputField.addActionListener(sendMessageAction); // Відправлення по Enter
 
@@ -700,5 +717,12 @@ public class GamePanel extends JPanel implements ActionListener {
 
         });
         return goToWorldButton;
+    }
+    public HintPanel getHintPanel() {
+        return hintPanel;
+    }
+
+    public void setHintPanel(HintPanel hintPanel) {
+        this.hintPanel = hintPanel;
     }
 }

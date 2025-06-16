@@ -13,6 +13,8 @@ public class GameFrame extends JFrame {
 
     private Hero hero;
     Hero newHero;
+
+
     private GamePanel gamePanel;
     private Student student;
 
@@ -38,10 +40,17 @@ public class GameFrame extends JFrame {
 
         // Створюємо героя з переданими шляхами до ресурсів
         newHero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
-        student = new Student(generateRandomID(), initialHeroName, hero.getCourse(), hero.getSpecialty().toString());
+        student = new Student( initialHeroName, hero.getCourse(), hero.getSpecialty().toString());
 
+        newHero.setStudent(student);
         newHero.setBudget(hero.getBudget());
         newHero.setSpecialty(hero.getSpecialty());
+        if(hero.getStudent()!=null) {
+            student.setExamDisciplines(hero.getStudent().getExamDisciplines());
+            student.setEnrolledDisciplines(hero.getStudent().getEnrolledDisciplines());
+
+        }
+
         newHero.setCourse(hero.getCourse());
       newHero.setSelectedName(hero.getSelectedName());
       newHero.setLevel(hero.getLevel());
@@ -112,5 +121,12 @@ public class GameFrame extends JFrame {
 
     public void setHero(Hero hero) {
         this.hero = hero;
+    }
+    public GamePanel getGamePanel() {
+        return gamePanel;
+    }
+
+    public void setGamePanel(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
     }
 }

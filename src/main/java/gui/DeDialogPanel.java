@@ -1,6 +1,7 @@
 package gui;
 import mainstage.GameBoard;
 import org.example.GameFrame;
+import org.example.Hero;
 import org.example.MusicPlayer;
 
 import java.awt.*;
@@ -17,6 +18,7 @@ public class DeDialogPanel extends JPanel {
     private static final Color BG = new Color(159, 131, 244);
 
     private GameBoard gameBoard;
+    private Hero hero;
 
 
     public DeDialogPanel(GameBoard gameBoard) {
@@ -34,7 +36,23 @@ public class DeDialogPanel extends JPanel {
         add(pausedPanel);
         add(new JButton(new ResumeAction("ПРОДОВЖИТИ")));
         add(new JButton(new PlayerPanelAction("ПАНЕЛЬ ПЕРСОНАЖА")));
-        add(new JButton(new MainMenuAction("ГОЛОВНЕ МЕНЮ")));
+        add(new JButton(new SettingsAction("НАЛАШТУВАННЯ")));
+    }
+
+    public DeDialogPanel() {
+
+        JLabel pausedLabel = new JLabel("PAUSED");
+        pausedLabel.setForeground(Color.BLACK);
+        JPanel pausedPanel = new JPanel();
+        pausedPanel.setOpaque(false);
+        pausedPanel.add(pausedLabel);
+        pausedPanel.setFont(new Font("Arial", Font.BOLD, 16));
+        setBackground(BG);
+        int eb = 15;
+        setBorder(BorderFactory.createEmptyBorder(eb, eb, eb, eb));
+        setLayout(new GridLayout(0, 1, 10, 10));
+        add(pausedPanel);
+
         add(new JButton(new SettingsAction("НАЛАШТУВАННЯ")));
     }
 
@@ -64,8 +82,10 @@ public class DeDialogPanel extends JPanel {
             MusicPlayer.getInstance().playButtonClick();
             Window win = SwingUtilities.getWindowAncestor((Component) e.getSource());
             win.dispose();
-            gameBoard.gameThread.interrupt();
-            MusicPlayer.getInstance().setMusicEnabled(false);
+
+                gameBoard.gameThread.interrupt();
+
+                MusicPlayer.getInstance().setMusicEnabled(false);
             SwingUtilities.invokeLater(() -> {
 
                 Window gameWindow = SwingUtilities.getWindowAncestor(gameBoard);
@@ -74,6 +94,7 @@ public class DeDialogPanel extends JPanel {
                 }
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> new GameFrame(gameBoard).setVisible(true));
+
             });
         }
     }

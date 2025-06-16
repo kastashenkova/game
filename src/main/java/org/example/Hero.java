@@ -11,6 +11,8 @@ import javax.imageio.ImageIO;
 
 public class Hero {
     private String name;
+
+
     private int energy;
     private int mood;
     private int hunger;
@@ -431,7 +433,7 @@ public class Hero {
         g2d.setColor(Color.BLACK);
         g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
         g2d.setFont(new Font("Arial", Font.PLAIN, 10));
-        g2d.drawString("Енергія: " + energy + "%", initialTopRightX, currentTopRightY - 5);
+        g2d.drawString("Енергія: " + this.energy + "%", initialTopRightX, currentTopRightY - 5);
 
 
         // Панель настрою
@@ -453,7 +455,7 @@ public class Hero {
         g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (hunger / 100.0)), statsBarHeight);
         g2d.setColor(Color.BLACK);
         g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
-        g2d.drawString("Голод: " + hunger + "%", initialTopRightX, currentTopRightY - 5);
+        g2d.drawString("Голод: " + this.hunger + "%", initialTopRightX, currentTopRightY - 5);
 
 
         // Панель знань
@@ -464,7 +466,7 @@ public class Hero {
         g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (knowledge / 100.0)), statsBarHeight);
         g2d.setColor(Color.BLACK);
         g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
-        g2d.drawString("Знання: " + knowledge + "%", initialTopRightX, currentTopRightY - 5);
+        g2d.drawString("Знання: " + this.knowledge + "%", initialTopRightX, currentTopRightY - 5);
 
         currentTopRightY += (statsBarHeight + statsPadding + 10);
         g2d.setColor(Color.LIGHT_GRAY);
@@ -473,7 +475,7 @@ public class Hero {
         g2d.fillRect(initialTopRightX, currentTopRightY, (int) (statsBarWidth * (budget / 1000.0)), statsBarHeight);
         g2d.setColor(Color.BLACK);
         g2d.drawRect(initialTopRightX, currentTopRightY, statsBarWidth, statsBarHeight);
-        g2d.drawString("Бюджет: " + budget + "₴", initialTopRightX, currentTopRightY - 5);
+        g2d.drawString("Бюджет: " + this.budget + "₴", initialTopRightX, currentTopRightY - 5);
 
         //
         // Відображення поточного рівня
@@ -514,6 +516,14 @@ public class Hero {
 
     public void decreaseBudget(int decrease) {
         this.budget -= decrease;
+    }
+
+    public void decreaseEnergy(int energy){
+        this.energy -= energy;
+    }
+
+    public void increaseEnergy(int energy){
+        this.energy += energy;
     }
 
     public Specialty getSpecialty() {
@@ -558,5 +568,9 @@ public class Hero {
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public void setEnergy(int energy) {
+        this.energy = energy;
     }
 }
