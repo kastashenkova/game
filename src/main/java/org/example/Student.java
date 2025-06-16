@@ -14,6 +14,8 @@ public class Student implements Serializable {
     private int course;
     private String major;
     private List<Discipline> enrolledDisciplines;
+
+    private List<Discipline> examDisciplines;
     private Map<String, Integer> trimesterScores;
     private Map<String, Integer> zalikAttempts = new HashMap<>();
     private int electiveCount;
@@ -84,6 +86,9 @@ public class Student implements Serializable {
             if (!discipline.isMandatory()) {
                 electiveCount++;
             }
+            if (discipline.getControlType().equals("Екзамен")){
+                examDisciplines.add(discipline);
+            };
         }
         if (initialScore != null) {
             setTrimesterScore(discipline.getDisciplineId(), initialScore);
@@ -171,5 +176,13 @@ public class Student implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(studentId);
+    }
+
+    public List<Discipline> getExamDisciplines() {
+        return examDisciplines;
+    }
+
+    public void setExamDisciplines(List<Discipline> examDisciplines) {
+        this.examDisciplines = examDisciplines;
     }
 }
