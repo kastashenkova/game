@@ -1,18 +1,12 @@
-package studies;
-
-import org.example.Discipline;
+package org.example;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class Student implements Serializable {
     private String studentId;
@@ -23,6 +17,8 @@ public class Student implements Serializable {
     private Map<String, Integer> trimesterScores;
     private Map<String, Integer> zalikAttempts = new HashMap<>();
     private int electiveCount;
+    private boolean expelled;
+
 
     public Student(String studentId, String name, int course, String major) {
         this.studentId = studentId;
@@ -149,6 +145,14 @@ public class Student implements Serializable {
 
     public void incrementZalikAttempts(String disciplineId) {
         zalikAttempts.put(disciplineId, getZalikAttempts(disciplineId) + 1);
+    }
+
+    public void expel() {
+        this.expelled = true;
+    }
+
+    public boolean isExpelled() {
+        return expelled;
     }
 
     @Override

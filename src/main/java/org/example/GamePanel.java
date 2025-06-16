@@ -657,13 +657,13 @@ public class GamePanel extends JPanel implements ActionListener {
 
         panel.add(label, BorderLayout.NORTH);
 
-        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів - шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
+        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів, шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
         label1.setFont(new Font("Inter", Font.ITALIC, 12));
         label1.setForeground(new Color(30, 30, 30));
 
         panel.add(label1, BorderLayout.CENTER);
 
-        JLabel label2 = new JLabel("<html><body style='width: 150px'>Для підтримання життєздатності не забувайте підкріплюватись у маркеті SimsPo або кафе швидкого приготування!</body></html>");
+        JLabel label2 = new JLabel("<html><body style='width: 150px'>Для підтримки життєздатности не забувайте підкріплюватись у маркеті «SimsPo» або кафе швидкого приготування!</body></html>");
         label2.setFont(new Font("Inter", Font.ITALIC, 12));
         label2.setForeground(new Color(30, 30, 30));
 

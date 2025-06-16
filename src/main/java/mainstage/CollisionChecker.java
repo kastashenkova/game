@@ -3,7 +3,6 @@ package mainstage;
 import gui.LoadingFrame;
 import org.example.EnrollmentSystemGUI;
 import org.example.Hero;
-import org.example.StartWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,6 +62,7 @@ public class CollisionChecker {
                 gameBoard.gameThread.interrupt();
                 gameBoard.musicPlayer.stopMusic();
                 Hero hero = gameBoard.hero;
+                System.out.println(hero.getBudget());
                 int level = player.hero.getLevel();
                 SwingUtilities.invokeLater(() -> {
 
@@ -74,7 +74,7 @@ public class CollisionChecker {
                     loading.startLoading(() -> {
                         if(level==1){
                             hero.levelUp();
-                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
+                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI();
                             enrollmentSystemGUI.setVisible(true);
                         } else if(level==2){
 

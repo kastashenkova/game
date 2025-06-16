@@ -1,7 +1,7 @@
 package org.example;
 
 import mainstage.GameBoard;
-import studies.Student;
+import org.example.Student;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +24,7 @@ public class GameFrame extends JFrame {
     private final double initialScaleFactor;
 
     public GameFrame(Hero hero) {
-        setTitle("NaUKMA Sims");
+        setTitle("Sims NaUKMA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
@@ -40,10 +40,11 @@ public class GameFrame extends JFrame {
         newHero = new Hero(initialHeroName, initialHeroImagePath, initialDiamondImagePath, initialHeroX, initialHeroY, initialScaleFactor);
         student = new Student(generateRandomID(), initialHeroName, hero.getCourse(), hero.getSpecialty().toString());
 
-        newHero.setBudget(150);
+        newHero.setBudget(hero.getBudget());
         newHero.setSpecialty(hero.getSpecialty());
         newHero.setCourse(hero.getCourse());
       newHero.setSelectedName(hero.getSelectedName());
+      newHero.setLevel(hero.getLevel());
 
         gamePanel = new GamePanel(newHero, this);
         add(gamePanel, BorderLayout.CENTER);

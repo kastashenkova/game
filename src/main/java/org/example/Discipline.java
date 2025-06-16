@@ -3,7 +3,7 @@ package org.example;
 import java.io.Serializable;
 import java.util.Objects;
 
-
+import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
 
 public class Discipline implements Serializable {
     private String disciplineId;
@@ -105,7 +105,7 @@ public class Discipline implements Serializable {
         if (currentEnrollment < maxCapacity) {
             currentEnrollment++;
             return true;
-        } else if (maxCapacity == EnrollmentSystem.UNLIMITED_CAPACITY){
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
             currentEnrollment++;
         }
         return false;
@@ -122,7 +122,7 @@ public class Discipline implements Serializable {
     public boolean hasAvailableSlots() {
         if (currentEnrollment < maxCapacity) {
             return currentEnrollment < maxCapacity;
-        } else if (maxCapacity == EnrollmentSystem.UNLIMITED_CAPACITY){
+        } else if (maxCapacity == UNLIMITED_CAPACITY){
             return currentEnrollment < 64;
         }
         return false;

@@ -2,7 +2,6 @@ package org.example;
 
 import gui.LoadingFrame;
 import mainstage.GameBoard;
-import studies.Student;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -326,7 +325,7 @@ public class EnrollmentSystemGUI extends JFrame {
                 int confirm = JOptionPane.showConfirmDialog(
                         EnrollmentSystemGUI.this,
                         "Ви дійсно хочете завершити поточну гру та повернутися на початок?",
-                        "Завершити гру",
+                        "Вийти",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE
                 );
@@ -1428,7 +1427,7 @@ private void initializeInitialDataM(int selectedCourse) {
             SwingUtilities.invokeLater(() -> {
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> {
-                    hero.levelUp();
+                    hero.setLevel(2);
                     new GameFrame(hero).setVisible(true);
                 });
             });
