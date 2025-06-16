@@ -13,7 +13,9 @@ public class Hero {
     private int mood;
     private int hunger;
     private int knowledge; // Новий атрибут: Знання, від 0 до 100
-    private int level; // Новий атрибут: Поточний рівень героя (1 або 2)
+
+
+    private int level = 1; // Новий атрибут: Поточний рівень героя (1 або 2)
     private boolean canLevelUp; // Новий атрибут: Чи може герой перейти на новий рівень
     private int budget;
     private int course;
@@ -31,7 +33,6 @@ public class Hero {
 
 
     public String heroResourcePath;
-
 
 
     private BufferedImage heroImage; // Зображення героя (оригінального розміру)
@@ -58,9 +59,10 @@ public class Hero {
     private final long GAME_OVER_TIME_LIMIT = 15000; // 15 секунд до завершення гри
     private boolean isGameOverDueToEnergy;
 
-    public Hero(){
+    public Hero() {
 
     }
+
     public Hero(String name, String heroResourcePath, String diamondResourcePath, int initialX, int intialY, double scaleFactor) {
         this.name = name;
         this.energy = 100;
@@ -118,6 +120,7 @@ public class Hero {
             this.diamondImage = null; // Забезпечити null, якщо завантаження не вдалося
         }
     }
+
     public BufferedImage getHeroImage() {
         return heroImage;
     }
@@ -125,17 +128,47 @@ public class Hero {
     public void setHeroImage(BufferedImage heroImage) {
         this.heroImage = heroImage;
     }
-    public String getName() { return name; }
-    public int getEnergy() { return energy; }
-    public int getMood() { return mood; }
-    public int getHunger() { return hunger; }
-    public int getKnowledge() { return knowledge; } // Геттер для знань
-    public int getLevel() { return level; } // Геттер для рівня
-    public int getX() { return x; }
-    public int getY() { return y; }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getEnergy() {
+        return energy;
+    }
+
+    public int getMood() {
+        return mood;
+    }
+
+    public int getHunger() {
+        return hunger;
+    }
+
+    public int getKnowledge() {
+        return knowledge;
+    } // Геттер для знань
+
+    public int getLevel() {
+        return level;
+    } // Геттер для рівня
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
     // Ці методи повертають масштабовані розміри на основі оригінального зображення та scaleFactor
-    public int getScaledWidth() { return heroImage != null ? (int)(heroImage.getWidth() * scaleFactor) : 0; }
-    public int getScaledHeight() { return heroImage != null ? (int)(heroImage.getHeight() * scaleFactor) : 0; }
+    public int getScaledWidth() {
+        return heroImage != null ? (int) (heroImage.getWidth() * scaleFactor) : 0;
+    }
+
+    public int getScaledHeight() {
+        return heroImage != null ? (int) (heroImage.getHeight() * scaleFactor) : 0;
+    }
 
     public boolean isSelected() {
         return isSelected;
@@ -212,7 +245,7 @@ public class Hero {
             canLevelUp = true;
             setMessage(selectedName + " готова до сесії! Натисніть 'Підвищити рівень'."); // Повідомлення про готовність до сесії
         } else {
-            setMessage(selectedName+ " повчилася. Знання: " + knowledge + "%.");
+            setMessage(selectedName + " повчилася. Знання: " + knowledge + "%.");
         }
     }
 
@@ -239,7 +272,7 @@ public class Hero {
             mood = Math.min(100, mood + 10); // Покращуємо настрій
             setMessage(selectedName + " успішно перейшла на рівень 2 (сесія)!");
         } else if (level >= 2) {
-            setMessage(selectedName+ " вже на рівні сесії.");
+            setMessage(selectedName + " вже на рівні сесії.");
         } else {
             setMessage(selectedName + " ще не готова до сесії (потрібно більше знань).");
         }
@@ -366,7 +399,7 @@ public class Hero {
 
             // Позиція для повідомлення
             int messageX = currentDrawX + (currentDrawWidth - textWidth) / 2;
-            int messageY = currentDrawY - textHeight - (diamondImage != null ? (int)(diamondImage.getHeight() * 0.2) + 5 : 5);
+            int messageY = currentDrawY - textHeight - (diamondImage != null ? (int) (diamondImage.getHeight() * 0.2) + 5 : 5);
             if (diamondImage == null) messageY -= 15; // Якщо немає діаманта, підняти повідомлення вище
 
             // Малюємо фонову рамку для повідомлення
@@ -445,7 +478,7 @@ public class Hero {
         currentTopRightY += (statsBarHeight + statsPadding + 10);
         g2d.setColor(Color.BLACK);
         g2d.setFont(new Font("Arial", Font.BOLD, 14));
-        g2d.drawString("Рівень: " + level, initialTopRightX, currentTopRightY);
+        g2d.drawString("Рівень: " + this.level, initialTopRightX, currentTopRightY);
 
         // Повідомлення про можливість переходу на новий рівень
         if (canLevelUp) {
@@ -457,14 +490,15 @@ public class Hero {
             g2d.drawString(levelUpMsg, initialTopRightX + (statsBarWidth - msgWidth) / 2, currentTopRightY);
         }
     }
-    public void setName(String name){
+
+    public void setName(String name) {
         this.name = name;
     }
 
     public void decreaseHunger(int nutrition) {
 
         this.hunger -= nutrition;
-        if(hunger<=0) this.hunger = 0;
+        if (hunger <= 0) this.hunger = 0;
     }
 
 
@@ -476,9 +510,10 @@ public class Hero {
         this.budget = budget;
     }
 
-    public void decreaseBudget(int decrease){
+    public void decreaseBudget(int decrease) {
         this.budget -= decrease;
     }
+
     public Specialty getSpecialty() {
         return specialty;
     }
@@ -486,6 +521,7 @@ public class Hero {
     public void setSpecialty(Specialty specialty) {
         this.specialty = specialty;
     }
+
     public Student getStudent() {
         return student;
     }
@@ -493,6 +529,7 @@ public class Hero {
     public void setStudent(Student student) {
         this.student = student;
     }
+
     public String getHeroResourcePath() {
         return heroResourcePath;
     }
@@ -515,5 +552,9 @@ public class Hero {
 
     public void setSelectedName(String selectedName) {
         this.selectedName = selectedName;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 }
