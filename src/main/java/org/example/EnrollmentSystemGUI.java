@@ -1501,15 +1501,4 @@ public class EnrollmentSystemGUI extends JFrame {
             e.printStackTrace();
         }
     }
-
-
-    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
-        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
-        UIManager.put("control", SIMS_LIGHT_PINK);
-        UIManager.put("textForeground", SIMS_DARK_TEXT);
-
-        SwingUtilities.invokeLater(EnrollmentSystemGUI::new);
-    }
 }
