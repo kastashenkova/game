@@ -29,7 +29,7 @@ public class StartWindow extends JFrame {
         "Інженерія програмного забезпечення", "Комп'ютерні науки",
             "Прикладна математика"};
     String[] courses = new String[]{
-         "БП-1", "БП-2", "БП-3" , "БП-4", "МП-1", "МП-2" };
+         "1", "2", "3" , "4", "5", "6" };
     int selectedCourse;
 
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
