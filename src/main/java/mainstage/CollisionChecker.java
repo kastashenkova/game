@@ -62,6 +62,7 @@ public class CollisionChecker {
                 gameBoard.gameThread.interrupt();
                 gameBoard.musicPlayer.stopMusic();
                 Hero hero = gameBoard.hero;
+                System.out.println(hero.getBudget());
                 int level = player.hero.getLevel();
                 SwingUtilities.invokeLater(() -> {
 
