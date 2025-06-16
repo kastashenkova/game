@@ -74,7 +74,7 @@ public class CollisionChecker {
                     loading.startLoading(() -> {
                         if(level==1){
                             hero.levelUp();
-                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI();
+                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
                             enrollmentSystemGUI.setVisible(true);
                         } else if(level==2){
 
