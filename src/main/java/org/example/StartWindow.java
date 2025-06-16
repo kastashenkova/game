@@ -222,6 +222,7 @@ public class StartWindow extends JFrame {
             hero.setSelectedName(enteredName);
             hero.setHeroResourcePath(selectedCharacterResourcePath);
             hero.setSpecialty(specialty);
+            hero.setBudget(150);
             System.out.println(specialty.toString());
             hero.setCourse(selectedCourse);
 
