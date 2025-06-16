@@ -1,12 +1,9 @@
-package studies;
-
-import org.example.Discipline;
+package org.example;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Objects;
 import java.util.Random;
 
 public class CreditWindow extends JDialog {
@@ -20,7 +17,7 @@ public class CreditWindow extends JDialog {
     private JLabel attemptLabel;
 
     private static final int MAX_REGULAR_ATTEMPTS = 2;
-    private static final int MAX_TOTAL_ATTEMPTS = 3; // 2 регулярні + 1 перездача
+    private static final int MAX_TOTAL_ATTEMPTS = 3;
     private static final int PASSING_SCORE = 60;
 
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
@@ -126,9 +123,6 @@ public class CreditWindow extends JDialog {
             return;
         }
 
-        // Дозволяємо крутити колесо, якщо спроб менше MAX_REGULAR_ATTEMPTS,
-        // АБО якщо спроб рівно MAX_REGULAR_ATTEMPTS (тобто це перездача)
-        // АБО якщо поточний бал < PASSING_SCORE і спроб менше MAX_TOTAL_ATTEMPTS
         if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS ||
                 (actualAttemptsMade == MAX_REGULAR_ATTEMPTS && (currentTotalScore == null || currentTotalScore < PASSING_SCORE))) {
             spinButton.setEnabled(true);
@@ -136,16 +130,16 @@ public class CreditWindow extends JDialog {
             if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS) {
                 spinButton.setText("Крутити колесо!");
                 attemptLabel.setText("Спроба: " + (actualAttemptsMade + 1) + "/" + MAX_REGULAR_ATTEMPTS);
-            } else { // actualAttemptsMade == MAX_REGULAR_ATTEMPTS, це буде перездача
+            } else {
                 spinButton.setText("Крутити колесо (перездача)!");
-                attemptLabel.setText("Спроба: Перездача (3/" + MAX_TOTAL_ATTEMPTS + ")");
+                attemptLabel.setText("ПЕРЕЗДАЧА");
             }
         } else if (currentTotalScore != null && currentTotalScore >= PASSING_SCORE) {
             spinButton.setEnabled(false);
             spinButton.setText("Залік складено");
             scoreLabel.setText("Складено: " + currentTotalScore + " балів");
             attemptLabel.setText("Залік складено успішно!");
-        } else { // Всі спроби вичерпано і бал < PASSING_SCORE
+        } else {
             spinButton.setEnabled(false);
             spinButton.setText("Спроби вичерпано");
             scoreLabel.setText("Бал недостатній: " + (currentTotalScore != null ? currentTotalScore : "0") + "!");
@@ -153,12 +147,10 @@ public class CreditWindow extends JDialog {
         }
     }
 
-
     private void spinWheel() {
         spinButton.setEnabled(false);
 
         Random random = new Random();
-        // Бал від 1 до 60
         int finalScore = random.nextInt(60) + 1;
         int rotations = 5 + random.nextInt(5);
         double sectorSize = 360.0 / 60;
@@ -177,42 +169,17 @@ public class CreditWindow extends JDialog {
         if (currentSpunScore != null) {
             Integer existingScore = student.getTrimesterScore(discipline.getDisciplineId());
             int scoreToSave;
+            int actualAttemptsMade = student.getZalikAttempts(discipline.getDisciplineId());
 
-            int baseScoreToAdd = 40; // Базовий бал, який студент має до колеса
-            int previousSpunPoints = 0;
-
-            if (existingScore != null) {
-                // Якщо вже є бал, ми хочемо додати лише нові спінові бали до нього,
-                // не перевищуючи 100 і не повторюючи базовий бал.
-                // previousSpunPoints - це та частина балу, яка була отримана з колеса
-                // (тобто існуючий бал мінус базові 40).
-                previousSpunPoints = Math.max(0, existingScore - baseScoreToAdd);
+            if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS) {
+                int currentBaseScore = (existingScore != null) ? existingScore : 40;
+                scoreToSave = currentBaseScore + currentSpunScore;
+            } else {
+                scoreToSave = 40 + currentSpunScore;
+                if (existingScore != null) {
+                    scoreToSave = Math.max(existingScore, scoreToSave);
+                }
             }
-
-            // Новий загальний бал = Базовий бал (40) + Накопичені бали з попередніх спінів + Отримані бали
-            // Це неправильна логіка. Нам потрібно або додати новий бал до попереднього,
-            // АБО просто взяти максимальний з існуючого та нового (якщо ми хочемо, щоб кращий бал зберігався).
-            // За умови "завжди прокрутити 2 рази", краще зберігати найкращий або просто останній.
-            // Припустимо, ми хочемо, щоб кожен новий спін давав "новий" бал, додаючи його до 40.
-
-            // Проста логіка: новий бал - це 40 + поточний_спін
-            // Або: новий бал = Math.max(existingScore != null ? existingScore : 0, baseScoreToAdd + currentSpunScore);
-            // Виходячи з попередньої реалізації, де 40 завжди додається, зберігаємо її, але з корекцією.
-
-            // Правильна логіка для збереження:
-            // Якщо це перша спроба, бал = 40 + currentSpunScore.
-            // Якщо це наступна спроба, бал = 40 + MAX( попередній_спін_бал, поточний_спін_бал )
-            // Або просто: новий бал - це кращий з усіх спроб, або просто останній результат.
-
-            // Якщо ми хочемо, щоб бали "накопичувалися" або просто брали кращий результат,
-            // а не сумувалися з попередніми спінами після 40, то логіка має бути такою:
-            scoreToSave = baseScoreToAdd + currentSpunScore; // Поточний результат за спробу
-            if (existingScore != null) {
-                // Якщо вже є існуючий бал, беремо максимум між ним і новим scoreToSave
-                scoreToSave = Math.max(existingScore, scoreToSave);
-            }
-            // Це забезпечить, що бал ніколи не зменшиться, але й не буде "накопичуватися" нескінченно.
-
 
             if (scoreToSave > 100) {
                 scoreToSave = 100;
@@ -220,43 +187,37 @@ public class CreditWindow extends JDialog {
 
             student.setTrimesterScore(discipline.getDisciplineId(), scoreToSave);
             student.incrementZalikAttempts(discipline.getDisciplineId());
-            currentAttempt = student.getZalikAttempts(discipline.getDisciplineId()); // Оновлюємо currentAttempt з фактичної кількості
+
+            currentAttempt = student.getZalikAttempts(discipline.getDisciplineId());
 
             JOptionPane.showMessageDialog(this,
                     "Додано " + currentSpunScore + " балів. Ваш поточний бал за залік: " + scoreToSave + "!",
                     "Бал збережено",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            // Логіка перевірки результату та доступності наступної спроби
-            if (scoreToSave >= PASSING_SCORE && student.getZalikAttempts(discipline.getDisciplineId()) >= MAX_REGULAR_ATTEMPTS) {
-                // Якщо бал прохідний і вже зроблено мінімум 2 спроби (або більше)
-                // АБО якщо бал прохідний після перездачі
+            if (scoreToSave >= PASSING_SCORE && currentAttempt >= MAX_REGULAR_ATTEMPTS) {
                 JOptionPane.showMessageDialog(this,
                         "Залік успішно складено! Бал: " + scoreToSave + ".",
                         "Успіх!",
                         JOptionPane.INFORMATION_MESSAGE);
-                dispose(); // Закриваємо вікно
-            } else if (student.getZalikAttempts(discipline.getDisciplineId()) < MAX_TOTAL_ATTEMPTS) {
-                // Якщо спроб ще лишилось (навіть якщо бал прохідний, але спроб < MAX_REGULAR_ATTEMPTS)
-                // АБО якщо бал не прохідний, але є ще спроби
+                dispose();
+            } else if (currentAttempt < MAX_TOTAL_ATTEMPTS) {
                 currentSpunScore = null;
                 scoreLabel.setText(" ");
-                updateUIBasedOnAttempts(); // Оновлюємо UI для наступної спроби
+                updateUIBasedOnAttempts();
             } else {
-                // Всі спроби вичерпано і бал < PASSING_SCORE
                 JOptionPane.showMessageDialog(this,
                         "На жаль, Ви не набрали достатньо балів після " + MAX_TOTAL_ATTEMPTS + " спроб. Вас відраховано з університету!",
                         "Відрахування",
                         JOptionPane.ERROR_MESSAGE);
                 student.expel();
-                dispose(); // Закриваємо вікно
+                dispose();
             }
             if (parentGUI != null) {
-                parentGUI.updateProgressDisplay(); // Оновлюємо батьківське вікно
+                parentGUI.updateProgressDisplay();
             }
         }
     }
-
 
     class WheelPanel extends JPanel {
         private double rotationAngle = 0;

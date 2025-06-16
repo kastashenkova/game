@@ -13,7 +13,8 @@
       "currentEnrollment": 65,
       "isMandatory": true,
       "targetCourse": 1,
-      "controlType": "Екзамен"
+      "controlType": "Екзамен",
+      "isZalik": false
     },
     {
       "disciplineId": "315199",
@@ -23,7 +24,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315200",
@@ -33,7 +35,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315277",
@@ -44,7 +47,8 @@
       "currentEnrollment": 65,
       "isMandatory": true,
       "targetCourse": 1,
-      "controlType": "Екзамен"
+      "controlType": "Екзамен",
+      "isZalik": false
     },
     {
       "disciplineId": "315275",
@@ -54,7 +58,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315231",
@@ -64,7 +69,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315203",
@@ -75,7 +81,8 @@
       "currentEnrollment": 65,
       "isMandatory": true,
       "targetCourse": 1,
-      "controlType": "Екзамен"
+      "controlType": "Екзамен",
+      "isZalik": false
     },
     {
       "disciplineId": "315204",
@@ -85,7 +92,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315223",
@@ -95,7 +103,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315213",
@@ -105,7 +114,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "315202",
@@ -115,7 +125,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "314810",
@@ -125,7 +136,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "314804",
@@ -135,7 +147,8 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     },
     {
       "disciplineId": "314809",
@@ -145,10 +158,12 @@
       "maxCapacity": 65,
       "currentEnrollment": 65,
       "isMandatory": true,
-      "targetCourse": 1
+      "targetCourse": 1,
+      "isZalik": false
     }
   ],
   "trimesterScores": {},
   "zalikAttempts": {},
-  "electiveCount": 0
+  "electiveCount": 0,
+  "expelled": false
 }

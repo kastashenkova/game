@@ -1,6 +1,6 @@
 package org.example;
 
-import studies.Student;
+import org.example.Student;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

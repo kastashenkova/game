@@ -23,10 +23,19 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     JButton startButton; JButton optionsButton;  JButton quitButton;
     BufferedImage icon;
 
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+
     public WelcomeFrame() {
+        UIManager.put("OptionPane.yesButtonText", "Так");
+        UIManager.put("OptionPane.noButtonText", "Ні");
+        UIManager.put("OptionPane.cancelButtonText", "Скасувати");
+
         setTitle("Sims NaUKMA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 700);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
@@ -178,6 +187,11 @@ public class WelcomeFrame extends JFrame implements ActionListener {
 
 
     public static void main(String[] args) throws UnsupportedLookAndFeelException {
+        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+        UIManager.put("control", SIMS_LIGHT_PINK);
+        UIManager.put("textForeground", SIMS_DARK_TEXT);
+
         UIManager.setLookAndFeel(new FlatLightLaf());
         SwingUtilities.invokeLater(WelcomeFrame::new);
     }
