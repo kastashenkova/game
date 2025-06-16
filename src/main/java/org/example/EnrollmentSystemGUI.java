@@ -1428,6 +1428,7 @@ private void initializeInitialDataM(int selectedCourse) {
             SwingUtilities.invokeLater(() -> {
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> {
+                    hero.levelUp();
                     new GameFrame(hero).setVisible(true);
                 });
             });
