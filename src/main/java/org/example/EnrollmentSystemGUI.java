@@ -339,7 +339,7 @@ public class EnrollmentSystemGUI extends JFrame {
                 int confirm = JOptionPane.showConfirmDialog(
                         EnrollmentSystemGUI.this,
                         "Ви дійсно хочете завершити поточну гру та повернутися на початок?",
-                        "Завершити гру",
+                        "Вийти",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE
                 );
