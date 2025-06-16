@@ -473,8 +473,8 @@ public class StudyProgressGUI extends JFrame {
                     String controlTypeName = (controlType != null) ? controlType : "контролю";
 
                     if (Objects.equals(controlType, Discipline.CONTROL_TYPE_EXAM)) {
-                        //ExamWindow examWindow = new ExamWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent);
-                        //examWindow.setVisible(true);
+                        ExamWindow examWindow = new ExamWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent);
+                        examWindow.setVisible(true);
                         //StudyProgressGUI.this.updateProgressDisplay();
                     } else if (Objects.equals(controlType, Discipline.CONTROL_TYPE_ZALIK)) {
                         int attemptsMade = currentStudent.getZalikAttempts(selectedDiscipline.getDisciplineId());

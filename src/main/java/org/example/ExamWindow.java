@@ -4,9 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class CreditWindow extends JDialog {
+public class ExamWindow extends JDialog {
     private Discipline discipline;
     private Student student;
     private int currentAttempt;
@@ -28,8 +32,98 @@ public class CreditWindow extends JDialog {
 
     private StudyProgressGUI parentGUI;
 
-    public CreditWindow(Frame owner, Discipline discipline, Student student, int currentAttempt) {
-        super(owner, "Залік", true);
+    // Клас для зберігання питання та варіантів відповідей
+    private static class ProfessorQuestion {
+        String question;
+        List<String> correctAnswers; // Список для можливих правильних відповідей
+        List<String> partialAnswers; // Список для можливих частково правильних відповідей
+
+        public ProfessorQuestion(String question, List<String> correctAnswers, List<String> partialAnswers) {
+            this.question = question;
+            this.correctAnswers = correctAnswers;
+            this.partialAnswers = partialAnswers;
+        }
+    }
+
+    // Hardcoded list of professors and their questions with answers
+    private static final Map<String, ProfessorQuestion> professorsAndQuestions = new LinkedHashMap<>();
+    static {
+        // Приклад: "Яка максимальна швидкість світла, якщо рухатися перпендикулярно до нього?"
+        // Правильна: "така ж", "незмінна"
+        // Часткова: "мабуть така ж"
+        professorsAndQuestions.put("Проф. Довгань", new ProfessorQuestion(
+                "Яка максимальна швидкість світла, якщо рухатися перпендикулярно до нього?",
+                List.of("така ж", "незмінна", "швидкість світла", "с"),
+                List.of("мабуть така ж", "не міняється", "як завжди")
+        ));
+        professorsAndQuestions.put("Доц. Коваль", new ProfessorQuestion(
+                "Чи може програма без багів написати програму без багів?",
+                List.of("ні", "ні, не може", "немає"),
+                List.of("навряд чи", "складно", "теоретично ні")
+        ));
+        professorsAndQuestions.put("Викл. Мельник", new ProfessorQuestion(
+                "Якщо викладач спізнюється, це затримка чи просто \"альтернативний\" початок пари?",
+                List.of("альтернативний початок", "це альтернативний початок", "інший початок"),
+                List.of("затримка", "спізнення", "альтернативний")
+        ));
+        professorsAndQuestions.put("Проф. Захаров", new ProfessorQuestion(
+                "Яким буде результат ділення на нуль, якщо його виконати в реальному житті?",
+                List.of("помилка", "нескінченність", "error", "виняток"),
+                List.of("проблема", "хаос", "невідомість")
+        ));
+        professorsAndQuestions.put("Доц. Петренко", new ProfessorQuestion(
+                "Як перетворити каву на код, і чи є зворотний алгоритм?",
+                List.of("випити каву", "написати код", "програмування", "надихнутися кавою", "зворотного алгоритму немає"),
+                List.of("просто пити каву", "написати код з кавою", "немає")
+        ));
+        professorsAndQuestions.put("Викл. Сидоренко", new ProfessorQuestion(
+                "Чи вважається сон під час лекції формою активного слухання?",
+                List.of("ні", "звичайно ні", "не вважається"),
+                List.of("можливо, якщо це сон про лекцію", "інколи", "частково")
+        ));
+        professorsAndQuestions.put("Проф. Іваненко", new ProfessorQuestion(
+                "Скільки програмістів потрібно, щоб вкрутити лампочку, якщо вона не входить в ТЗ?",
+                List.of("жодного", "0", "не входить в тз", "залежить від тз"),
+                List.of("один, якщо напише скрипт", "багато, щоб обговорити")
+        ));
+        professorsAndQuestions.put("Доц. Бондар", new ProfessorQuestion(
+                "Якщо студент не здав ДЗ, чи можна вважати, що він оптимізував час?",
+                List.of("ні", "звичайно ні", "не оптимізував"),
+                List.of("це залежить", "можливо, для інших справ", "не завжди")
+        ));
+        professorsAndQuestions.put("Викл. Шевченко", new ProfessorQuestion(
+                "Який зв'язок між дедлайном і швидкістю вивчення матеріалу?",
+                List.of("прямий", "дуже сильний", "дедлайн стимулює", "чим ближче дедлайн, тим швидше"),
+                List.of("є зв'язок", "залежить", "дедлайн прискорює")
+        ));
+        professorsAndQuestions.put("Проф. Мороз", new ProfessorQuestion(
+                "Чи можна довести теорему Піфагора за допомогою гугл-перекладача?",
+                List.of("ні", "не можна", "це неможливо"),
+                List.of("навряд чи", "тільки якщо дуже постаратись", "теоретично ні")
+        ));
+
+        String[] defaultQuestions = {
+                "Що робити, якщо курс лекцій виявився нескінченним циклом?",
+                "Яка оптимальна кількість бутербродів для кодування?",
+                "Чи можна вважати, що ваш мозок - це комп'ютер, якщо ви вчитесь на програміста?",
+                "Чи можна написати штучний інтелект, який буде писати заліковки?",
+                "Як ефективно використовувати час, коли до сесії залишилося 5 хвилин?",
+                "Чи може студент отримати відрахування, якщо він занадто геніальний?",
+                "Яке рішення буде оптимальним: здати все вчасно чи здати ідеально, але пізно?",
+                "Якщо комп'ютер завис, чи можна вважати, що він медитує?"
+        };
+        for (int i = 0; professorsAndQuestions.size() < 60; i++) {
+            String profName = "Викл. Ім'я " + (professorsAndQuestions.size() + 1);
+            String q = defaultQuestions[i % defaultQuestions.length];
+            professorsAndQuestions.put(profName, new ProfessorQuestion(
+                    q, List.of("правильна відповідь " + i), List.of("частково правильна " + i)
+            ));
+        }
+    }
+    private final List<String> professorNames = new ArrayList<>(professorsAndQuestions.keySet());
+
+    public ExamWindow(Frame owner, Discipline discipline, Student student) {
+        super(owner, "Екзамен", true);
         if (owner instanceof StudyProgressGUI) {
             this.parentGUI = (StudyProgressGUI) owner;
         } else {
@@ -56,7 +150,7 @@ public class CreditWindow extends JDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel titleLabel = new JLabel("Отримання балів за залік з дисципліни «" + discipline.getName() + "»");
+        JLabel titleLabel = new JLabel("Отримання балів за екзамен з дисципліни «" + discipline.getName() + "»");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(titleLabel);
@@ -136,9 +230,9 @@ public class CreditWindow extends JDialog {
             }
         } else if (currentTotalScore != null && currentTotalScore >= PASSING_SCORE) {
             spinButton.setEnabled(false);
-            spinButton.setText("Залік складено");
+            spinButton.setText("Екзамен складено");
             scoreLabel.setText("Складено: " + currentTotalScore + " балів");
-            attemptLabel.setText("Залік складено успішно!");
+            attemptLabel.setText("Екзамен складено успішно!");
         } else {
             spinButton.setEnabled(false);
             spinButton.setText("Спроби вичерпано");
@@ -151,15 +245,53 @@ public class CreditWindow extends JDialog {
         spinButton.setEnabled(false);
 
         Random random = new Random();
-        int finalScore = random.nextInt(60) + 1;
+        int finalScoreFromWheel = random.nextInt(60) + 1; // Score from 1 to 60 for visual/professor selection
         int rotations = 5 + random.nextInt(5);
         double sectorSize = 360.0 / 60;
-        double targetAngleInWheelCoordinates = (finalScore - 1) * sectorSize + sectorSize / 2;
+        double targetAngleInWheelCoordinates = (finalScoreFromWheel - 1) * sectorSize + sectorSize / 2;
         double rotationOffset = (360 - targetAngleInWheelCoordinates);
         double totalTargetRotation = rotations * 360 + rotationOffset;
 
         wheelPanel.startSpinning(totalTargetRotation, rotations, resultScore -> {
-            currentSpunScore = resultScore;
+            int professorIndex = (resultScore - 1) % professorNames.size();
+            String landedProfessorName = professorNames.get(professorIndex);
+            ProfessorQuestion pq = professorsAndQuestions.get(landedProfessorName);
+
+            String question = (pq != null) ? pq.question : "Цікаве питання від викладача!";
+
+            String userAnswer = JOptionPane.showInputDialog(this,
+                    "Питання від \"" + landedProfessorName + "\":\n\n" + question + "\n\nВаша відповідь:",
+                    "Питання від викладача",
+                    JOptionPane.QUESTION_MESSAGE);
+
+            int pointsFromAnswer = 0;
+            if (userAnswer != null) {
+                userAnswer = userAnswer.toLowerCase().trim();
+                if (pq != null) {
+                    String finalUserAnswer = userAnswer;
+                    if (pq.correctAnswers.stream().anyMatch(ans -> finalUserAnswer.contains(ans.toLowerCase()))) {
+                        pointsFromAnswer = 40;
+                        JOptionPane.showMessageDialog(this, "Ваша відповідь правильна! Отримано +40 балів.", "Відповідь вірна", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        String finalUserAnswer1 = userAnswer;
+                        if (pq.partialAnswers.stream().anyMatch(ans -> finalUserAnswer1.contains(ans.toLowerCase()))) {
+                            pointsFromAnswer = 20;
+                            JOptionPane.showMessageDialog(this, "Ваша відповідь частково правильна! Отримано +20 балів.", "Відповідь часткова", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            pointsFromAnswer = 5;
+                            JOptionPane.showMessageDialog(this, "Ваша відповідь неправильна. Отримано +5 балів за присутність.", "Відповідь невірна", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                } else {
+                    pointsFromAnswer = 5;
+                    JOptionPane.showMessageDialog(this, "Не вдалося знайти питання. Отримано +5 балів.", "Помилка питання", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                pointsFromAnswer = 5;
+                JOptionPane.showMessageDialog(this, "Ви не відповіли. Отримано +5 балів за присутність.", "Без відповіді", JOptionPane.WARNING_MESSAGE);
+            }
+
+            currentSpunScore = pointsFromAnswer;
             scoreLabel.setText("Отримано: " + currentSpunScore + " балів");
             saveScoreAutomatically();
         });
@@ -176,7 +308,7 @@ public class CreditWindow extends JDialog {
                 scoreToSave = currentBaseScore + currentSpunScore;
             } else {
                 scoreToSave = 40 + currentSpunScore;
-                if (existingScore != null) {
+                if (existingScore != null) { // Якщо був попередній бал, беремо кращий (для перездачі)
                     scoreToSave = Math.max(existingScore, scoreToSave);
                 }
             }
@@ -191,13 +323,13 @@ public class CreditWindow extends JDialog {
             currentAttempt = student.getZalikAttempts(discipline.getDisciplineId());
 
             JOptionPane.showMessageDialog(this,
-                    "Додано " + currentSpunScore + " балів. Ваш поточний бал за залік: " + scoreToSave + "!",
+                    "Додано " + currentSpunScore + " балів. Ваш поточний бал за екзамен: " + scoreToSave + "!",
                     "Бал збережено",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            if (scoreToSave >= PASSING_SCORE && currentAttempt >= MAX_REGULAR_ATTEMPTS) {
+            if (scoreToSave >= PASSING_SCORE) {
                 JOptionPane.showMessageDialog(this,
-                        "Залік успішно складено! Бал: " + scoreToSave + ".",
+                        "Екзамен успішно складено! Бал: " + scoreToSave + ".",
                         "Успіх!",
                         JOptionPane.INFORMATION_MESSAGE);
                 dispose();
@@ -212,7 +344,6 @@ public class CreditWindow extends JDialog {
                         JOptionPane.ERROR_MESSAGE);
                 student.expel();
                 dispose();
-                System.exit(0);
             }
             if (parentGUI != null) {
                 parentGUI.updateProgressDisplay();
@@ -276,7 +407,6 @@ public class CreditWindow extends JDialog {
             int score = (int) (angleAtArrow / (360.0 / 60)) + 1;
             if (score == 61) score = 60;
             if (score == 0) score = 60;
-
             return score;
         }
 
@@ -305,17 +435,19 @@ public class CreditWindow extends JDialog {
             }
 
             g2d.setColor(SIMS_DARK_TEXT);
-            g2d.setFont(new Font("Segoe UI", Font.BOLD, 9));
+            g2d.setFont(new Font("Segoe UI", Font.BOLD, 9)); // Smaller font for names
             FontMetrics fm = g2d.getFontMetrics();
 
-            for (int i = 1; i <= 60; i++) {
-                double angleInRadians = Math.toRadians((i - 1) * (360.0 / 60) + (360.0 / 60) / 2);
+            // Draw professor names instead of numbers
+            for (int i = 0; i < 60; i++) {
+                double angleInRadians = Math.toRadians(i * (360.0 / 60) + (360.0 / 60) / 2); // Center of the segment
                 int textRadius = radius - fm.getHeight() / 2 - 5;
 
                 int x = (int) (centerX + textRadius * Math.cos(angleInRadians));
                 int y = (int) (centerY + textRadius * Math.sin(angleInRadians));
 
-                String text = String.valueOf(i);
+                // Get professor name, repeating if less than 60 unique names
+                String text = professorNames.get(i % professorNames.size());
                 int textWidth = fm.stringWidth(text);
                 int textHeight = fm.getHeight();
 
