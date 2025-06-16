@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-
 //calendar with dates of exams
 class ExamCalendar extends JPanel {
     private List<LocalDate> examDates;

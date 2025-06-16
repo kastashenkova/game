@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.List;
-
 //class for questions
 public class Question {
     private String questionText;

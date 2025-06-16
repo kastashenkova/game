@@ -22,7 +22,6 @@ public class Exam extends JPanel {
         this.frame = frame;
         setLayout(new BorderLayout(20, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
-
         questionL = new JLabel();
         questionL.setFont(new Font("Sans-Serif", Font.BOLD, 18));
         add(questionL, BorderLayout.NORTH);

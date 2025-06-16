@@ -28,7 +28,6 @@ public class TicketSelectionPanel extends JPanel {
 //        ImageIcon ticketImg = new ImageIcon("C:\\Users\\User\\IdeaProjects\\test\\ticket.png");
 //        Image scaledImg = ticketImg.getImage().getScaledInstance(150, 100, Image.SCALE_SMOOTH);
 //        ImageIcon icon = new ImageIcon(scaledImg);
-
         for (int i = 1; i <= 6; i++) {
             JButton ticketButton = new JButton();
             //JButton ticketButton = new JButton(icon);

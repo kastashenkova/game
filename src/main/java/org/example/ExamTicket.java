@@ -12,7 +12,6 @@ public class ExamTicket {
         this.ticketName = ticketName;
         this.questions = new ArrayList<>();
     }
-
     public String getTicketName() {
         return ticketName;
     }

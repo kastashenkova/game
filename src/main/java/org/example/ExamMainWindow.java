@@ -3,7 +3,7 @@ package org.example;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-
+//черговий клас з вікном для сесії вибачте я не маю фантазії як їх називати, тут крч основне віконечко де гравець обирає самі білети
 public class ExamMainWindow extends JPanel {
     private List<ExamTicket> tickets;
     private TicketSelectedListener listener;

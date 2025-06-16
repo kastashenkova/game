@@ -2,7 +2,6 @@ package org.example;
 
 import javax.swing.*;
 import java.util.List;
-
 //тут через мейн поки запускається вікно з самими білетами та питаннями, треба зв'язати з першим вікном exam session
 public class ThirdLvlMain {
     public static void main(String[] args) {

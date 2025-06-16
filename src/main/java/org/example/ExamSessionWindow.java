@@ -2,12 +2,10 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
-
 //start window of session
 public class ExamSessionWindow extends JFrame {
     private ExamCalendar calendarPanel;
     private JButton success;
-
     public ExamSessionWindow(ExamTicket ticket) {
         setTitle("Рівень 3: Сесія");
         setSize(800, 600);
