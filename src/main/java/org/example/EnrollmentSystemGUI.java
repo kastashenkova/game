@@ -2,6 +2,7 @@ package org.example;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import gui.LoadingFrame;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -42,9 +43,9 @@ public class EnrollmentSystemGUI extends JFrame {
     private JButton searchButton;
     private JComboBox<String> searchCriteriaCombo;
 
-    //ЗМІНИТИ!!!
-    private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");
+    private Hero hero;
 
+    private Student currentStudent = new Student("І 001/24 бп", "Тестовий студент", 1, "121 Інженерія програмного забезпечення");
     private Timer autoEnrollTimer;
     private Random randomGlitches = new Random();
 
@@ -89,7 +90,9 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
-    public EnrollmentSystemGUI() {
+    public EnrollmentSystemGUI(Hero hero) {
+        this.hero = hero;
+
         UIManager.put("OptionPane.messageFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("OptionPane.buttonFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("Label.font", new Font("Segoi UI", Font.BOLD, 12));
@@ -1440,7 +1443,13 @@ public class EnrollmentSystemGUI extends JFrame {
                     "Запис завершено",
                     JOptionPane.INFORMATION_MESSAGE);
             dispose();
-            System.exit(0);
+            System.exit(0);SwingUtilities.invokeLater(() -> {
+                LoadingFrame loading = new LoadingFrame();
+                loading.startLoading(() -> {
+                    hero.levelUp();
+                    new GameFrame(hero).setVisible(true);
+                });
+            });
         } else {
             JOptionPane.showMessageDialog(this,
                     "Ви повинні обрати дисципліни мінімум на " + EnrollmentSystem.MIN_CREDITS_TO_CONFIRM + " кредитів, щоб завершити вибір. Обрано: " + totalCredits + ".\n",
@@ -1500,16 +1509,5 @@ public class EnrollmentSystemGUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
-        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
-        UIManager.put("control", SIMS_LIGHT_PINK);
-        UIManager.put("textForeground", SIMS_DARK_TEXT);
-
-        SwingUtilities.invokeLater(EnrollmentSystemGUI::new);
     }
 }
