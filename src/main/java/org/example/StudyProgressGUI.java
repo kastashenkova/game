@@ -1,4 +1,4 @@
-package studies;
+package org.example;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -145,7 +145,7 @@ public class StudyProgressGUI extends JFrame {
         }
     }
 
-    private void updateProgressDisplay() {
+    void updateProgressDisplay() {
         tableModel.setRowCount(0);
 
         if (currentStudent == null || currentStudent.getEnrolledDisciplines().isEmpty()) {
@@ -479,7 +479,7 @@ public class StudyProgressGUI extends JFrame {
                     } else if (Objects.equals(controlType, Discipline.CONTROL_TYPE_ZALIK)) {
                         int attemptsMade = currentStudent.getZalikAttempts(selectedDiscipline.getDisciplineId());
                         if (attemptsMade < 2) {
-                            ZalikWindow zalikWindow = new ZalikWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent, attemptsMade);
+                            CreditWindow zalikWindow = new CreditWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent, attemptsMade);
                             zalikWindow.setVisible(true);
                             StudyProgressGUI.this.updateProgressDisplay();
                         } else {

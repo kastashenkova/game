@@ -1,10 +1,11 @@
 package org.example;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
 
-public class Discipline {
+public class Discipline implements Serializable {
     private String disciplineId;
     private String name;
     private String instructor; // Changed from 'lecturer' to 'instructor' for consistency
@@ -13,6 +14,11 @@ public class Discipline {
     private int currentEnrollment;
     private boolean isMandatory;
     private int targetCourse;
+    private String controlType;
+    private boolean isZalik;
+
+    public static final String CONTROL_TYPE_ZALIK = "Залік";
+    public static final String CONTROL_TYPE_EXAM = "Екзамен";
 
     public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse) {
         this.disciplineId = disciplineId;
@@ -23,6 +29,39 @@ public class Discipline {
         this.maxCapacity = maxCapacity;
         this.isMandatory = isMandatory;
         this.targetCourse = targetCourse;
+    }
+
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse, String controlType) {
+        this.disciplineId = disciplineId;
+        this.name = name;
+        this.instructor = instructor;
+        this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
+        this.maxCapacity = maxCapacity;
+        this.isMandatory = isMandatory;
+        this.targetCourse = targetCourse;
+        if (controlType != null && (controlType.equals(CONTROL_TYPE_ZALIK) || controlType.equals(CONTROL_TYPE_EXAM))) {
+            this.controlType = controlType;
+        } else {
+            this.controlType = CONTROL_TYPE_ZALIK;
+        }
+    }
+
+    public Discipline(String disciplineId, String name, String instructor, double credits, int currentEnrollment, int maxCapacity, boolean isMandatory, int targetCourse, String controlType, boolean isZalik) {
+        this.disciplineId = disciplineId;
+        this.name = name;
+        this.instructor = instructor;
+        this.credits = credits;
+        this.currentEnrollment = currentEnrollment;
+        this.maxCapacity = maxCapacity;
+        this.isMandatory = isMandatory;
+        this.targetCourse = targetCourse;
+        if (controlType != null && (controlType.equals(CONTROL_TYPE_ZALIK) || controlType.equals(CONTROL_TYPE_EXAM))) {
+            this.controlType = controlType;
+        } else {
+            this.controlType = CONTROL_TYPE_ZALIK;
+        }
+        this.isZalik = isZalik;
     }
 
     // Гетери
@@ -57,6 +96,9 @@ public class Discipline {
     public int getTargetCourse() {
         return targetCourse;
     }
+
+    public String getControlType() {
+        return controlType; }
 
     // Методи для керування заповненням дисципліни (потокобезпечні)
     public synchronized boolean enrollStudent() {
@@ -96,6 +138,10 @@ public class Discipline {
         }
     }
 
+    public boolean isZalik() {
+        return isZalik;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -107,5 +153,9 @@ public class Discipline {
     @Override
     public int hashCode() {
         return Objects.hash(disciplineId);
+    }
+
+    public void setControlType(String controlType) {
+        this.controlType = controlType;
     }
 }

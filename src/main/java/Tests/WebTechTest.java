@@ -1,4 +1,4 @@
-package org.example;
+package Tests;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class AlgorithmsTest extends JFrame {
+public class WebTechTest extends JFrame {
 
     private Question[] questions;
     private int currentQuestionIndex = 0;
@@ -46,19 +46,17 @@ public class AlgorithmsTest extends JFrame {
         }
     }
 
-    public AlgorithmsTest() {
-        setTitle("Тест з Алгоритмів і структур даних");
+    public WebTechTest() {
+        setTitle("Тест із Вебтехнологій");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Встановлюємо український текст для кнопок "OK" та "Скасувати"
         UIManager.put("OptionPane.okButtonText", "ОК");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
 
-        // Задаємо глобальні шрифти для JOptionPane та інших компонентів
         UIManager.put("OptionPane.messageFont", new Font("Arial", Font.PLAIN, 16));
         UIManager.put("OptionPane.buttonFont", new Font("Arial", Font.BOLD, 14));
         UIManager.put("Label.font", new Font("Arial", Font.PLAIN, 16));
@@ -127,48 +125,36 @@ public class AlgorithmsTest extends JFrame {
 
     private void initializeQuestions() {
         questions = new Question[] {
-                new Question("1. Яка основна функція компілятора?",
-                        new String[]{"Виконання програми", "Перетворення вихідного коду у машинозрозумілий код", "Відлагодження програми", "Управління пам'яттю"}, 1),
-                new Question("2. Що таке змінна в програмуванні?",
-                        new String[]{"Постійне значення", "Ім'я для комірки пам'яті, що зберігає дані", "Тип даних", "Оператор порівняння"}, 1),
-                new Question("3. Який тип циклу використовується, коли кількість ітерацій відома заздалегідь?",
-                        new String[]{"While", "Do-While", "For", "ForEach"}, 2),
-                new Question("4. Що таке синтаксична помилка?",
-                        new String[]{
-                                "Помилка в логіці програми",
-                                "Помилка, яка виникає під час виконання програми",
-                                "Помилка, що порушує правила написання коду мови програмування",
-                                "Помилка, пов'язана з неправильним використанням пам'яті"}, 2),
-                new Question("5. Який оператор використовується для перевірки рівності двох значень у більшості мов?",
-                        new String[]{"=", "==", ":=", "==="}, 1),
-                new Question("6. Що таке функція (метод) у програмуванні?",
-                        new String[]{"Змінна для зберігання тексту", "Блок коду, призначений для виконання певного завдання", "Тип даних", "Структура даних"}, 1),
-                new Question("7. Яка структура даних є LIFO (Last-In, First-Out)?",
-                        new String[]{"Черга (Queue)", "Стек (Stack)", "Список (List)", "Масив (Array)"}, 1),
-                new Question("8. Яка концепція ООП дозволяє створювати нові класи на основі наявних?",
-                        new String[]{"Інкапсуляція", "Поліморфізм", "Наслідування", "Абстракція"}, 2),
-                new Question("9. Для чого призначений оператор 'if-else'?",
-                        new String[]{"Для повторення блоку коду", "Для виконання коду на основі умови", "Для оголошення змінних", "Для створення об'єктів"}, 1),
-                new Question("10. Що таке 'алгоритм'?",
-                        new String[]{"Мова програмування", "Набір інструкцій для розв'язання задачі", "Тип комп'ютера", "Програма для малювання"}, 1),
-                new Question("11. Який оператор логічного 'І' (AND) використовується в Java/C++/C#?",
-                        new String[]{"||", "!", "&&", "|"}, 2),
-                new Question("12. Що таке 'масив'?",
-                        new String[]{"Змінна для одного значення", "Колекція однотипних елементів, що зберігаються послідовно", "Функція", "Оператор"}, 1),
-                new Question("13. Який з цих термінів НЕ є основним компонентом ООП?",
-                        new String[]{
-                                "Інкапсуляція",
-                                "Наслідування",
-                                "Компіляція",
-                                "Поліморфізм"}, 2),
-                new Question("14. Що повертає булева змінна?",
-                        new String[]{"Ціле число", "Рядок тексту", "Правда або хибність (true/false)", "Список значень"}, 2),
-                new Question("15. Який алгоритм сортування є найпростішим для розуміння і реалізації, але не найефективнішим?",
-                        new String[]{
-                                "Швидке сортування (QuickSort)",
-                                "Сортування злиттям (MergeSort)",
-                                "Бульбашкове сортування (Bubble Sort)",
-                                "Сортування вибором (Selection Sort)"}, 2)
+                new Question("1. Яке призначення HTML у веброзробці?",
+                        new String[]{"Створення стилів для сторінки", "Визначення структури вебсторінки", "Обробка запитів на сервері", "Створення баз даних"}, 1),
+                new Question("2. Який тег використовується для створення гіперпосилання в HTML?",
+                        new String[]{"<link>", "<a>", "<href>", "<url>"}, 1),
+                new Question("3. Що таке CSS?",
+                        new String[]{"Мова програмування", "Мова запитів до бази даних", "Мова стилів для оформлення вебсторінок", "Фреймворк JavaScript"}, 2),
+                new Question("4. Яка структура HTML-документа є обов’язковою?",
+                        new String[]{"<head>, <body>", "<html>, <head>, <body>", "<header>, <footer>", "<main>, <section>"}, 1),
+                new Question("5. Який атрибут тега <img> вказує шлях до зображення?",
+                        new String[]{"href", "src", "alt", "path"}, 1),
+                new Question("6. Яке призначення JavaScript у веброзробці?",
+                        new String[]{"Створення стилів", "Визначення структури", "Додавання інтерактивності", "Зберігання даних"}, 2),
+                new Question("7. Який метод JavaScript використовується для виведення повідомлення?",
+                        new String[]{"alert()", "print()", "echo()", "console()" }, 0),
+                new Question("8. Що таке DOM у контексті вебтехнологій?",
+                        new String[]{"Формат даних", "Серверна мова", "Об’єктна модель документа", "Браузерний плагін"}, 2),
+                new Question("9. Який протокол використовується для передачі вебсторінок?",
+                        new String[]{"FTP", "SMTP", "HTTP", "IP"}, 2),
+                new Question("10. Що таке URL?",
+                        new String[]{"Мова запитів", "Інструмент веброзробки", "Адреса ресурсу в Інтернеті", "Структура HTML"}, 2),
+                new Question("11. Який тег HTML використовується для створення списку з маркерами?",
+                        new String[]{"<ol>", "<ul>", "<li>", "<dl>"}, 1),
+                new Question("12. Який селектор у CSS відповідає за вибір елементів за їх класом?",
+                        new String[]{"#", ".", "/", "@"}, 1),
+                new Question("13. Що таке client-server модель?",
+                        new String[]{"Модель для обробки зображень", "Система керування стилями", "Модель взаємодії клієнта і сервера", "База даних"}, 2),
+                new Question("14. Яка функція відповідає за обробку подій у JavaScript?",
+                        new String[]{"eventHandler()", "onclick", "getElementById()", "loadDocument()"}, 1),
+                new Question("15. Що таке форма (form) в HTML?",
+                        new String[]{"Засіб стилізації", "Розмітка таблиці", "Інструмент взаємодії користувача з вебсторінкою", "Компонент навігації"}, 2)
         };
     }
 
@@ -270,7 +256,7 @@ public class AlgorithmsTest extends JFrame {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 int confirm = JOptionPane.showConfirmDialog(
-                        AlgorithmsTest.this,
+                        WebTechTest.this,
                         "Ви дійсно хочете вийти з тесту?",
                         "Підтвердження виходу",
                         JOptionPane.YES_NO_OPTION,
@@ -341,7 +327,7 @@ public class AlgorithmsTest extends JFrame {
         // Показуємо результат в JOptionPane
         String message = "Ваш результат: " + score + " з " + questions.length + " балів.";
         if (passed) {
-            message += "\nВітаємо! Ви успішно пройшли тест з Алгоритмів і структур даних.";
+            message += "\nВітаємо! Ви успішно пройшли тест із Вебтехнологій.";
             showResultPanel(score);
         } else {
             message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
@@ -356,7 +342,7 @@ public class AlgorithmsTest extends JFrame {
             if (option == JOptionPane.YES_OPTION) {
                 resetTest();
             } else {
-                System.exit(0); // Вийти
+                System.exit(0);
             }
         }
     }
@@ -437,7 +423,7 @@ public class AlgorithmsTest extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи з Алгоритмів і структур даних!",
+                    "Вітаємо з успішним проходженням контрольної роботи з Вебтехнологій!",
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -464,7 +450,7 @@ public class AlgorithmsTest extends JFrame {
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
-                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Алгоритмів та структур даних</h1>" +
+                "<h1 style='color: " + toHex(Color.BLACK) + ";'>Інструкція до тесту з Вебтехнологій</h1>" +
                 "<p>Ласкаво просимо до тесту!</p>" +
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
@@ -537,7 +523,7 @@ public class AlgorithmsTest extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new AlgorithmsTest().setVisible(true);
+                new WebTechTest().setVisible(true);
             }
         });
     }

@@ -27,9 +27,9 @@ public class StartWindow extends JFrame {
     JLabel nameLabel;
     String[] specialties = new String[]{
         "Інженерія програмного забезпечення", "Комп'ютерні науки",
-            "Прикладна математика", "Кібербезпека", "Робототехніка"};
+            "Прикладна математика"};
     String[] courses = new String[]{
-         "1", "2", "3" , "4", "5", "6" };
+         "БП-1", "БП-2", "БП-3" , "БП-4", "МП-1", "МП-2" };
     int selectedCourse;
 
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
@@ -104,9 +104,6 @@ public class StartWindow extends JFrame {
             if (index == 0) specialty = Specialty.IPZ;
             if (index == 1) specialty = Specialty.KN;
             if (index == 2) specialty = Specialty.PM;
-            if (index == 3) specialty = Specialty.AVIS;
-            if (index == 4) specialty = Specialty.AKITR;
-            if (index == 5) specialty = Specialty.KN;
         });
         topFormPanel.add(specialtyBox);
 
@@ -195,8 +192,8 @@ public class StartWindow extends JFrame {
             MusicPlayer.getInstance().playButtonClick();
             int result = JOptionPane.showConfirmDialog(
                     null,
-                    "Готові до початку гри зі створеним персонажем?",
-                    "Confirmation",
+                    "Готові до початку гри зі створеною персонажкою?",
+                    "Підтвердження",
                     JOptionPane.YES_NO_CANCEL_OPTION
             );
             if (result == JOptionPane.YES_OPTION) {

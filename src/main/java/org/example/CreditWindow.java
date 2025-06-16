@@ -1,4 +1,4 @@
-package studies;
+package org.example;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 
-public class ZalikWindow extends JDialog {
+public class CreditWindow extends JDialog {
     private Discipline discipline;
     private Student student;
     private int currentAttempt;
@@ -16,19 +16,31 @@ public class ZalikWindow extends JDialog {
     private Integer currentSpunScore = null;
     private JLabel attemptLabel;
 
+    private static final int MAX_REGULAR_ATTEMPTS = 2;
+    private static final int MAX_TOTAL_ATTEMPTS = 3;
+    private static final int PASSING_SCORE = 60;
+
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
     private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
     private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
     private static final Color SIMS_ACCENT_COLOR = new Color(255, 179, 186);
 
-    public ZalikWindow(Frame owner, Discipline discipline, Student student, int currentAttempt) {
+    private StudyProgressGUI parentGUI;
+
+    public CreditWindow(Frame owner, Discipline discipline, Student student, int currentAttempt) {
         super(owner, "Залік", true);
+        if (owner instanceof StudyProgressGUI) {
+            this.parentGUI = (StudyProgressGUI) owner;
+        } else {
+            System.err.println("Помилка: CreditWindow повинен бути викликаний з StudyProgressGUI.");
+        }
+
         this.discipline = discipline;
         this.student = student;
         this.currentAttempt = currentAttempt;
 
-        setSize(900, 600);
+        setSize(800, 600);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(owner);
@@ -45,12 +57,12 @@ public class ZalikWindow extends JDialog {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("Отримання балів за залік з дисципліни «" + discipline.getName() + "»");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        attemptLabel = new JLabel("Спроба: " + (currentAttempt + 1) + "/2");
+        attemptLabel = new JLabel();
         attemptLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         attemptLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(attemptLabel);
@@ -100,16 +112,38 @@ public class ZalikWindow extends JDialog {
     }
 
     private void updateUIBasedOnAttempts() {
-        if (currentAttempt >= 2) {
+        Integer currentTotalScore = student.getTrimesterScore(discipline.getDisciplineId());
+        int actualAttemptsMade = student.getZalikAttempts(discipline.getDisciplineId());
+
+        if (student.isExpelled()) {
+            spinButton.setEnabled(false);
+            spinButton.setText("Відраховано");
+            scoreLabel.setText("Студента відраховано");
+            attemptLabel.setText(" ");
+            return;
+        }
+
+        if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS ||
+                (actualAttemptsMade == MAX_REGULAR_ATTEMPTS && (currentTotalScore == null || currentTotalScore < PASSING_SCORE))) {
+            spinButton.setEnabled(true);
+            scoreLabel.setText("Поточний бал: " + (currentTotalScore != null ? currentTotalScore : "40"));
+            if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS) {
+                spinButton.setText("Крутити колесо!");
+                attemptLabel.setText("Спроба: " + (actualAttemptsMade + 1) + "/" + MAX_REGULAR_ATTEMPTS);
+            } else {
+                spinButton.setText("Крутити колесо (перездача)!");
+                attemptLabel.setText("ПЕРЕЗДАЧА");
+            }
+        } else if (currentTotalScore != null && currentTotalScore >= PASSING_SCORE) {
+            spinButton.setEnabled(false);
+            spinButton.setText("Залік складено");
+            scoreLabel.setText("Складено: " + currentTotalScore + " балів");
+            attemptLabel.setText("Залік складено успішно!");
+        } else {
             spinButton.setEnabled(false);
             spinButton.setText("Спроби вичерпано");
-            scoreLabel.setText("Спроби вичерпано");
-            attemptLabel.setText("Спроба: " + currentAttempt + "/2 (вичерпано)");
-        } else {
-            spinButton.setEnabled(true);
-            spinButton.setText("Крутити колесо!");
-            scoreLabel.setText(" ");
-            attemptLabel.setText("Спроба: " + (currentAttempt + 1) + "/2");
+            scoreLabel.setText("Бал недостатній: " + (currentTotalScore != null ? currentTotalScore : "0") + "!");
+            attemptLabel.setText("Всі спроби вичерпано!");
         }
     }
 
@@ -120,8 +154,6 @@ public class ZalikWindow extends JDialog {
         int finalScore = random.nextInt(60) + 1;
         int rotations = 5 + random.nextInt(5);
         double sectorSize = 360.0 / 60;
-        double angleToSectorCenter = (finalScore - 1) * sectorSize + sectorSize / 2;
-        double angleForScoreFromTop = (finalScore - 1) * sectorSize + sectorSize / 2;
         double targetAngleInWheelCoordinates = (finalScore - 1) * sectorSize + sectorSize / 2;
         double rotationOffset = (360 - targetAngleInWheelCoordinates);
         double totalTargetRotation = rotations * 360 + rotationOffset;
@@ -137,18 +169,17 @@ public class ZalikWindow extends JDialog {
         if (currentSpunScore != null) {
             Integer existingScore = student.getTrimesterScore(discipline.getDisciplineId());
             int scoreToSave;
+            int actualAttemptsMade = student.getZalikAttempts(discipline.getDisciplineId());
 
-            int baseScoreToAdd = 40;
-            int previousSpunPoints = 0;
-
-            if (existingScore != null) {
-                // Якщо попередній бал був 40, то additionalPoints буде 0.
-                // Якщо бал був 50, то additionalPoints буде 10.
-                previousSpunPoints = Math.max(0, existingScore - baseScoreToAdd);
+            if (actualAttemptsMade < MAX_REGULAR_ATTEMPTS) {
+                int currentBaseScore = (existingScore != null) ? existingScore : 40;
+                scoreToSave = currentBaseScore + currentSpunScore;
+            } else {
+                scoreToSave = 40 + currentSpunScore;
+                if (existingScore != null) {
+                    scoreToSave = Math.max(existingScore, scoreToSave);
+                }
             }
-
-            // Новий загальний бал = Базовий бал (40) + Накопичені бали з попередніх спінів + Отримані бали
-            scoreToSave = baseScoreToAdd + previousSpunPoints + currentSpunScore;
 
             if (scoreToSave > 100) {
                 scoreToSave = 100;
@@ -156,20 +187,34 @@ public class ZalikWindow extends JDialog {
 
             student.setTrimesterScore(discipline.getDisciplineId(), scoreToSave);
             student.incrementZalikAttempts(discipline.getDisciplineId());
-            currentAttempt++;
+
+            currentAttempt = student.getZalikAttempts(discipline.getDisciplineId());
 
             JOptionPane.showMessageDialog(this,
                     "Додано " + currentSpunScore + " балів. Ваш поточний бал за залік: " + scoreToSave + "!",
                     "Бал збережено",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            if (currentAttempt < 2) {
-                spinButton.setEnabled(true);
+            if (scoreToSave >= PASSING_SCORE && currentAttempt >= MAX_REGULAR_ATTEMPTS) {
+                JOptionPane.showMessageDialog(this,
+                        "Залік успішно складено! Бал: " + scoreToSave + ".",
+                        "Успіх!",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+            } else if (currentAttempt < MAX_TOTAL_ATTEMPTS) {
                 currentSpunScore = null;
                 scoreLabel.setText(" ");
-                attemptLabel.setText("Спроба: " + (currentAttempt + 1) + "/2");
+                updateUIBasedOnAttempts();
             } else {
-                dispose(); // Закрити вікно після вичерпання спроб
+                JOptionPane.showMessageDialog(this,
+                        "На жаль, Ви не набрали достатньо балів після " + MAX_TOTAL_ATTEMPTS + " спроб. Вас відраховано з університету!",
+                        "Відрахування",
+                        JOptionPane.ERROR_MESSAGE);
+                student.expel();
+                dispose();
+            }
+            if (parentGUI != null) {
+                parentGUI.updateProgressDisplay();
             }
         }
     }
@@ -211,7 +256,7 @@ public class ZalikWindow extends JDialog {
                         repaint();
                     } else {
                         timer.stop();
-                        rotationAngle = totalRotation; // Встановлюємо фінальний кут
+                        rotationAngle = totalRotation;
                         repaint();
                         int resultScore = calculateScoreFromResultAngle(rotationAngle);
                         if (completionListener != null) {
@@ -234,7 +279,6 @@ public class ZalikWindow extends JDialog {
             return score;
         }
 
-
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -247,10 +291,8 @@ public class ZalikWindow extends JDialog {
 
             java.awt.geom.AffineTransform oldTransform = g2d.getTransform();
 
-            // Обертаємо колесо
             g2d.rotate(Math.toRadians(rotationAngle), centerX, centerY);
 
-            // Малювання секторів
             for (int i = 0; i < 60; i++) {
                 double startAngle = i * (360.0 / 60);
                 g2d.setColor(sectorColors[i % sectorColors.length]);
@@ -261,7 +303,6 @@ public class ZalikWindow extends JDialog {
                         (int) startAngle, (int) (360.0 / 60));
             }
 
-            // Малювання чисел на колесі
             g2d.setColor(SIMS_DARK_TEXT);
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 9));
             FontMetrics fm = g2d.getFontMetrics();
@@ -284,7 +325,6 @@ public class ZalikWindow extends JDialog {
 
             g2d.setTransform(oldTransform);
 
-            // Малювання стрілки справа по центру
             g2d.setColor(Color.RED);
             int arrowBaseSize = 9;
             int arrowLength = radius - 136;
@@ -303,7 +343,6 @@ public class ZalikWindow extends JDialog {
             g2d.fillPolygon(xPoints, yPoints, 3);
             g2d.drawPolygon(xPoints, yPoints, 3);
 
-            // Центральне коло
             g2d.setColor(SIMS_DARK_TEXT);
             g2d.fillOval(centerX - 15, centerY - 15, 30, 30);
             g2d.setColor(Color.WHITE);
