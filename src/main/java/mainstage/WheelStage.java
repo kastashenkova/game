@@ -27,24 +27,27 @@ public class WheelStage extends JFrame {
         setLayout(new BorderLayout());
         setSize(600, 600);
         setLocationRelativeTo(null);
+        setBackground(new Color(118, 244, 255));
 
         BufferedImage icon = ImageIO.read(getClass().getResourceAsStream("/logo.png"));
         setIconImage(icon);
 
-        BackgroundPanel backgroundPanel = new BackgroundPanel(getClass().getResource("/backWheel.jpg").getFile());
-        setContentPane(backgroundPanel);
 
-        try {
-            URL url = getClass().getResource("/wheel.gif");
-            ImageIcon icon1 = new ImageIcon(url);
-            JLabel ferrisLabel = new JLabel(icon1);
-            add(ferrisLabel, BorderLayout.CENTER);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        URL url = WheelStage.class.getResource("/wheel.gif");
+        if (url != null) {
+            ImageIcon gifIcon = new ImageIcon(url);
+            JLabel gifLabel = new JLabel(gifIcon);
+            add(gifLabel);
+        } else {
+            System.out.println("Гіфка не знайдена");
         }
+
+        setVisible(true);
 
         hero = gameBoard.hero;
         hero.increaseEnergy(30);
 
     }
+
 }

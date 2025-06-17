@@ -15,7 +15,7 @@ public class Player {
     public final int screenY;
     public int  speed;
     private GameBoard gameBoard;
-    private KeyEventHandler keyEventHandler;
+    KeyEventHandler keyEventHandler;
     BufferedImage right1, right2, left1, left2, defaultPic;
     int spriteCounter = 0;
     int spriteNumber = 1;
@@ -172,6 +172,7 @@ public class Player {
         }
         return screenX;
     }
+
 
     public int getScreenY() {
         int screenY = this.screenY;

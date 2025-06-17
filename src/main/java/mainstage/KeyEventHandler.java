@@ -12,6 +12,12 @@ public class KeyEventHandler implements KeyListener {
     public void keyTyped(KeyEvent e) {
 
     }
+    public void clearAllKeys() {
+        upPressed = false;
+        downPressed = false;
+        leftPressed = false;
+        rightPressed = false;
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {

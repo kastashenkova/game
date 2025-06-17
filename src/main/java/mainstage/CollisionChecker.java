@@ -102,6 +102,9 @@ public class CollisionChecker {
                 player.worldY -= 40;
                 player.worldX -=50;
                 gameBoard.setPaused(true);
+                gameBoard.player.direction = Direction.defaulted;
+
+                gameBoard.player.keyEventHandler.clearAllKeys();
                 SwingUtilities.invokeLater(() -> {
                     ShopFrame shopFrame;
                     try {
@@ -127,6 +130,8 @@ public class CollisionChecker {
                         player.worldY -= 40;
                         player.worldX +=50;
                 gameBoard.setPaused(true);
+                gameBoard.player.direction = Direction.defaulted;
+                gameBoard.player.keyEventHandler.clearAllKeys();
                 SwingUtilities.invokeLater(() -> {
                     ShopFrame shopFrame;
                     try {
@@ -141,6 +146,7 @@ public class CollisionChecker {
                 player.worldY += 40;
                 player.worldX -=100;
                 gameBoard.setPaused(true);
+
                 try {
                     WheelStage wheelStage = new WheelStage(gameBoard);
                     wheelStage.setVisible(true);
@@ -151,7 +157,9 @@ public class CollisionChecker {
                                    "настрій!");
                             MusicPlayer.getInstance().setMusicEnabled(true);
                             MusicPlayer.getInstance().playMusic("/assets/Sounds/theme1.wav");
-                        }
+
+                            gameBoard.player.keyEventHandler.clearAllKeys();
+                               }
                     });
                 } catch (IOException e){
 
