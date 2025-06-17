@@ -530,6 +530,18 @@ public class Hero {
        }
         this.energy = result;
     }
+    public void decreaseMood(int mood){
+        this.mood -= mood;
+    }
+
+    public void increaseMood(int mood){
+        int result =    this.mood + mood;
+        if(result>=100){
+            this.mood = 100;
+            return;
+        }
+        this.mood = result;
+    }
 
     public Specialty getSpecialty() {
         return specialty;

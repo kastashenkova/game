@@ -4,9 +4,12 @@ import Tests.TestManager;
 import gui.LoadingFrame;
 import org.example.EnrollmentSystemGUI;
 import org.example.Hero;
+import org.example.MusicPlayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.List;
 
@@ -134,6 +137,26 @@ public class CollisionChecker {
                     shopFrame.setVisible(true);
 
                 });
+            } else if((obj.name.equals("wheel"))){
+                player.worldY += 40;
+                player.worldX -=100;
+                gameBoard.setPaused(true);
+                try {
+                    WheelStage wheelStage = new WheelStage(gameBoard);
+                    wheelStage.setVisible(true);
+                    wheelStage.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosed(WindowEvent e) {
+                           JOptionPane.showMessageDialog(null, "Ви ощасливили свого сіма та підняли йому " +
+                                   "настрій!");
+                            MusicPlayer.getInstance().setMusicEnabled(true);
+                            MusicPlayer.getInstance().playMusic("/assets/Sounds/theme1.wav");
+                        }
+                    });
+                } catch (IOException e){
+
+                }
+
             }
     }
 }
