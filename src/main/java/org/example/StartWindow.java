@@ -160,7 +160,7 @@ public class StartWindow extends JFrame {
         if (imageUrl != null) {
             characterIcon = new ImageIcon(imageUrl);
             Image image = characterIcon.getImage();
-            Image scaledImage = image.getScaledInstance(110, 155, Image.SCALE_SMOOTH);
+            Image scaledImage = image.getScaledInstance(90, 155, Image.SCALE_SMOOTH);
             characterIcon = new ImageIcon(scaledImage); // Створюємо новий ImageIcon зі масштабованим зображенням
         } else {
             System.err.println("Помилка: зображення не знайдено в classpath за шляхом: " + imageResourcePath);
@@ -223,6 +223,7 @@ public class StartWindow extends JFrame {
             hero.setHeroResourcePath(selectedCharacterResourcePath);
             hero.setSpecialty(specialty);
             hero.setBudget(150);
+            hero.setEnergy(100);
             System.out.println(specialty.toString());
             hero.setCourse(selectedCourse);
 

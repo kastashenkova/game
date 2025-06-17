@@ -28,6 +28,17 @@ public class GamePanel extends JPanel implements ActionListener {
     private GameFrame parentFrame;
 
 
+    private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
+    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
+    private static final Color SIMS_TURQUOISE = new Color(64, 224, 208);
+    private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
+    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
+    private final Color SIMS_BUTTON_HOVER = new Color(255, 240, 245);
+    private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
+    private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
+
+
+
     HintPanel hintPanel;
 
     private Point lastMousePos;
@@ -173,6 +184,128 @@ public class GamePanel extends JPanel implements ActionListener {
         hintPanel.setBounds(900, 350, 280, 220);
         add(hintPanel);
 
+        JButton sleepButton = createSimsButton("Спати");
+        sleepButton.addActionListener(e -> {
+                    MusicPlayer.getInstance().playButtonClick();
+                    currentGameState = GameState.GAME_PAUSED;
+
+                    Component comp = (Component) e.getSource();
+                    if (comp == null) return;
+
+                    // Створення напівпрозорої панелі для затемнення
+                    JPanel glassPane = new JPanel() {
+                        @Override
+                        protected void paintComponent(Graphics g) {
+                            g.setColor(new Color(0, 0, 0, 150)); // напівпрозорий чорний
+                            g.fillRect(0, 0, getWidth(), getHeight());
+                        }
+                    };
+                    glassPane.setOpaque(false);
+                    glassPane.setLayout(null);
+
+                    RootPaneContainer win = (RootPaneContainer) SwingUtilities.getWindowAncestor(comp);
+                    win.setGlassPane(glassPane);
+
+
+            JLabel messageLabel = new JLabel("Герой спить...", SwingConstants.CENTER);
+            messageLabel.setFont(new Font("MONOSPACED", Font.BOLD, 22));
+            messageLabel.setForeground(Color.WHITE);
+            messageLabel.setBounds(400, 80, 400, 50); // позиція та розмір можна налаштувати
+            glassPane.add(messageLabel);
+
+            JLabel countdownLabel = new JLabel("10", SwingConstants.CENTER);
+            countdownLabel.setFont(new Font("MONOSPACED", Font.BOLD, 56));
+            countdownLabel.setForeground(Color.WHITE);
+            countdownLabel.setBounds(500, 350, 100, 100);
+            glassPane.add(countdownLabel);
+
+            glassPane.setVisible(true);
+            glassPane.repaint();
+
+                    JLabel z1 = createZLabel("Z", 24, 540, 200);
+                    JLabel z2 = createZLabel("Z", 36, 580, 180);
+                    JLabel z3 = createZLabel("Z", 48, 620, 160);
+
+                    glassPane.add(z1);
+                    glassPane.repaint();
+
+                    //timer for zzz
+                    Timer zAppearTimer = new Timer(500, null);
+                    final int[] step = {1};
+                    Timer[] pulseTimerHolder = new Timer[1];
+
+
+                        zAppearTimer.addActionListener(eevt -> {
+                            if (step[0] == 1) {
+                                glassPane.add(z2);
+                                glassPane.repaint();
+                            } else if (step[0] == 2) {
+                                glassPane.add(z3);
+                                glassPane.repaint();
+                                zAppearTimer.stop();
+
+
+                                Timer pulseTimer = new Timer(500, null);
+                                pulseTimerHolder[0] = pulseTimer; // зберігаємо посилання
+
+                                final int[] pulseStep = {0};
+                                pulseTimer.addActionListener(ev -> {
+                                    switch (pulseStep[0]) {
+                                        case 0 -> z1.setVisible(true);
+                                        case 1 -> z2.setVisible(true);
+                                        case 2 -> z3.setVisible(true);
+                                        case 3 -> z1.setVisible(false);
+                                        case 4 -> z2.setVisible(false);
+                                        case 5 -> z3.setVisible(false);
+                                    }
+                                    pulseStep[0] = (pulseStep[0] + 1) % 6;
+                                });
+
+                                pulseTimer.start();
+                            }
+                            step[0]++;
+                        });
+
+                        zAppearTimer.start();
+
+                        //general timer
+                        Timer timer = new Timer(1000, null);
+                        final int[] secondsPassed = {10};
+
+            String[] sleepMessages = {
+                    "Герой спить...",
+                    "Набираємося сил...",
+                    "Сон - важлива справа!",
+                    "Заряджаємось енергією..."
+            };
+
+
+            timer.addActionListener(event -> {
+                            if (secondsPassed[0] > 0) {
+                                int timeLeft = secondsPassed[0];
+                                countdownLabel.setText(String.valueOf(secondsPassed[0]));
+                                hero.increaseEnergy(10);
+                                int randomIndex = (int)(Math.random() * sleepMessages.length);
+                                String msg = sleepMessages[randomIndex];
+                                messageLabel.setText(msg);
+                                secondsPassed[0]--;
+                            } else {
+                                timer.stop();
+                                countdownLabel.setText("0");
+                                if (pulseTimerHolder[0] != null) {
+                                    pulseTimerHolder[0].stop();
+                                }
+                                currentGameState = GameState.PLAYING;
+                                glassPane.setVisible(false);
+                                JOptionPane.showMessageDialog(this, "Ваш сім відновив енергію і готовий до нових звершень!");
+                            }
+                        });
+
+                        timer.start();
+                });
+        sleepButton.setBounds(1020, 250, 100, 50);
+        add(sleepButton);
+
         statsLabel = new JLabel();
         statsLabel.setFont(new Font("Arial", Font.BOLD, 14));
         statsLabel.setForeground(Color.BLACK);
@@ -188,14 +321,14 @@ public class GamePanel extends JPanel implements ActionListener {
 
         JButton eatButton = new JButton("Їсти");
         eatButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        eatButton.addActionListener(e -> {
+        eatButton.addActionListener(evnt -> {
             if (currentGameState == GameState.PLAYING) {
                 hero.eat();
             }
         });
         heroActionsPanel.add(eatButton);
 
-        JButton sleepButton = new JButton("Спати");
+      /*  JButton sleepButton = new JButton("Спати");
         sleepButton.setFont(new Font("Arial", Font.PLAIN, 10));
         sleepButton.addActionListener(e -> {
             if (currentGameState == GameState.PLAYING) {
@@ -203,6 +336,8 @@ public class GamePanel extends JPanel implements ActionListener {
             }
         });
         heroActionsPanel.add(sleepButton);
+
+       */
 
         JButton studyButton = new JButton("Навчатися");
         studyButton.setFont(new Font("Arial", Font.PLAIN, 10));
@@ -222,7 +357,7 @@ public class GamePanel extends JPanel implements ActionListener {
         });
         heroActionsPanel.add(relaxButton);
 
-        add(heroActionsPanel);
+      //  add(heroActionsPanel);
 
         gameTimer = new Timer(1000 / 60, this);
         gameTimer.start();
@@ -385,7 +520,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
         positionUserChatElements();
         goToWorldButton = getGoToWorldButton();
-        goToWorldButton.setBounds(10, 600, 100, 70);
+        goToWorldButton.setBounds(10, 600, 180, 70);
         add(goToWorldButton);
 
         JPanel panel = heroInfoPanel(hero);
@@ -395,6 +530,13 @@ public class GamePanel extends JPanel implements ActionListener {
         JPanel panel1 = infoPanel();
         panel1.setBounds(10, 180, 230, 250);
         add(panel1);
+    }
+    private JLabel createZLabel(String text, int size, int x, int y) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Serif", Font.BOLD, size));
+        label.setForeground(Color.GRAY);
+        label.setBounds(x, y, 100, 100);
+        return label;
     }
 
     @Override
@@ -691,10 +833,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
 
     private JButton getGoToWorldButton(){
-        goToWorldButton = new JButton("Вийти у світ");
-        goToWorldButton.setBackground(new Color(78, 90, 205));
-        goToWorldButton.setForeground(Color.WHITE);
-        goToWorldButton.setFont(new Font("Arial", Font.BOLD, 16));
+        goToWorldButton =  new JButton("Вийти у світ");
+        goToWorldButton.setBackground(SIMS_LIGHT_PINK);
+        goToWorldButton.setForeground(Color.GRAY);
+        goToWorldButton.setFont(new Font("MONOSPACED", Font.BOLD, 16));
         goToWorldButton.setFocusPainted(false);
         goToWorldButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         goToWorldButton.setBorder(new LineBorder(Color.WHITE, 2, true)); // true = округлі кути
@@ -724,5 +866,22 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void setHintPanel(HintPanel hintPanel) {
         this.hintPanel = hintPanel;
+    }
+    private JButton createSimsButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setBackground(SIMS_LIGHT_BLUE);
+        button.setForeground(SIMS_DARK_TEXT);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(SIMS_BUTTON_HOVER);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(SIMS_LIGHT_BLUE);
+            }
+        });
+        return button;
     }
 }

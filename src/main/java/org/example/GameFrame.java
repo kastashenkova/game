@@ -54,6 +54,7 @@ public class GameFrame extends JFrame {
         newHero.setCourse(hero.getCourse());
       newHero.setSelectedName(hero.getSelectedName());
       newHero.setLevel(hero.getLevel());
+      newHero.setEnergy(hero.getEnergy());
 
         gamePanel = new GamePanel(newHero, this);
         add(gamePanel, BorderLayout.CENTER);

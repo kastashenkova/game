@@ -42,7 +42,6 @@ public class PauseAction extends AbstractAction {
         if (comp == null) {
             return;
         }
-
         JPanel glassPane = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {

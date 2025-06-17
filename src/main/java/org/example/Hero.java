@@ -523,7 +523,12 @@ public class Hero {
     }
 
     public void increaseEnergy(int energy){
-        this.energy += energy;
+        int result =    this.energy + energy;
+       if(result>=100){
+           this.energy = 100;
+           return;
+       }
+        this.energy = result;
     }
 
     public Specialty getSpecialty() {
