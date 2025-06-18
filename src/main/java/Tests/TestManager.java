@@ -15,65 +15,104 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Manages the test-taking process for the student (hero) in the game.
+ * It selects disciplines for testing, generates questions, presents tests to the user,
+ * and handles post-test logic including saving game data and updating hero stats.
+ */
 public class TestManager {
 
     private Hero hero;
     private Student student;
-
     private List<Discipline> examDisciplines;
 
     private static final String DATA_FILE = "enrollment_data.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    /**
+     * Constructs a new TestManager.
+     * Initializes with the current hero, extracts the student and their exam disciplines.
+     * Sets the hero's initial knowledge level.
+     *
+     * @param hero The {@link Hero} object representing the player.
+     */
     public TestManager(Hero hero) {
-
         this.hero = hero;
         this.student = hero.getStudent();
         this.examDisciplines = student.getExamDisciplines();
-        hero.setKnowledge(80);
-
+        hero.setKnowledge(80); // Sets an initial knowledge level for the hero.
     }
 
+    /**
+     * Starts the test process.
+     * Selects three random exam disciplines and initiates the display of the first test.
+     */
     public void startTest() {
         List<Discipline> selected = getThreeRandomDisciplines();
-        generateQuestions(selected.get(0));
-        generateQuestions(selected.get(1));
+        // These calls to generateQuestions here seem redundant as they are called again in showNextTestWithLoading.
+        // It's generally better to generate questions just before showing the test.
+        // For example, if generateQuestions modifies the discipline object, doing it here might not be necessary
+        // if showNextTestWithLoading also does it for the current discipline.
+        // Keeping it as per original code for now.
+        if (!selected.isEmpty()) {
+            generateQuestions(selected.get(0));
+            if (selected.size() > 1) {
+                generateQuestions(selected.get(1));
+            }
+        }
         showNextTestWithLoading(selected, 0);
     }
 
+    /**
+     * Selects up to three random disciplines from the student's list of exam disciplines.
+     *
+     * @return A {@code List} of up to three randomly selected {@link Discipline} objects.
+     */
     private List<Discipline> getThreeRandomDisciplines() {
         List<Discipline> copy = new ArrayList<>(examDisciplines);
-        Collections.shuffle(copy);
-        return copy.subList(0, Math.min(3, copy.size()));
+        Collections.shuffle(copy); // Randomize the order of disciplines
+        return copy.subList(0, Math.min(3, copy.size())); // Return up to 3 disciplines
     }
 
+    /**
+     * Recursively displays the next test in the sequence with a loading screen.
+     * After all tests are completed, it updates hero stats, saves data, and returns to the game frame.
+     *
+     * @param selected A list of disciplines chosen for testing.
+     * @param index The current index of the test to be displayed from the {@code selected} list.
+     */
     private void showNextTestWithLoading(List<Discipline> selected, int index) {
         if (index >= selected.size()) {
+            // All tests completed
             JOptionPane.showMessageDialog(null, "Ви пройшли всі тести!", "Успіх", JOptionPane.INFORMATION_MESSAGE);
             SwingUtilities.invokeLater(() -> {
                 LoadingFrame loading = new LoadingFrame();
                 loading.startLoading(() -> {
-                    hero.levelUp();
-                    hero.setLevel(3);
-                    hero.setStudent(student);
-                    hero.decreaseEnergy(40);
-                    hero.decreaseHunger(-30);
-                    hero.decreaseMood(30);
-                    saveDataJson();
+                    // Update hero stats after completing tests
+                    hero.levelUp(); // Assuming this increases the hero's level
+                    hero.setLevel(3); // Explicitly setting level to 3
+                    hero.setStudent(student); // Ensure student object is updated in hero
+                    hero.decreaseEnergy(40); // Decrease energy (penalty/cost for testing)
+                    hero.decreaseHunger(-30); // Decrease hunger (positive effect, less hungry)
+                    hero.decreaseMood(30); // Decrease mood (positive effect, happier)
+                    saveDataJson(); // Save game data
                     GameFrame gameFrame = new GameFrame(hero);
-                    gameFrame.getGamePanel().getHintPanel().setHint(3);
-                    gameFrame.setVisible(true);
+                    gameFrame.getGamePanel().getHintPanel().setHint(3); // Set a specific hint
+                    gameFrame.setVisible(true); // Show the main game frame
                 });
             });
             return;
         }
 
         Discipline current = selected.get(index);
-        generateQuestions(current);
+        generateQuestions(current); // Generate questions for the current discipline
+
         LoadingFrame loading = new LoadingFrame();
         loading.startLoading(() -> {
             SwingUtilities.invokeLater(() -> {
-                MainTestFrame testFrame = new MainTestFrame(hero,current, () -> {
+                // Create and display the test frame
+                MainTestFrame testFrame = new MainTestFrame(hero, current, () -> {
+                    // This Runnable is executed after the current test in MainTestFrame is finished
                     while (true) {
                         int result = JOptionPane.showOptionDialog(
                                 null,
@@ -82,29 +121,40 @@ public class TestManager {
                                 JOptionPane.DEFAULT_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE,
                                 null,
-                                new Object[]{"Так"}, // тільки одна кнопка
+                                new Object[]{"Так"}, // Only one button "Так"
                                 "Так"
                         );
                         if (result == 0) {
-                            break; // вийти з циклу, якщо натиснуто "Так"
+                            break; // Exit loop if "Так" is pressed
                         }
                     }
-                    showNextTestWithLoading(selected, index + 1);
+                    showNextTestWithLoading(selected, index + 1); // Proceed to the next test
                 });
                 testFrame.setVisible(true);
             });
         });
     }
 
+    /**
+     * Saves the current student's data to a JSON file.
+     * This method is used to persist the game state.
+     */
     private void saveDataJson() {
         try (FileWriter writer = new FileWriter(DATA_FILE)) {
             gson.toJson(student, writer);
         } catch (IOException e) {
+            System.err.println("Error saving data to " + DATA_FILE + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-
+    /**
+     * Generates and assigns a set of predefined questions to the given discipline
+     * based on its name. If the discipline name doesn't match any known set,
+     * no questions will be assigned.
+     *
+     * @param discipline The {@link Discipline} object for which to generate questions.
+     */
     public void generateQuestions(Discipline discipline) {
         if (discipline.getName().equals("Забезпечення якости доступу програмних продуктів"))
             discipline.questions = new Question[]{

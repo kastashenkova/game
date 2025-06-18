@@ -361,15 +361,15 @@ public class GamePanel extends JPanel implements ActionListener {
         ActionListener sendMessageAction = e -> {
             String message = userMessageInputField.getText().trim();
             if (!message.isEmpty()) {
+                showFloatingMessage("Ви", message); // Відображаємо повідомлення
                 MusicPlayer.getInstance().setMusicEnabled(true);
                 MusicPlayer.getInstance().playEffect("/assets/Sounds/message_send.wav");
                 userMessageInputField.setText(""); // Очищаємо поле
             }
         };
-
-
         sendUserMessageButton.addActionListener(sendMessageAction);
         userMessageInputField.addActionListener(sendMessageAction); // Відправлення по Enter
+
 
         addMouseListener(new MouseAdapter() {
             @Override
