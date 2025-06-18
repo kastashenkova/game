@@ -15,7 +15,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * The StudyProgressGUI class provides a graphical user interface for displaying
+ * and managing a student's academic progress during a session. It shows disciplines,
+ * current scores, and allows interaction for taking exams or credits (zalik).
+ */
 public class StudyProgressGUI extends JFrame {
+    // UI Colors consistent with a "Sims" theme
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
     private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
@@ -24,35 +30,44 @@ public class StudyProgressGUI extends JFrame {
     private static final Color SIMS_GREEN_INCORRECT = new Color(182, 209, 182);
 
     private Student currentStudent;
-    double totalScoresSum = 0;
+    double totalScoresSum = 0; // Accumulates scores for average calculation
 
-    private Hero hero;
-    private JTable progressTable;
-    private DefaultTableModel tableModel;
-    private JLabel averageScoreLabel;
-    private JButton endSessionButton;
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final String ENROLLMENT_FILE = "enrollment_data.json";
+    private Hero hero; // The player's character
+    private JTable progressTable; // Table to display discipline progress
+    private DefaultTableModel tableModel; // Model for the progress table
+    private JLabel averageScoreLabel; // Label to display the average score
+    private JButton endSessionButton; // Button to conclude the session
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create(); // GSON for JSON operations
+    private static final String ENROLLMENT_FILE = "enrollment_data.json"; // File to store student enrollment data
 
+    /**
+     * Constructs a new StudyProgressGUI.
+     * @param hero The Hero object associated with this study session.
+     */
     public StudyProgressGUI(Hero hero) {
         MusicPlayer.getInstance().setMusicEnabled(true);
-        MusicPlayer.getInstance().playMusic("/assets/Sounds/sessionBack.wav");
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/sessionBack.wav"); // Play background music for the session
 
         this.hero = hero;
-        setTitle("Сесія");
-        setSize(1200, 800);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setTitle("Сесія"); // Window title
+        setSize(1200, 800); // Window size
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close operation
+        setLocationRelativeTo(null); // Center the window
 
-        initComponents();
-        loadStudentData();
-        showInstructionsDialog();
-        updateProgressDisplay();
+        initComponents(); // Initialize UI components
+        loadStudentData(); // Load student's enrolled disciplines
+        showInstructionsDialog(); // Show instructions at the start
+        updateProgressDisplay(); // Update the table and average score
     }
 
+    /**
+     * Initializes the UI components of the StudyProgressGUI, including the table,
+     * labels, and buttons.
+     */
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(10, 10)); // Main layout for the frame
 
+        // Panel for the progress table
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBorder(BorderFactory.createTitledBorder("Ваш прогрес по дисциплінах"));
 
@@ -60,6 +75,7 @@ public class StudyProgressGUI extends JFrame {
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
+                // Only the "Сесія" column (index 3) is editable
                 return column == 3;
             }
         };
@@ -70,9 +86,11 @@ public class StudyProgressGUI extends JFrame {
         progressTable.setGridColor(Color.LIGHT_GRAY);
         progressTable.setIntercellSpacing(new Dimension(1, 1));
 
+        // Set custom renderer and editor for the "Сесія" column (button)
         progressTable.getColumn("Сесія").setCellRenderer(new ButtonRenderer());
         progressTable.getColumn("Сесія").setCellEditor(new ButtonEditor(new JCheckBox()));
 
+        // Add mouse listener for double-click to display discipline details
         progressTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -89,25 +107,27 @@ public class StudyProgressGUI extends JFrame {
         tablePanel.add(scrollPane, BorderLayout.CENTER);
         add(tablePanel, BorderLayout.CENTER);
 
+        // Label for student information at the top
         JLabel studentInfoLabel = new JLabel("Завантажую інформацію про студента...");
         studentInfoLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         studentInfoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
         add(studentInfoLabel, BorderLayout.NORTH);
 
+        // Panel for average score and "End Session" button at the bottom
         JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        averageScoreLabel = new JLabel(" ");
+        averageScoreLabel = new JLabel(" "); // Initial empty label
         averageScoreLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         averageScoreLabel.setForeground(SIMS_DARK_TEXT);
         southPanel.add(averageScoreLabel);
 
-        // Add the new "End Session" button
+        // "End Session" button
         endSessionButton = new JButton("Завершити сесію");
         endSessionButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         endSessionButton.setBackground(SIMS_MEDIUM_PINK);
         endSessionButton.setForeground(SIMS_DARK_TEXT);
-        endSessionButton.setEnabled(true);
+        endSessionButton.setEnabled(true); // Initially enabled
         endSessionButton.addActionListener(e -> {
-            handleEndSession();
+            handleEndSession(); // Call method to handle session conclusion
         });
 
         southPanel.add(endSessionButton);
@@ -115,32 +135,40 @@ public class StudyProgressGUI extends JFrame {
         add(southPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Loads student data from a JSON file. If the file is not found or corrupted,
+     * a default empty student will be created.
+     */
     private void loadStudentData() {
         try (FileReader reader = new FileReader(ENROLLMENT_FILE)) {
             currentStudent = gson.fromJson(reader, Student.class);
             if (currentStudent == null) {
-                System.err.println("Помилка: не вдалося завантажити дані студента з JSON. Можливо, файл порожній або пошкоджений.");
-                currentStudent = new Student("Невідомий студент", 0, "Невідомо");
+                System.err.println("Error: Failed to load student data from JSON. File might be empty or corrupted.");
+                currentStudent = new Student("Невідомий студент", 0, "Невідомо"); // Fallback to default student
             }
 
+            // Ensure control type is set for all disciplines
             for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
                 if (disc.getControlType() == null || disc.getControlType().isEmpty()) {
-                    disc.setControlType(Discipline.CONTROL_TYPE_ZALIK);
+                    disc.setControlType(Discipline.CONTROL_TYPE_ZALIK); // Default to "Zalik" if not specified
                 }
             }
 
         } catch (IOException e) {
-            System.err.println("Помилка завантаження даних студента з JSON: " + e.getMessage());
+            System.err.println("Error loading student data from JSON: " + e.getMessage());
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                    "Не вдалося завантажити дані студента. Буде створено порожнього студента.",
-                    "Помилка завантаження",
+                    "Failed to load student data. An empty student will be created.",
+                    "Loading Error",
                     JOptionPane.ERROR_MESSAGE);
-            currentStudent = new Student("Студент без даних", 0, "Н/Д");
+            currentStudent = new Student("Студент без даних", 0, "Н/Д"); // Fallback on error
         }
-        updateStudentInfoLabel();
+        updateStudentInfoLabel(); // Update the student info display
     }
 
+    /**
+     * Updates the student information label at the top of the GUI.
+     */
     private void updateStudentInfoLabel() {
         JLabel studentInfoLabel = (JLabel) ((BorderLayout) getContentPane().getLayout()).getLayoutComponent(BorderLayout.NORTH);
         if (currentStudent != null) {
@@ -156,18 +184,22 @@ public class StudyProgressGUI extends JFrame {
         }
     }
 
+    /**
+     * Updates the progress table and recalculates the average score based on
+     * the current student's enrolled disciplines and their scores.
+     */
     void updateProgressDisplay() {
-        tableModel.setRowCount(0);
+        tableModel.setRowCount(0); // Clear existing rows
 
         if (currentStudent == null || currentStudent.getEnrolledDisciplines().isEmpty()) {
             averageScoreLabel.setText("Середній бал: 0.00");
-            endSessionButton.setEnabled(false);
+            endSessionButton.setEnabled(false); // Disable end session if no disciplines
             return;
         }
 
-
-        int disciplinesCountedForAverage = currentStudent.getEnrolledDisciplines().size();
-        boolean allScoresAbove60 = true;
+        totalScoresSum = 0; // Reset sum for recalculation
+        int disciplinesCountedForAverage = 0; // Count disciplines that contribute to average
+        boolean allScoresAbove60 = true; // Flag to check if all scores are sufficient
 
         for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
             Integer actualScore = currentStudent.getTrimesterScore(disc.getDisciplineId());
@@ -176,56 +208,67 @@ public class StudyProgressGUI extends JFrame {
             int scoreForAverageCalculation;
 
             if (actualScore == null) {
+                // If no actual score is recorded (e.g., first attempt or not yet taken)
                 if (Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK)) {
                     int attempts = currentStudent.getZalikAttempts(disc.getDisciplineId());
                     if (attempts == 0) {
-                        scoreDisplay = "40";
+                        scoreDisplay = "40"; // Default initial score for Zalik
                         scoreForAverageCalculation = 40;
                     } else {
-                        scoreDisplay = "0";
+                        scoreDisplay = "0"; // Score if attempts made but no success
                         scoreForAverageCalculation = 0;
                     }
                 } else {
-                    scoreDisplay = String.valueOf(disc.getCurrentStudentsMark());
+                    scoreDisplay = String.valueOf(disc.getCurrentStudentsMark()); // Use current mark from discipline
                     scoreForAverageCalculation = disc.getCurrentStudentsMark();
                 }
-
-                totalScoresSum += scoreForAverageCalculation;
-
-                if (actualScore == null || actualScore < 60) {
-                    if (!(Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0)) {
-                        allScoresAbove60 = false;
-                    } else if (Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0 && scoreForAverageCalculation <= 60) {
-                        allScoresAbove60 = false;
-                    } else if (actualScore != null && actualScore < 60) {
-                        allScoresAbove60 = false;
-                    }
-                }
-                String actionButtonText = " ";
-                if(disc.getAvtomat()){
-                    actionButtonText = "Автомат";
-
-
-                } else {
-
-                    actionButtonText = "Допуск";
-                }
-
-                Object[] rowData = {
-                        disc.getName(),
-                        displayControlType,
-                        scoreDisplay,
-                        actionButtonText
-                };
-                tableModel.addRow(rowData);
+            } else {
+                // If actual score is recorded
+                scoreDisplay = String.valueOf(actualScore);
+                scoreForAverageCalculation = actualScore;
             }
 
-            double average = (disciplinesCountedForAverage > 0) ? (totalScoresSum / disciplinesCountedForAverage) : 0;
-            averageScoreLabel.setText(String.format("Середній бал: %.2f", average));
+            totalScoresSum += scoreForAverageCalculation;
+            disciplinesCountedForAverage++; // Increment count for average calculation
 
+            // Check if score is sufficient for overall session completion (>=60)
+            if (scoreForAverageCalculation < 60) {
+                // Special handling for Zalik with 0 attempts and initial score of 40
+                if (!(Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0)) {
+                    allScoresAbove60 = false;
+                }
+            }
+
+            String actionButtonText;
+            if (disc.getAvtomat()) {
+                actionButtonText = "Автомат";
+            } else if (Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK)) {
+                actionButtonText = "Допуск"; // For Zalik, button text is "Допуск"
+            } else {
+                actionButtonText = "Допуск"; // For Exam, button text is "Допуск"
+            }
+
+
+            Object[] rowData = {
+                    disc.getName(),
+                    displayControlType,
+                    scoreDisplay,
+                    actionButtonText
+            };
+            tableModel.addRow(rowData);
         }
+
+        double average = (disciplinesCountedForAverage > 0) ? (totalScoresSum / disciplinesCountedForAverage) : 0;
+        averageScoreLabel.setText(String.format("Середній бал: %.2f", average));
+
+        // Enable or disable the "End Session" button based on overall scores
+        endSessionButton.setEnabled(allScoresAbove60); // Enable only if all scores are >= 60
     }
 
+    /**
+     * Displays detailed information about a selected discipline in a dialog.
+     * @param row The row index of the selected discipline in the table.
+     */
     private void displayDisciplineDetails(int row) {
         String disciplineName = (String) tableModel.getValueAt(row, 0);
 
@@ -251,12 +294,16 @@ public class StudyProgressGUI extends JFrame {
 
             JOptionPane.showMessageDialog(this, details.toString(), "Інформація про дисципліну", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(this, "Не вдалося знайти деталі для цієї дисципліни.", "Помилка", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to find details for this discipline.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // New method to handle "End Session" button click
+    /**
+     * Handles the action when the "End Session" button is clicked.
+     * It prompts the user for confirmation and, if confirmed, transitions to the next game stage.
+     */
     private void handleEndSession() {
+        // Customize JOptionPane button texts
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
 
@@ -268,8 +315,10 @@ public class StudyProgressGUI extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
 
         if (result != JOptionPane.YES_OPTION) {
-            return; // користувач натиснув "Ні"
+            return; // User clicked "No"
         }
+
+        // Check average score for scholarship
         double currentAverageScore = Double.parseDouble(averageScoreLabel.getText().replace("Середній бал: ", "").replace(",", "."));
         if (currentAverageScore > 95.0) {
             JOptionPane.showMessageDialog(this,
@@ -277,25 +326,29 @@ public class StudyProgressGUI extends JFrame {
                     "ЮХУУУУ!!!! Стипендія!!!",
                     JOptionPane.INFORMATION_MESSAGE);
         }
-        dispose();
+
+        dispose(); // Close the session GUI
         SwingUtilities.invokeLater(() -> {
-            LoadingFrame loading = new LoadingFrame();
+            LoadingFrame loading = new LoadingFrame(); // Show loading screen
             loading.startLoading(() -> {
-                hero.levelUp();
-                hero.setLevel(4);
-                hero.setStudent(currentStudent);
-                hero.decreaseEnergy(40);
-                hero.decreaseHunger(-30);
-                hero.decreaseMood(-30);
-                GameFrame gameFrame = new GameFrame(hero);
-                gameFrame.getGamePanel().getHintPanel().setHint(4);
-                gameFrame.setVisible(true);
+                // Apply post-session effects to the hero
+                hero.levelUp(); // Level up the hero
+                hero.setLevel(4); // Set hero level to 4 (example, might be dynamic)
+                hero.setStudent(currentStudent); // Update hero's student object
+                hero.decreaseEnergy(40); // Decrease energy
+                hero.decreaseHunger(-30); // Decrease hunger (increase hunger stat - less hungry)
+                hero.decreaseMood(-30); // Decrease mood (increase mood stat - happier)
+                GameFrame gameFrame = new GameFrame(hero); // Create new game frame
+                gameFrame.getGamePanel().getHintPanel().setHint(4); // Set a hint for the next game stage
+                gameFrame.setVisible(true); // Make the game frame visible
             });
         });
-
     }
 
-
+    /**
+     * Custom TableCellRenderer for rendering buttons in the "Сесія" column.
+     * It styles the button based on the student's score in the discipline.
+     */
     class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
             setOpaque(true);
@@ -304,24 +357,27 @@ public class StudyProgressGUI extends JFrame {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-            setText((value == null) ? "" : value.toString());
+            setText((value == null) ? "" : value.toString()); // Set button text
+
+            // Get the score from the "Поточний бал" column
             Object scoreObj = table.getModel().getValueAt(row, 2);
             Integer score = null;
             if (scoreObj instanceof Integer) {
                 score = (Integer) scoreObj;
             } else if (scoreObj instanceof String && !scoreObj.equals("N/A")) {
                 try {
-                    // Парсимо, враховуючи " (поч.)"
+                    // Parse string score, handling cases like "40 (поч.)"
                     String scoreStr = (String) scoreObj;
                     if (scoreStr.contains(" ")) {
                         scoreStr = scoreStr.substring(0, scoreStr.indexOf(" "));
                     }
                     score = Integer.parseInt(scoreStr);
                 } catch (NumberFormatException e) {
-                    score = null;
+                    score = null; // If parsing fails
                 }
             }
 
+            // Determine discipline and its control type for button state
             String disciplineName = (String) table.getModel().getValueAt(row, 0);
             Discipline currentDisc = null;
             for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
@@ -334,25 +390,28 @@ public class StudyProgressGUI extends JFrame {
             if (currentDisc != null && Objects.equals(currentDisc.getControlType(), Discipline.CONTROL_TYPE_ZALIK)) {
                 int attempts = currentStudent.getZalikAttempts(currentDisc.getDisciplineId());
                 if (attempts >= 2) {
-                    setEnabled(false);
-                    setText("Іспит складено");
+                    setEnabled(false); // Disable button if all Zalik attempts used
+                    setText("Іспит складено"); // Indicate completion
                 } else if (currentDisc.getAvtomat()){
                     setEnabled(false);
-                    setText("Автомат");
+                    setText("Автомат"); // If 'Avtomat' (automatic pass)
+                } else {
+                    setEnabled(true); // Enable for Zalik if attempts remain
+                    setText("Допуск");
                 }
             } else {
-                setEnabled(true);
-                setText("Допуск");
+                setEnabled(true); // Enable for Exams
+                setText("Допуск"); // Default text for exams or other controls
             }
 
-
+            // Set button background color based on score
             if (score != null && score >= 40) {
-                setBackground(SIMS_GREEN_CORRECT);
+                setBackground(SIMS_GREEN_CORRECT); // Green for sufficient score
             } else {
-                setBackground(SIMS_GREEN_INCORRECT);
+                setBackground(SIMS_GREEN_INCORRECT); // Lighter green for insufficient score
             }
 
-
+            // Set tooltip text based on score
             if (score != null) {
                 if (score >= 40) {
                     setToolTipText("Студентка допущена до контролю");
@@ -366,6 +425,10 @@ public class StudyProgressGUI extends JFrame {
         }
     }
 
+    /**
+     * Custom TableCellEditor for handling button clicks in the "Сесія" column.
+     * When clicked, it opens the corresponding exam or credit window.
+     */
     class ButtonEditor extends DefaultCellEditor {
         private JButton button;
         private String label;
@@ -376,7 +439,7 @@ public class StudyProgressGUI extends JFrame {
             super(checkBox);
             button = new JButton();
             button.setOpaque(true);
-            button.addActionListener(e -> fireEditingStopped());
+            button.addActionListener(e -> fireEditingStopped()); // Fire event when button is clicked
         }
 
         @Override
@@ -385,15 +448,15 @@ public class StudyProgressGUI extends JFrame {
             label = (value == null) ? "" : value.toString();
             button.setText(label);
             currentRow = row;
-            isPushed = true;
+            isPushed = true; // Flag to indicate button was pushed
 
+            // Get the score from the "Поточний бал" column for enabling/disabling logic
             Object scoreObj = table.getModel().getValueAt(row, 2);
             Integer score = null;
             if (scoreObj instanceof Integer) {
                 score = (Integer) scoreObj;
             } else if (scoreObj instanceof String && !scoreObj.equals("N/A")) {
                 try {
-                    // Парсимо, враховуючи " (поч.)"
                     String scoreStr = (String) scoreObj;
                     if (scoreStr.contains(" ")) {
                         scoreStr = scoreStr.substring(0, scoreStr.indexOf(" "));
@@ -404,6 +467,7 @@ public class StudyProgressGUI extends JFrame {
                 }
             }
 
+            // Get discipline for its control type and attempts
             String disciplineName = (String) table.getModel().getValueAt(row, 0);
             Discipline currentDisc = null;
             for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
@@ -416,14 +480,15 @@ public class StudyProgressGUI extends JFrame {
             if (currentDisc != null && Objects.equals(currentDisc.getControlType(), Discipline.CONTROL_TYPE_ZALIK)) {
                 int attempts = currentStudent.getZalikAttempts(currentDisc.getDisciplineId());
                 if (attempts >= 2) {
-                    button.setEnabled(false);
+                    button.setEnabled(false); // Disable if Zalik attempts exhausted
                 } else {
-                    button.setEnabled(true);
+                    button.setEnabled(true); // Enable if Zalik attempts remain
                 }
             } else {
-                button.setEnabled(true); // Залишаємо активною для екзаменів
+                button.setEnabled(true); // Keep enabled for exams
             }
 
+            // Set button background color based on score
             if (score != null && score >= 40) {
                 button.setBackground(SIMS_GREEN_CORRECT);
             } else {
@@ -446,17 +511,17 @@ public class StudyProgressGUI extends JFrame {
                 }
 
                 if (selectedDiscipline == null) {
-                    System.err.println("Помилка. Дисципліну не знайдено.");
-                    return label;
+                    System.err.println("Error. Discipline not found.");
+                    return label; // Return original label if discipline not found
                 }
 
+                // Get the current displayed score from the table model
                 Object tableScoreObj = tableModel.getValueAt(currentRow, 2);
                 Integer currentDisplayedScore = null;
                 if (tableScoreObj instanceof Integer) {
                     currentDisplayedScore = (Integer) tableScoreObj;
                 } else if (tableScoreObj instanceof String && !tableScoreObj.equals("N/A")) {
                     try {
-                        // Парсимо, враховуючи " (поч.)"
                         String scoreStr = (String) tableScoreObj;
                         if (scoreStr.contains(" ")) {
                             scoreStr = scoreStr.substring(0, scoreStr.indexOf(" "));
@@ -467,27 +532,28 @@ public class StudyProgressGUI extends JFrame {
                     }
                 }
 
+                // Proceed if score is sufficient (>= 40)
                 if (currentDisplayedScore != null && currentDisplayedScore >= 40) {
                     String controlType = selectedDiscipline.getControlType();
-                    String controlTypeName = (controlType != null) ? controlType : "контролю";
 
                     if (Objects.equals(controlType, Discipline.CONTROL_TYPE_EXAM)) {
-
                         if (selectedDiscipline.getAvtomat()){
                             JOptionPane.showMessageDialog(null, "Цей предмет вже складено автоматично. Вікно іспиту не відкриватиметься.",
                                     "Автомат",
                                     JOptionPane.INFORMATION_MESSAGE);
-                            return "Автомат";
+                            return "Автомат"; // Indicate automatic pass
                         }
+                        // Open ExamWindow
                         ExamWindow examWindow = new ExamWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent);
                         examWindow.setVisible(true);
-                        //StudyProgressGUI.this.updateProgressDisplay();
+                        // StudyProgressGUI.this.updateProgressDisplay(); // Update display after exam (might be done by ExamWindow)
                     } else if (Objects.equals(controlType, Discipline.CONTROL_TYPE_ZALIK)) {
                         int attemptsMade = currentStudent.getZalikAttempts(selectedDiscipline.getDisciplineId());
-                        if (attemptsMade < 2) {
+                        if (attemptsMade < 2) { // Check if attempts are available
+                            // Open CreditWindow (Zalik)
                             CreditWindow zalikWindow = new CreditWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent, attemptsMade);
                             zalikWindow.setVisible(true);
-                            StudyProgressGUI.this.updateProgressDisplay();
+                            StudyProgressGUI.this.updateProgressDisplay(); // Update display after Zalik
                         } else {
                             JOptionPane.showMessageDialog(StudyProgressGUI.this,
                                     "Ви використали всі 2 спроби для заліку з " + selectedDiscipline.getName() + ".",
@@ -495,17 +561,18 @@ public class StudyProgressGUI extends JFrame {
                                     JOptionPane.WARNING_MESSAGE);
                         }
                     } else {
-                        System.out.println("  -> Невизначений тип контролю, неможливо перейти до сесії.");
+                        System.out.println("  -> Undefined control type, cannot proceed to session.");
                     }
                 } else {
+                    // Show warning if score is insufficient
                     JOptionPane.showMessageDialog(StudyProgressGUI.this,
                             "Бал " + ((currentDisplayedScore != null) ? currentDisplayedScore : "0") + " недостатній для допуску до екзамену. Потрібно щонайменше 40 балів!",
                             "Недопущено",
                             JOptionPane.WARNING_MESSAGE);
                 }
             }
-            isPushed = false;
-            return label;
+            isPushed = false; // Reset push flag
+            return label; // Return the button's label
         }
 
         @Override
@@ -520,6 +587,9 @@ public class StudyProgressGUI extends JFrame {
         }
     }
 
+    /**
+     * Displays an instruction dialog to the user at the start of the session.
+     */
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: #00000;'>" +
@@ -549,10 +619,18 @@ public class StudyProgressGUI extends JFrame {
         JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Gets the current Hero object associated with this session.
+     * @return The Hero object.
+     */
     public Hero getHero() {
         return hero;
     }
 
+    /**
+     * Sets the Hero object for this session.
+     * @param hero The new Hero object.
+     */
     public void setHero(Hero hero) {
         this.hero = hero;
     }
