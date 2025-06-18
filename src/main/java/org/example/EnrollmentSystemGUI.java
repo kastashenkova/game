@@ -2,8 +2,8 @@ package org.example;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import gui.LoadingFrame;
-import gui.PauseAction;
+import gui.LoadingFrame; // Assuming this class exists for loading animations
+import gui.PauseAction; // Assuming this class exists for handling pause functionality
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,49 +14,130 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.Random;
 
-import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY;
+import static org.example.EnrollmentSystem.UNLIMITED_CAPACITY; // Static import for unlimited capacity constant
 
-import static java.awt.Color.*;
-import static org.example.EnrollmentSystem.MANDATORY_DISCIPLINE_CAPACITY;
+import static java.awt.Color.*; // Static import for common Color constants
+import static org.example.EnrollmentSystem.MANDATORY_DISCIPLINE_CAPACITY; // Static import for mandatory discipline capacity
 
+/**
+ * The `EnrollmentSystemGUI` class provides a graphical user interface for students
+ * to enroll in and drop from disciplines within a simulated university enrollment system.
+ * It displays mandatory, available elective, and enrolled elective disciplines,
+ * handles enrollment/unenrollment logic, manages credit limits, and includes
+ * features like search, instructions, and an animated start.
+ */
 public class EnrollmentSystemGUI extends JFrame {
 
+    /**
+     * The file path for saving/loading enrollment data using GSON.
+     */
     private static final String ENROLLMENT_FILE = "enrollment_data.json";
+    /**
+     * GSON instance for JSON serialization and deserialization, configured for pretty printing.
+     */
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    /**
+     * The core enrollment system logic instance.
+     */
     private EnrollmentSystem enrollmentSystem;
+    /**
+     * JLabel to display information about the current student.
+     */
     private JLabel studentInfoLabel;
 
+    /**
+     * JList to display mandatory disciplines.
+     */
     private JList<Discipline> mandatoryDisciplineList;
+    /**
+     * DefaultListModel for managing data in `mandatoryDisciplineList`.
+     */
     private DefaultListModel<Discipline> mandatoryListModel;
 
+    /**
+     * JList to display available elective disciplines.
+     */
     private JList<Discipline> electiveDisciplineList;
-    private DefaultListModel<Discipline> electiveListModel; // Поточна модель для відображення
+    /**
+     * DefaultListModel for managing data in `electiveDisciplineList`.
+     */
+    private DefaultListModel<Discipline> electiveListModel;
 
+    /**
+     * JList to display disciplines the student has already enrolled in.
+     */
     private JList<Discipline> enrolledElectiveList;
+    /**
+     * DefaultListModel for managing data in `enrolledElectiveList`.
+     */
     private DefaultListModel<Discipline> enrolledElectiveListModel;
 
+    /**
+     * Button to enroll in a selected elective discipline.
+     */
     private JButton enrollElectiveButton;
+    /**
+     * Button to drop from a selected enrolled elective discipline.
+     */
     private JButton dropElectiveButton;
+    /**
+     * Button to confirm the student's elective selections.
+     */
     private JButton confirmSelectionButton;
 
+    /**
+     * Text field for entering search queries.
+     */
     private JTextField searchField;
+    /**
+     * Button to trigger the search functionality.
+     */
     private JButton searchButton;
+    /**
+     * Combo box for selecting search criteria (e.g., by name, ID, instructor).
+     */
     private JComboBox<String> searchCriteriaCombo;
 
+    /**
+     * Reference to the {@link Hero} object, which contains the main student character.
+     */
     private Hero hero;
-
+    /**
+     * Reference to the {@link Student} object, representing the player's character.
+     */
     private Student student;
+    /**
+     * Timer for automatically enrolling virtual students in elective disciplines.
+     */
     private Timer autoEnrollTimer;
+    /**
+     * Random instance used for simulating "glitches" or events (e.g., warnings).
+     */
     private Random randomGlitches = new Random();
 
+    // Define custom colors for the UI, inspired by Sims
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
     private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
     private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
 
-    // Internal class for customizing list item display in JList
+    /**
+     * An internal static class that customizes how {@link Discipline} objects
+     * are rendered in a {@link JList}. It displays discipline name, and enrollment
+     * capacity, applying color-coding based on availability.
+     */
     static class DisciplineListRenderer extends DefaultListCellRenderer {
+        /**
+         * Returns the component used for drawing the cell.
+         *
+         * @param list The JList we're painting.
+         * @param value The value returned by {@code list.getModel().getElementAt(index)}.
+         * @param index The cell's index.
+         * @param isSelected True if the specified cell was selected.
+         * @param cellHasFocus True if the specified cell has the focus.
+         * @return A component configured to display the specified value.
+         */
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -65,123 +146,123 @@ public class EnrollmentSystemGUI extends JFrame {
                 String capacityText;
 
                 if (disc.isMandatory()) {
-                    // Для обов'язкових показуємо конкретну кількість студентів на курсі
+                    // For mandatory disciplines, show max capacity as fixed enrollment
                     capacityText = "Зайнято місць: " + disc.getMaxCapacity() + "/" + disc.getMaxCapacity();
-                    label.setForeground(list.getForeground());
+                    label.setForeground(list.getForeground()); // Default text color
                 } else {
-                    // Для вибіркових
+                    // For elective disciplines
                     if (disc.getMaxCapacity() == UNLIMITED_CAPACITY) {
                         capacityText = "Зайнято місць: " + disc.getCurrentEnrollment() + "/необмежено";
-                        label.setForeground(new Color(0, 100, 0));
+                        label.setForeground(new Color(0, 100, 0)); // Green for unlimited
                     } else {
                         capacityText = "Зайнято місць: " + disc.getCurrentEnrollment() + "/" + disc.getMaxCapacity();
-                        // Колірна логіка для обмежених вибіркових
+                        // Color logic for limited electives based on availability
                         if (!disc.hasAvailableSlots()) {
-                            label.setForeground(RED.darker());
+                            label.setForeground(RED.darker()); // Dark red if no slots
                         } else if (disc.getCurrentEnrollment() > disc.getMaxCapacity() * 0.75) {
-                            label.setForeground(new Color(200, 100, 0));
+                            label.setForeground(new Color(200, 100, 0)); // Orange if nearly full
                         } else {
-                            label.setForeground(list.getForeground());
+                            label.setForeground(list.getForeground()); // Default if plenty of slots
                         }
                     }
                 }
+                // Set the display text for the list item
                 label.setText(disc.getName() + " (" + capacityText + ")");
             }
             return label;
         }
     }
 
+    /**
+     * Constructs the `EnrollmentSystemGUI`.
+     * This involves setting up the main window, initializing the enrollment system,
+     * prompting the user for degree and course selection, loading initial data,
+     * and setting up all GUI components and their listeners.
+     *
+     * @param hero The {@link Hero} object representing the player character.
+     */
     public EnrollmentSystemGUI(Hero hero) {
         this.hero = hero;
         this.student = hero.getStudent();
 
-
+        // Initialize and play background music
         MusicPlayer.getInstance().setMusicEnabled(true);
         MusicPlayer.getInstance().playMusic("/assets/Sounds/sessionBack.wav");
 
+        // Apply custom UI Manager settings for consistent font styles
         UIManager.put("OptionPane.messageFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("OptionPane.buttonFont", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("Label.font", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("Button.font", new Font("Segoi UI", Font.BOLD, 12));
         UIManager.put("TitledBorder.font", new Font("Segoi UI", Font.BOLD, 12));
 
-        super("Система автоматизованого запису на дисципліни (САЗ)");
-        enrollmentSystem = new EnrollmentSystem();
+        super("Система автоматизованого запису на дисципліни (САЗ)"); // Set window title
+        enrollmentSystem = new EnrollmentSystem(); // Create core enrollment system
 
+        // Set default text for JOptionPane buttons
         UIManager.put("OptionPane.okButtonText", "ОК");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
 
+        // Show initial instructions to the user
         showInstructionsDialog();
 
         // --- Degree and Course Selection ---
         String selectedDegree = showDegreeSelectionDialog();
         if (selectedDegree == null) {
-            System.exit(0);
+            System.exit(0); // Exit if degree selection is canceled
         }
 
         int selectedCourse = showCourseSelectionDialog(selectedDegree);
         if (selectedCourse == -1) {
-            System.exit(0);
+            System.exit(0); // Exit if course selection is canceled or invalid
         }
 
-        showStartAnimation();
+        showStartAnimation(); // Show a brief start animation
 
-        Student fooStudent;
-
-        // Initialize data based on selected course
+        // Initialize student and discipline data based on selected degree and course
         if (selectedDegree.equals("Бакалаврат")) {
-
-            initializeInitialDataB(selectedCourse);
-            fooStudent = enrollmentSystem.getStudentById("І 005/24 бп").orElse(null);
-            if (fooStudent == null) {
-                JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                System.exit(1);
-            }
+            initializeInitialDataB(selectedCourse); // Load Bachelor's data
         } else if (selectedDegree.equals("Магістратура")) {
-
-            initializeInitialDataM(selectedCourse);
-            fooStudent = enrollmentSystem.getStudentById("І 005/24 мп").orElse(null);
-            if (fooStudent == null) {
-                JOptionPane.showMessageDialog(this, "Помилка. Студента не знайдено після вибору курсу.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                System.exit(1);
-            }
+            initializeInitialDataM(selectedCourse); // Load Master's data
         }
 
-        // Automatically enroll student in all mandatory disciplines for their course
+        // Automatically enroll the student in all mandatory disciplines for their course
         for (Discipline mandatoryDisc : enrollmentSystem.getMandatoryDisciplines(student.getCourse())) {
             student.enrollDiscipline(mandatoryDisc);
         }
 
-        setSize(1200, 800);
-        setLocationRelativeTo(null);
+        setSize(1200, 800); // Set window size
+        setLocationRelativeTo(null); // Center the window on screen
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Custom close behavior
 
+        // Main panel setup
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         // Student Info Panel at the top
         JPanel studentInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         studentInfoLabel = new JLabel();
-        studentInfoLabel.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Шрифт для JLabel
+        studentInfoLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         studentInfoPanel.add(studentInfoLabel);
         mainPanel.add(studentInfoPanel, BorderLayout.NORTH);
 
-        // Панель для верхньої частини (вибіркові та обрані дисципліни)
+        // Panel for elective and enrolled elective disciplines (top part of the content)
         JPanel topContentPanel = new JPanel(new BorderLayout());
-        topContentPanel.setBorder(new EmptyBorder(0, 0, 10, 0)); // Додаємо невеликий відступ знизу
+        topContentPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
 
         // Elective Disciplines Panel (Available for Enrollment)
         JPanel electivePanel = new JPanel(new BorderLayout(5, 5));
-        electivePanel.setBorder(BorderFactory.createTitledBorder("Вибіркові дисципліни (доступні для запису)")); // UIManager встановить шрифт
+        electivePanel.setBorder(BorderFactory.createTitledBorder("Вибіркові дисципліни (доступні для запису)"));
         electiveListModel = new DefaultListModel<>();
         electiveDisciplineList = new JList<>(electiveListModel);
         electiveDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        electiveDisciplineList.setCellRenderer(new DisciplineListRenderer());
-        electiveDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
+        electiveDisciplineList.setCellRenderer(new DisciplineListRenderer()); // Apply custom renderer
+        electiveDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13));
         electivePanel.add(new JScrollPane(electiveDisciplineList), BorderLayout.CENTER);
-        electiveDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
+        electiveDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter()); // Add mouse listener for info dialogs
 
+        // Search panel for electives
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-
         searchCriteriaCombo = new JComboBox<>(new String[] {
                 "за назвою", "за кодом", "за викладачем_кою"
         });
@@ -197,15 +278,17 @@ public class EnrollmentSystemGUI extends JFrame {
         searchPanel.add(searchButton);
         electivePanel.add(searchPanel, BorderLayout.NORTH);
 
+        // Buttons for elective enrollment/drop/confirmation
         JPanel electiveButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         enrollElectiveButton = new JButton("Записатися на вибіркову");
-        enrollElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JButton
+        enrollElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         dropElectiveButton = new JButton("Виписатися з вибіркової");
-        dropElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для JButton
-        confirmSelectionButton = new JButton("Готово (Кредитів: 0)");
-        confirmSelectionButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Шрифт для кнопки "Готово"
-        confirmSelectionButton.setEnabled(false);
+        dropElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        confirmSelectionButton = new JButton("Готово (Кредитів: 0)"); // Initial text, updated dynamically
+        confirmSelectionButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        confirmSelectionButton.setEnabled(false); // Disabled initially
 
+        // Add action listeners to buttons
         enrollElectiveButton.addActionListener(e -> attemptEnrollment());
         dropElectiveButton.addActionListener(e -> attemptDrop());
         confirmSelectionButton.addActionListener(e -> confirmSelection());
@@ -213,15 +296,14 @@ public class EnrollmentSystemGUI extends JFrame {
         searchButton.addActionListener(e -> {
             String text = searchField.getText();
             String criterion = (String) searchCriteriaCombo.getSelectedItem();
-            filterElectiveDisciplines(text, criterion);
+            filterElectiveDisciplines(text, criterion); // Filter electives based on search
         });
 
-        searchField.addActionListener(e -> {
+        searchField.addActionListener(e -> { // Also trigger search on Enter key in search field
             String text = searchField.getText();
             String criterion = (String) searchCriteriaCombo.getSelectedItem();
             filterElectiveDisciplines(text, criterion);
         });
-
 
         electiveButtonsPanel.add(enrollElectiveButton);
         electiveButtonsPanel.add(dropElectiveButton);
@@ -230,27 +312,29 @@ public class EnrollmentSystemGUI extends JFrame {
 
         // Panel for Enrolled Electives
         JPanel enrolledElectivePanel = new JPanel(new BorderLayout(5, 5));
-        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни")); // UIManager встановить шрифт
+        enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни"));
         enrolledElectiveListModel = new DefaultListModel<>();
         enrolledElectiveList = new JList<>(enrolledElectiveListModel);
         enrolledElectiveList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        enrolledElectiveList.setCellRenderer(new DisciplineListRenderer());
-        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Шрифт для JList
+        enrolledElectiveList.setCellRenderer(new DisciplineListRenderer()); // Apply custom renderer
+        enrolledElectiveList.setFont(new Font("Segoe UI", Font.BOLD, 13));
         enrolledElectivePanel.add(new JScrollPane(enrolledElectiveList), BorderLayout.CENTER);
-        enrolledElectiveList.addMouseListener(new DisciplineInfoMouseAdapter());
+        enrolledElectiveList.addMouseListener(new DisciplineInfoMouseAdapter()); // Add mouse listener for info dialogs
 
-        // JSplitPane для вибіркових і обраних вибіркових
+        // JSplitPane to divide available electives and enrolled electives horizontally
         JSplitPane electiveSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         electiveSplitPane.setResizeWeight(0.5); // Equal split
         electiveSplitPane.setLeftComponent(electivePanel);
         electiveSplitPane.setRightComponent(enrolledElectivePanel);
 
+        // Special handling for 1st year Bachelor's students (no electives)
         if ("Бакалаврат".equals(selectedDegree) && selectedCourse == 1) {
             enrollElectiveButton.setEnabled(false);
             dropElectiveButton.setEnabled(false);
             searchField.setEnabled(false);
             searchButton.setEnabled(false);
 
+            // Display message instead of elective list
             JLabel noElectivesMessage = new JLabel("На першому курсі бакалаврату немає можливості обирати додаткові дисципліни", SwingConstants.CENTER);
             noElectivesMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
             noElectivesMessage.setForeground(RED.darker());
@@ -258,7 +342,7 @@ public class EnrollmentSystemGUI extends JFrame {
             electivePanel.removeAll();
             electivePanel.setLayout(new BorderLayout());
             electivePanel.add(noElectivesMessage, BorderLayout.CENTER);
-            electivePanel.add(electiveButtonsPanel, BorderLayout.SOUTH); // Додаємо панель кнопок знов, щоб confirmSelectionButton була видима
+            electivePanel.add(electiveButtonsPanel, BorderLayout.SOUTH); // Keep buttons visible
             electivePanel.setBorder(BorderFactory.createTitledBorder("Вибіркові дисципліни (недоступно)"));
 
             enrolledElectivePanel.removeAll();
@@ -268,28 +352,28 @@ public class EnrollmentSystemGUI extends JFrame {
             ((JLabel) enrolledElectivePanel.getComponent(0)).setForeground(BLACK.darker());
             enrolledElectivePanel.setBorder(BorderFactory.createTitledBorder("Обрані вибіркові дисципліни"));
 
-            updateConfirmButtonState();
+            updateConfirmButtonState(); // Update confirm button state
         }
 
         topContentPanel.add(electiveSplitPane, BorderLayout.CENTER);
 
-        // Mandatory Disciplines Panel
+        // Mandatory Disciplines Panel (bottom part of the content)
         JPanel mandatoryPanel = new JPanel(new BorderLayout(5, 5));
         mandatoryPanel.setBorder(BorderFactory.createTitledBorder("Обов'язкові дисципліни"));
         mandatoryListModel = new DefaultListModel<>();
         mandatoryDisciplineList = new JList<>(mandatoryListModel);
         mandatoryDisciplineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mandatoryDisciplineList.setCellRenderer(new DisciplineListRenderer());
-        mandatoryDisciplineList.setEnabled(false);
+        mandatoryDisciplineList.setEnabled(false); // Mandatory disciplines are not selectable
         mandatoryDisciplineList.setFont(new Font("Segoe UI", Font.BOLD, 13));
         mandatoryPanel.add(new JScrollPane(mandatoryDisciplineList), BorderLayout.CENTER);
-        mandatoryDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter());
+        mandatoryDisciplineList.addMouseListener(new DisciplineInfoMouseAdapter()); // Add mouse listener for info dialogs
 
+        // --- Apply Sims-inspired Colors ---
         Color simsPink = new Color(255, 233, 243, 255);
-        Color simsAccent = new Color(66, 244, 180);
+        Color simsAccent = new Color(66, 244, 180); // A green-ish accent
         Color simsLightPink = new Color(255, 251, 253);
 
-        // Основне тло
         mainPanel.setBackground(simsPink);
         studentInfoPanel.setBackground(simsPink);
         searchPanel.setBackground(simsPink);
@@ -299,18 +383,16 @@ public class EnrollmentSystemGUI extends JFrame {
         enrolledElectivePanel.setBackground(simsPink);
         topContentPanel.setBackground(simsPink);
 
-        // Кнопки
         enrollElectiveButton.setBackground(simsAccent);
         dropElectiveButton.setBackground(simsAccent);
         confirmSelectionButton.setBackground(simsAccent);
         searchButton.setBackground(simsAccent);
 
-        // Списки
         electiveDisciplineList.setBackground(simsLightPink);
         enrolledElectiveList.setBackground(simsLightPink);
         mandatoryDisciplineList.setBackground(simsLightPink);
 
-        // Заголовки меж
+        // Set title color for titled borders
         ((javax.swing.border.TitledBorder) electivePanel.getBorder()).setTitleColor(BLACK);
         ((javax.swing.border.TitledBorder) enrolledElectivePanel.getBorder()).setTitleColor(BLACK);
         ((javax.swing.border.TitledBorder) mandatoryPanel.getBorder()).setTitleColor(BLACK);
@@ -320,7 +402,8 @@ public class EnrollmentSystemGUI extends JFrame {
 
         add(mainPanel);
 
-        PauseAction pauseAction = new PauseAction("");
+        // Pause button setup
+        PauseAction pauseAction = new PauseAction(""); // Assuming PauseAction constructor
         JButton pauseButton = new JButton(pauseAction);
         ImageIcon iconBtn = new ImageIcon(getClass().getResource( "/button/pause.png"));
         Image scaledImage = iconBtn.getImage().getScaledInstance(140, 30, Image.SCALE_SMOOTH);
@@ -333,40 +416,38 @@ public class EnrollmentSystemGUI extends JFrame {
 
         JPanel topBar = new JPanel();
         topBar.setOpaque(false);
-
         topBar.add(pauseButton);
+        add(topBar, BorderLayout.NORTH); // Add pause button to the top of the frame
 
-        add(topBar, BorderLayout.NORTH);
+        setVisible(true); // Make the main window visible
 
-        setVisible(true);
-
+        // Initial updates for UI elements
         updateDisciplineLists();
         updateStudentInfoDisplay();
         updateConfirmButtonState();
 
+        // Timer for automatic virtual student enrollment simulation
         autoEnrollTimer = new Timer(0, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Stop the timer if max virtual students have completed their picks
                 if (enrollmentSystem.getVirtualStudentsEnrolledCount() >= EnrollmentSystem.MAX_VIRTUAL_STUDENTS_TO_ENROLL) {
                     autoEnrollTimer.stop();
                     return;
                 }
-                enrollmentSystem.randomlyIncrementElectiveEnrollment();
-                electiveDisciplineList.repaint();
+                enrollmentSystem.randomlyIncrementElectiveEnrollment(); // Simulate enrollment
+                electiveDisciplineList.repaint(); // Repaint lists to show changes
                 enrolledElectiveList.repaint();
             }
         });
-        autoEnrollTimer.start();
+        autoEnrollTimer.start(); // Start the auto-enrollment simulation
 
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
+        // Custom window close listener for confirmation
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-                UIManager.put("OptionPane.yesButtonText", "Так");
+                UIManager.put("OptionPane.yesButtonText", "Так"); // Set custom text for Yes/No buttons
                 UIManager.put("OptionPane.noButtonText", "Ні");
-
-                boolean wasTimerRunning = (autoEnrollTimer != null && autoEnrollTimer.isRunning());
 
                 int confirm = JOptionPane.showConfirmDialog(
                         EnrollmentSystemGUI.this,
@@ -378,16 +459,20 @@ public class EnrollmentSystemGUI extends JFrame {
 
                 if (confirm == JOptionPane.YES_OPTION) {
                     if (autoEnrollTimer != null) {
-                        autoEnrollTimer.stop();
+                        autoEnrollTimer.stop(); // Stop the timer before closing
                     }
-                    EnrollmentSystemGUI.this.dispose();
-                    //SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
-                    //ЗМІНИТИ ТУТ!!!
+                    EnrollmentSystemGUI.this.dispose(); // Close the current window
+                    // TODO: Re-enable call to StartWindow or equivalent for game restart
+                    // SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
                 }
             }
         });
     }
 
+    /**
+     * Displays an introductory instruction dialog to the user at the start of the GUI.
+     * The instructions explain how to use the enrollment system.
+     */
     private void showInstructionsDialog() {
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: " + toHex(SIMS_DARK_TEXT) + ";'>" +
@@ -418,23 +503,38 @@ public class EnrollmentSystemGUI extends JFrame {
         scrollPane.setPreferredSize(new Dimension(600, 450));
 
         JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
-
-
     }
 
+    /**
+     * Converts a {@link Color} object to its hexadecimal string representation.
+     * This is useful for embedding colors directly into HTML strings for JEditorPane.
+     * @param color The {@link Color} object to convert.
+     * @return A hexadecimal string representing the color (e.g., "#RRGGBB").
+     */
     private String toHex(Color color) {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
+    /**
+     * Displays a warning dialog to the user when they attempt to "cheat" the system
+     * (e.g., selecting a degree/course that doesn't match their current student data).
+     * This deducts energy from the hero.
+     */
     private void showWarningDialog(){
-        MusicPlayer.getInstance().playError();
+        MusicPlayer.getInstance().playError(); // Play an error sound
         JOptionPane.showMessageDialog(this, "За намагання обдурити систему ваш сім втрачає 20 очок енергії!Обирайте правильні дані!", "ATTENTION", JOptionPane.WARNING_MESSAGE);
-        hero.setEnergy(hero.getEnergy()-20);
-
+        hero.setEnergy(hero.getEnergy()-20); // Deduct energy from the hero
     }
+
+    /**
+     * Displays a dialog prompting the user to select their educational degree (Bachelor's or Master's).
+     * Includes a check to ensure the selected degree is consistent with the student's current course.
+     * If inconsistency is detected, a warning is shown, and the degree is corrected to match the student.
+     *
+     * @return The selected degree string ("Бакалаврат" or "Магістратура"), or null if canceled.
+     */
     private String showDegreeSelectionDialog() {
         String[] degrees = {"Бакалаврат", "Магістратура"};
-
 
         String selectedDegreeStr = (String) JOptionPane.showInputDialog(
                 this,
@@ -443,24 +543,35 @@ public class EnrollmentSystemGUI extends JFrame {
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 degrees,
-                degrees[0]);
-        if (selectedDegreeStr.equals("Бакалаврат")) {
-            if (student.getCourse() > 4) {
-                showWarningDialog();
-                selectedDegreeStr = "Магістратура";
+                degrees[0]); // Default selection
+
+        // Logic to prevent "cheating" by selecting incorrect degree
+        if (selectedDegreeStr != null) { // If user didn't cancel
+            if (selectedDegreeStr.equals("Бакалаврат")) {
+                if (student.getCourse() > 4) { // Bachelor's courses are typically 1-4
+                    showWarningDialog();
+                    selectedDegreeStr = "Магістратура"; // Force to Master's if student is in higher course
+                }
+            } else if (selectedDegreeStr.equals("Магістратура")) {
+                if (student.getCourse() <= 4) { // Master's courses are typically 5-6 (or 1-2 for Master's specifically)
+                    showWarningDialog();
+                    selectedDegreeStr = "Бакалаврат"; // Force to Bachelor's if student is in lower course
+                }
             }
         }
-        else if (selectedDegreeStr.equals("Магістратура")) {
-                if(student.getCourse()<=4){
-                    showWarningDialog();
-                    selectedDegreeStr = "Бакалаврат";
-                }
-        }
-        System.out.println(selectedDegreeStr);
-            return selectedDegreeStr;
-
+        System.out.println("Selected Degree: " + selectedDegreeStr);
+        return selectedDegreeStr;
     }
 
+    /**
+     * Displays a dialog prompting the user to select their academic course (year)
+     * based on their previously chosen degree.
+     * Includes a check to ensure the selected course matches the student's actual course.
+     * If inconsistency is detected, a warning is shown, and the course is corrected.
+     *
+     * @param degree The previously selected educational degree ("Бакалаврат" or "Магістратура").
+     * @return The selected course number, or -1 if canceled or an error occurs.
+     */
     private int showCourseSelectionDialog(String degree) {
         String[] courses;
         String dialogTitle;
@@ -471,12 +582,12 @@ public class EnrollmentSystemGUI extends JFrame {
             dialogTitle = "Вибір курсу (Бакалаврат)";
             dialogMessage = "Будь ласка, оберіть Ваш курс бакалаврату!";
         } else if ("Магістратура".equals(degree)) {
-            courses = new String[]{"1", "2"};
+            courses = new String[]{"1", "2"}; // Master's courses are typically 1st and 2nd year of magistracy
             dialogTitle = "Вибір курсу (Магістратура)";
             dialogMessage = "Будь ласка, оберіть Ваш курс магістратури!";
         } else {
             JOptionPane.showMessageDialog(this, "Неправильний освітній ступінь.", "Помилка", JOptionPane.ERROR_MESSAGE);
-            return -1;
+            return -1; // Indicate error
         }
 
         String selectedCourseStr = (String) JOptionPane.showInputDialog(
@@ -486,81 +597,94 @@ public class EnrollmentSystemGUI extends JFrame {
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 courses,
-                courses[0]);
+                courses[0]); // Default selection
 
-        int selectedDegree = -1;
+        int selectedCourse = -1;
 
         if (selectedCourseStr != null) {
             try {
-                selectedDegree = Integer.parseInt(selectedCourseStr);
+                selectedCourse = Integer.parseInt(selectedCourseStr);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Неправильний формат курсу. Спробуйте ще раз.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                // Повторно запитуємо, якщо виникла помилка формату
-                return showCourseSelectionDialog(degree);
+                return showCourseSelectionDialog(degree); // Recursively ask again if format error
             }
         }
-        if(selectedDegree!=student.getCourse()) {
+
+        // Logic to prevent "cheating" by selecting incorrect course
+        // Note: student.getCourse() presumably returns the actual current course,
+        // where 5 and 6 might represent 1st and 2nd year Master's respectively.
+        if (selectedCourse != student.getCourse()) {
             showWarningDialog();
             if (student.getCourse() == 5) {
-                selectedDegree = 1;
+                selectedCourse = 1; // If student is actually 5th year, force selected course to 1 (for Master's context)
             } else if (student.getCourse() == 6) {
-                selectedDegree = 2;
+                selectedCourse = 2; // If student is actually 6th year, force selected course to 2 (for Master's context)
             } else {
-                selectedDegree = student.getCourse();
+                selectedCourse = student.getCourse(); // Otherwise, force to actual course
             }
-
         }
-        System.out.println(selectedDegree);
-        return selectedDegree;
+        System.out.println("Selected Course: " + selectedCourse);
+        return selectedCourse;
     }
 
+    /**
+     * Displays a short animated sequence (e.g., "Старт!", "Увага!", "Руш!")
+     * before the main GUI becomes fully interactive.
+     */
     private void showStartAnimation() {
-        JDialog animationDialog = new JDialog(this, true);
-        animationDialog.setUndecorated(true);
+        JDialog animationDialog = new JDialog(this, true); // Modal dialog
+        animationDialog.setUndecorated(true); // No window decorations
 
+        // Define colors for the animation
         Color simsPink = new Color(255, 168, 205, 255);
         Color simsAccent1 = new Color(66, 244, 180);
         Color simsAccent2 = new Color(34, 149, 107);
         Color simsAccent3 = new Color(66, 244, 191);
 
-        animationDialog.getContentPane().setBackground(simsPink);
+        animationDialog.getContentPane().setBackground(simsPink); // Dialog background
 
-        JLabel animationLabel = new JLabel("", SwingConstants.CENTER);
+        JLabel animationLabel = new JLabel("", SwingConstants.CENTER); // Label to display animation text
         animationLabel.setFont(new Font("Segoe UI", Font.BOLD, 80));
         animationLabel.setForeground(simsAccent1);
 
-        JPanel contentPanel = new JPanel(new GridBagLayout());
+        JPanel contentPanel = new JPanel(new GridBagLayout()); // Centering panel
         contentPanel.setOpaque(false);
         contentPanel.add(animationLabel);
 
         animationDialog.setContentPane(contentPanel);
-        animationDialog.setSize(400, 200);
-        animationDialog.setLocationRelativeTo(this);
+        animationDialog.setSize(400, 200); // Fixed size for animation
+        animationDialog.setLocationRelativeTo(this); // Center relative to parent frame
 
-        final String[] phases = {"Старт!", "Увага!", "Руш!"};
-        final Color[] textColors = {simsAccent1, simsAccent2, simsAccent3};
-        final int[] currentPhase = {0};
+        final String[] phases = {"Старт!", "Увага!", "Руш!"}; // Animation phases
+        final Color[] textColors = {simsAccent1, simsAccent2, simsAccent3}; // Colors for each phase
+        final int[] currentPhase = {0}; // Counter for current animation phase
 
-        Timer timer = new Timer(150, new ActionListener() {
+        // Timer to control the animation sequence
+        Timer timer = new Timer(150, new ActionListener() { // Fires every 150ms
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (currentPhase[0] < phases.length) {
-                    animationLabel.setText(phases[currentPhase[0]]);
-                    animationLabel.setForeground(textColors[currentPhase[0]]);
-                    currentPhase[0]++;
+                    animationLabel.setText(phases[currentPhase[0]]); // Set text
+                    animationLabel.setForeground(textColors[currentPhase[0]]); // Set color
+                    currentPhase[0]++; // Move to next phase
                 } else {
-                    ((Timer) e.getSource()).stop();
-                    animationDialog.dispose();
+                    ((Timer) e.getSource()).stop(); // Stop timer when all phases complete
+                    animationDialog.dispose(); // Close the animation dialog
                 }
             }
         });
-        timer.setInitialDelay(50);
-        timer.start();
+        timer.setInitialDelay(50); // Short initial delay
+        timer.start(); // Start the animation timer
 
-        animationDialog.setVisible(true);
+        animationDialog.setVisible(true); // Make the animation dialog visible
     }
 
-    // Method to initialize test data based on selected course
+    /**
+     * Initializes the discipline data for Bachelor's degree programs based on the given course.
+     * This method adds predefined mandatory and elective disciplines to the `enrollmentSystem`.
+     *
+     * @param selectedCourse The academic course for which to initialize data.
+     */
     private void initializeInitialDataB(int selectedCourse) {
         enrollmentSystem.addStudent(student);
 
@@ -1123,6 +1247,12 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
+    /**
+     * Initializes the initial data for the enrollment system based on the student's major and selected course.
+     * This method adds mandatory and elective disciplines to the enrollment system.
+     *
+     * @param selectedCourse The course number for which to initialize disciplines (1 or 2).
+     */
     private void initializeInitialDataM(int selectedCourse) {
         enrollmentSystem.addStudent(student);
 
@@ -1186,9 +1316,6 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("318386", "Технології чисельного моделювання", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("319980", "Практика науково-дослідна", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("318388", "Прикладна алгебра та теорія чисел", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-
-
-
 
             enrollmentSystem.addDiscipline(new Discipline("311433", "Математична біологія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
             enrollmentSystem.addDiscipline(new Discipline("311434", "Основи статистичного експерименту", "доц. Абраменко А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
@@ -1284,7 +1411,11 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
-    // --- Update Discipline Lists in GUI ---
+    /**
+     * Updates the lists of mandatory, elective, and enrolled elective disciplines in the GUI.
+     * It clears existing lists, populates mandatory disciplines, and then filters elective
+     * disciplines based on student enrollment and search criteria (if any).
+     */
     private void updateDisciplineLists() {
         mandatoryListModel.clear();
         electiveListModel.clear();
@@ -1325,12 +1456,21 @@ public class EnrollmentSystemGUI extends JFrame {
         updateConfirmButtonState();
     }
 
-
+    /**
+     * Filters the elective disciplines displayed in the GUI based on the provided search text and criterion.
+     * This method essentially triggers a refresh of the discipline lists.
+     *
+     * @param searchText The text to search for in discipline names, codes, or instructors.
+     * @param criterion The criterion by which to search (e.g., "за назвою", "за кодом", "за викладачем_кою").
+     */
     private void filterElectiveDisciplines(String searchText, String criterion) {
         updateDisciplineLists();
     }
 
-    // --- Update Student Information Display ---
+    /**
+     * Updates the student information display in the GUI, showing student ID, course,
+     * and current total credits along with the course credit limit.
+     */
     private void updateStudentInfoDisplay() {
         double totalCredits = 0;
         for (Discipline discipline : student.getEnrolledDisciplines()) {
@@ -1351,8 +1491,11 @@ public class EnrollmentSystemGUI extends JFrame {
                 ", кредити: " + totalCredits + "/" + courseCreditLimit + ")");
     }
 
-
-    // --- Update "Готово" button state based on total credits ---
+    /**
+     * Updates the state of the "Готово" (Confirm) button, including its text
+     * to display the total credits and enabling/disabling it based on whether
+     * the total credits meet the minimum required for confirmation.
+     */
     private void updateConfirmButtonState() {
         double totalCredits = 0;
         for (Discipline discipline : student.getEnrolledDisciplines()) {
@@ -1363,7 +1506,14 @@ public class EnrollmentSystemGUI extends JFrame {
         confirmSelectionButton.setEnabled(totalCredits >= EnrollmentSystem.MIN_CREDITS_TO_CONFIRM);
     }
 
-    // --- Simulate random glitches ---
+    /**
+     * Simulates a random glitch in the system. There's a 70% chance of a glitch occurring.
+     * If a glitch happens, it plays an error sound, displays a "system temporarily unavailable" message,
+     * and pauses execution. There's also a 30% chance within a glitch for a more severe
+     * "unexpected error" message to be displayed via a dialog box.
+     *
+     * @return true if a glitch occurred and an operation should be halted, false otherwise.
+     */
     private boolean simulateGlitch() {
         if (randomGlitches.nextDouble() < 0.7) {
             MusicPlayer.getInstance().playError();
@@ -1389,7 +1539,11 @@ public class EnrollmentSystemGUI extends JFrame {
         return false;
     }
 
-    // --- Logic for attempting to enroll in an elective discipline ---
+    /**
+     * Attempts to enroll the student in an elective discipline. This method first simulates
+     * a potential system glitch. If a glitch occurs, the enrollment attempt is aborted.
+     * (The rest of the enrollment logic is expected to be implemented here.)
+     */
     private void attemptEnrollment() {
         if (simulateGlitch()) {
             return;
@@ -1427,6 +1581,12 @@ public class EnrollmentSystemGUI extends JFrame {
     }
 
     // --- Logic for attempting to drop from an elective discipline ---
+    /**
+     * Attempts to drop a student from a selected elective discipline.
+     * This method first simulates a system glitch. If a glitch occurs, the operation is halted.
+     * It then validates the selection, confirms with the user, and if confirmed,
+     * attempts to drop the student from the discipline using a SwingWorker for background processing.
+     */
     private void attemptDrop() {
         if (simulateGlitch()) {
             return;
@@ -1487,7 +1647,13 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
-    // --- Handling completion of selection based on total credits ---
+    /**
+     * Handles the completion of the discipline selection process.
+     * It checks if the student has accumulated enough credits. If so, it finalizes the enrollment,
+     * disables further changes, saves the enrollment data, plays a success sound, and transitions
+     * to the next game level (or phase) after a loading screen.
+     * If not enough credits are selected, it displays an error message.
+     */
     private void confirmSelection() {
         double totalCredits = 0;
         for (Discipline discipline : student.getEnrolledDisciplines()) {
@@ -1540,12 +1706,27 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
+    /**
+     * Appends a message to the output display, typically a JOptionPane dialog.
+     *
+     * @param text The text message to be displayed.
+     */
     private void appendOutput(String text) {
         JOptionPane.showMessageDialog(this, text, "Повідомлення", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // Inner class for MouseListener to display discipline info
+    /**
+     * An inner class that extends MouseAdapter to provide a listener for mouse events on JLists.
+     * Specifically, it's used to display detailed information about a discipline when it's double-clicked.
+     */
     private class DisciplineInfoMouseAdapter extends MouseAdapter {
+        /**
+         * Invoked when the mouse button has been clicked (pressed and released) on a component.
+         * If a discipline in the list is double-clicked, it retrieves and displays its detailed information
+         * (code, name, instructor, credits, type, and enrollment capacity/status).
+         *
+         * @param e The MouseEvent generated by the click.
+         */
         @Override
         public void mouseClicked(MouseEvent e) {
             JList<?> list = (JList<?>) e.getSource();
@@ -1584,7 +1765,11 @@ public class EnrollmentSystemGUI extends JFrame {
         }
     }
 
-    // --- Save enrolled disciplines to a file ---
+    /**
+     * Saves the current student's enrollment data to a JSON file.
+     * The file path is defined by {@code ENROLLMENT_FILE}.
+     * Any {@code IOException} during writing will be printed to the stack trace.
+     */
     private void saveEnrollmentDataJson() {
         try (FileWriter writer = new FileWriter(ENROLLMENT_FILE)) {
             gson.toJson(student, writer);
