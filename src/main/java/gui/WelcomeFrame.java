@@ -182,4 +182,15 @@ public class WelcomeFrame extends JFrame implements ActionListener {
         return new ImageIcon(darkened);
     }
 
+
+
+    public static void main(String[] args) throws UnsupportedLookAndFeelException {
+        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
+        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
+        UIManager.put("control", SIMS_LIGHT_PINK);
+        UIManager.put("textForeground", SIMS_DARK_TEXT);
+
+        UIManager.setLookAndFeel(new FlatLightLaf());
+        SwingUtilities.invokeLater(WelcomeFrame::new);
+    }
 }
