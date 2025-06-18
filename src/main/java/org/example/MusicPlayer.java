@@ -119,6 +119,9 @@ public class MusicPlayer {
     public void playSpin() {
         playEffect("/assets/Sounds/spin.wav");
     }
+    public void playTick() {
+        playEffect("/assets/Sounds/tick.wav");
+    }
 
 
 

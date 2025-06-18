@@ -2,14 +2,18 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 //start window of session
 public class ExamSessionWindow extends JFrame {
     private ExamCalendar calendarPanel;
     private JButton success;
-    public ExamSessionWindow(ExamTicket ticket) {
+
+    public ExamSessionWindow() {
         setTitle("Рівень 3: Сесія");
         setSize(800, 600);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         JLabel schedule = new JLabel("Сесія: Розклад іспитів", SwingConstants.CENTER);
@@ -26,27 +30,16 @@ public class ExamSessionWindow extends JFrame {
         success.setForeground(Color.WHITE);
         success.setFocusPainted(false);
 
-//        success.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JOptionPane.showMessageDialog(ExamSessionWindow.this, "Ви склали сесію!", "Результат", JOptionPane.INFORMATION_MESSAGE);
-//            }});
+        success.addActionListener(new ActionListener() {
+            @Override
+           public void actionPerformed(ActionEvent e) {
+                    dispose();
+            }});
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(success);
         add(bottomPanel, BorderLayout.SOUTH);
-
-//        if (calendarPanel.showReminder()) {
-//            Reminder.showReminder(this, "Через 3 дні — іспит з програмування!");
-//        }
-    }
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            String ticketName = " ";
-            new ExamSessionWindow(new ExamTicket(ticketName)).setVisible(true);
-        });
     }
 }
-
 
 
 

@@ -85,7 +85,14 @@ public class CreditWindow extends JDialog {
         spinButton = new JButton("Крутити колесо!");
         spinButton.setFont(new Font("Segoe UI", Font.BOLD, 20));
         spinButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        spinButton.addActionListener(e -> spinWheel());
+        if(discipline.getAvtomat()){
+            JOptionPane.showMessageDialog(this, "Вітаємо! у вас автомат!");
+            spinButton.setEnabled(false);
+        }
+        spinButton.addActionListener(e ->{
+
+         spinWheel();
+                });
         spinButton.setBackground(SIMS_LIGHT_BLUE);
         spinButton.setForeground(SIMS_DARK_TEXT);
         spinButton.setFocusPainted(false);
@@ -139,11 +146,14 @@ public class CreditWindow extends JDialog {
             spinButton.setText("Залік складено");
             scoreLabel.setText("Складено: " + currentTotalScore + " балів");
             attemptLabel.setText("Залік складено успішно!");
+            discipline.setCurrentStudentsMark(currentTotalScore);
         } else {
             spinButton.setEnabled(false);
             spinButton.setText("Спроби вичерпано");
             scoreLabel.setText("Бал недостатній: " + (currentTotalScore != null ? currentTotalScore : "0") + "!");
             attemptLabel.setText("Всі спроби вичерпано!");
+            discipline.setCurrentStudentsMark(currentTotalScore);
+
         }
     }
 
@@ -187,6 +197,7 @@ public class CreditWindow extends JDialog {
 
             student.setTrimesterScore(discipline.getDisciplineId(), scoreToSave);
             student.incrementZalikAttempts(discipline.getDisciplineId());
+            discipline.setCurrentStudentsMark(scoreToSave);
 
             currentAttempt = student.getZalikAttempts(discipline.getDisciplineId());
 

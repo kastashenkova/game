@@ -48,9 +48,7 @@ public class GameFrame extends JFrame {
         if(hero.getStudent()!=null) {
             student.setExamDisciplines(hero.getStudent().getExamDisciplines());
             student.setEnrolledDisciplines(hero.getStudent().getEnrolledDisciplines());
-
         }
-
         newHero.setCourse(hero.getCourse());
       newHero.setSelectedName(hero.getSelectedName());
       newHero.setLevel(hero.getLevel());

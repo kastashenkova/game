@@ -753,14 +753,17 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("315464", "Кваліфікаційна робота", "проф. Глибовець А. М.", 12, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 4));
 
         } else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 1)){
-            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
-            enrollmentSystem.addDiscipline(new Discipline("315213", "Історія математики", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 6, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
+            enrollmentSystem.addDiscipline(new Discipline("315213", "Історія математики", "доц. Митник Ю. В., ст. викл. Силенко І. В.", 10, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
-            enrollmentSystem.addDiscipline(new Discipline("315202", "Дискретна математика", "ст. викл. Щеглов М. В.", 6, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
-            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 11, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315202", "Дискретна математика", "ст. викл. Щеглов М. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 10, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("314810", "Українська мова", "доц. Сегін Л. В., ст. викл. Калиновська О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Лінійна алгебра та аналітична геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315223", "Моделі обчислень в програмній інженерії", "доц. Проценко В. С.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+
         }
 
         else if ((student.getMajor().equals("Прикладна математика")) && (selectedCourse == 2)){
@@ -947,15 +950,15 @@ public class EnrollmentSystemGUI extends JFrame {
 
         else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 1)){
             enrollmentSystem.addDiscipline(new Discipline("315203", "Алгоритми і структури даних", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М., ст. викл. Кирієнко О. В.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
-            enrollmentSystem.addDiscipline(new Discipline("314835", "Архітектура обчислювальних систем", "ст. викл. Медвідь С. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("314835", "Архітектура обчислювальних систем", "ст. викл. Медвідь С. О.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("314827", "Історія української кібернетики", "проф. Глибовець А. М.", 2, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("315453", "Організація та обробка електронної інформації", "ст. викл. Сініцина Р. Б.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315453", "Організація та обробка електронної інформації", "ст. викл. Сініцина Р. Б.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("315202", "Дискретна математика", "ст. викл. Щеглов М. В.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 7, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("315275", "Мови програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 5, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
-            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
-            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
+            enrollmentSystem.addDiscipline(new Discipline("314809", "Англійська мова", "ст. викл. Гісем С. О.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315275", "Мови програмування", "проф. Глибовець А. М., ст. викл. Пєчкурова О. М.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315200", "Алгебра та геометрія", "доц. Чорней Р. К., ас. Сарана М.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
+            enrollmentSystem.addDiscipline(new Discipline("314804", "Фізичне виховання", "викл. Жуков В. О.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+            enrollmentSystem.addDiscipline(new Discipline("315199", "Математичний аналіз", "ст. викл. Іванюк А. О.", 8, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
         }
 
         else if ((student.getMajor().equals("Комп'ютерні науки")) && (selectedCourse == 2)){
@@ -1183,6 +1186,9 @@ public class EnrollmentSystemGUI extends JFrame {
             enrollmentSystem.addDiscipline(new Discipline("318386", "Технології чисельного моделювання", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1, "Екзамен"));
             enrollmentSystem.addDiscipline(new Discipline("319980", "Практика науково-дослідна", "доц. Чорней Р. К.", 3, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
             enrollmentSystem.addDiscipline(new Discipline("318388", "Прикладна алгебра та теорія чисел", "доц. Тригуб О. С.", 4, MANDATORY_DISCIPLINE_CAPACITY, MANDATORY_DISCIPLINE_CAPACITY, true, 1));
+
+
+
 
             enrollmentSystem.addDiscipline(new Discipline("311433", "Математична біологія", "ст. викл. Сидоренко А. А.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
             enrollmentSystem.addDiscipline(new Discipline("311434", "Основи статистичного експерименту", "доц. Абраменко А. О.", 4, EnrollmentSystem.ELECTIVE_CAPACITY, UNLIMITED_CAPACITY, false, 1));
@@ -1519,13 +1525,10 @@ public class EnrollmentSystemGUI extends JFrame {
                     hero.setStudent(student);
                     hero.decreaseEnergy(40);
                     hero.decreaseHunger(-30);
+                    hero.decreaseMood(30);
                     GameFrame gameFrame =  new GameFrame(hero);
-                    String nextHint = "Вітаємо з прозодженням 1-го рівня!\n" +
-                            "- Твій сім втомився - відпочинь\n" +
-                            "- Підкріпись чимось\n" +
-                            "- Почитай конспекти перед наступним рівнем\n" +
-                            "- Постарайся набрати бали і облегчити сесію";
-                    gameFrame.getGamePanel().hintPanel.setText(nextHint);
+                    gameFrame.getGamePanel().getHintPanel().setHint(2);
+
                     gameFrame.setVisible(true);
                 });
             });

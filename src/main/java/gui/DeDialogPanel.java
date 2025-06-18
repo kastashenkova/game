@@ -18,7 +18,6 @@ public class DeDialogPanel extends JPanel {
     private static final Color BG = new Color(159, 131, 244);
 
     private GameBoard gameBoard;
-    private Hero hero;
 
 
     public DeDialogPanel(GameBoard gameBoard) {
@@ -98,30 +97,7 @@ public class DeDialogPanel extends JPanel {
             });
         }
     }
-    private class MainMenuAction extends AbstractAction {
-        public MainMenuAction(String name) {
-            super(name);
-        }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            MusicPlayer.getInstance().playButtonClick();
-            Window win = SwingUtilities.getWindowAncestor((Component) e.getSource());
-            win.dispose();
-            gameBoard.gameThread.interrupt();
-            gameBoard.setPaused(true);
-            MusicPlayer.getInstance().setMusicEnabled(false);
-            SwingUtilities.invokeLater(() -> {
-                Window gameWindow = SwingUtilities.getWindowAncestor(gameBoard);
-                if (gameWindow != null) {
-                    gameWindow.dispose();
-                }
-                LoadingFrame loading = new LoadingFrame();
-                loading.startLoading(() -> new WelcomeFrame().setVisible(true));
-            });
-        }
-
-    }
     private class SettingsAction extends AbstractAction {
         public SettingsAction(String name) {
             super(name);

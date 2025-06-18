@@ -18,8 +18,11 @@ public class Discipline implements Serializable {
     private int targetCourse;
     private String controlType = CONTROL_TYPE_ZALIK;
     private boolean isZalik;
+    private boolean avtomat = false;
 
     public Question[] questions;
+
+    private int currentStudentsMark;
 
     public static final String CONTROL_TYPE_ZALIK = "Залік";
     public static final String CONTROL_TYPE_EXAM = "Екзамен";
@@ -164,5 +167,20 @@ public class Discipline implements Serializable {
 
     public void setControlType(String controlType) {
         this.controlType = controlType;
+    }
+
+    public int getCurrentStudentsMark() {
+        return currentStudentsMark;
+    }
+
+    public void setCurrentStudentsMark(int currentStudentsMark) {
+        this.currentStudentsMark = currentStudentsMark;
+    }
+
+    public void setAvtomat() {
+        this.avtomat = true;
+    }
+    public boolean getAvtomat(){
+        return  avtomat;
     }
 }

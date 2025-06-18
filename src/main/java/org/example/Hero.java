@@ -16,6 +16,9 @@ public class Hero {
     private int energy;
     private int mood;
     private int hunger;
+
+
+
     private int knowledge; // Новий атрибут: Знання, від 0 до 100
 
 
@@ -149,6 +152,7 @@ public class Hero {
         return hunger;
     }
 
+
     public int getKnowledge() {
         return knowledge;
     } // Геттер для знань
@@ -195,73 +199,16 @@ public class Hero {
         return null;
     }
 
-    // Новий метод для перевірки, чи може герой перейти на наступний рівень
-    public boolean canLevelUp() {
-        return canLevelUp;
-    }
+
 
     private void setMessage(String message) {
         this.heroMessage = message;
         this.messageDisplayEndTime = System.currentTimeMillis() + MESSAGE_DISPLAY_DURATION;
     }
-
-    public void eat() {
-        if (hunger <= 0) {
-            setMessage(selectedName + " не хоче їсти.");
-            return;
-        }
-        hunger = Math.max(0, hunger - 30);
-        mood = Math.min(100, mood + 15);
-        setMessage(selectedName + " поїла."); // Додано повідомлення
+    public void setKnowledge(int knowledge) {
+        this.knowledge = knowledge;
     }
 
-    public void sleep() {
-        // Reset low energy warning if hero sleeps
-        if (energy < 100) {
-            lowEnergyWarningActive = false;
-            lowEnergyWarningStartTime = 0;
-            isGameOverDueToEnergy = false; // Important: Reset game over state
-            energy = Math.min(100, energy + 40);
-            mood = Math.min(100, mood + 10);
-            setMessage(selectedName + " поспала."); // Додано повідомлення
-        } else {
-            setMessage(selectedName + " не хоче спати.");
-        }
-    }
-
-    public void study() {
-        if (energy < 20) {
-            setMessage(selectedName + " не має енергії для навчання.");
-            return;
-        }
-        // Якщо герой вже на рівні сесії і знання повні, не дозволяємо вчитися далі
-        if (level >= 2 && knowledge >= 100) {
-            setMessage(selectedName + " вже готова до сесії!");
-            return;
-        }
-
-        energy = Math.max(0, energy - 20);
-        mood = Math.max(0, mood - 10);
-        knowledge = Math.min(100, knowledge + 10); // Знання повільно наповнюються (+10 за навчання)
-
-        // Перевіряємо, чи може герой перейти на новий рівень
-        if (knowledge >= 100 && level == 1) { // Тільки якщо знання досягли 100 і ми на 1 рівні
-            canLevelUp = true;
-            setMessage(selectedName + " готова до сесії! Натисніть 'Підвищити рівень'."); // Повідомлення про готовність до сесії
-        } else {
-            setMessage(selectedName + " повчилася. Знання: " + knowledge + "%.");
-        }
-    }
-
-    public void relax() {
-        if (mood >= 100 && energy >= 100) {
-            setMessage(selectedName + " не може більше відпочивати.");
-            return;
-        }
-        mood = Math.min(100, mood + 20);
-        energy = Math.min(100, energy + 5);
-        setMessage(name + " відпочила.");
-    }
 
     /**
      * Метод для переходу героя на наступний рівень.

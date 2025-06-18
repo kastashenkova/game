@@ -120,7 +120,15 @@ public class ExamWindow extends JDialog {
             ));
         }
     }
+    private ImageIcon[] examImages;
+    private JLabel imageLabel;
+
     private final List<String> professorNames = new ArrayList<>(professorsAndQuestions.keySet());
+
+    private ImageIcon getRandomImage() {
+        int index = (int) (Math.random() * examImages.length);
+        return examImages[index];
+    }
 
     public ExamWindow(Frame owner, Discipline discipline, Student student) {
         super(owner, "Екзамен", true);
@@ -129,6 +137,8 @@ public class ExamWindow extends JDialog {
         } else {
             System.err.println("Помилка: CreditWindow повинен бути викликаний з StudyProgressGUI.");
         }
+
+
 
         this.discipline = discipline;
         this.student = student;
@@ -149,6 +159,21 @@ public class ExamWindow extends JDialog {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        examImages = new ImageIcon[] {
+                new ImageIcon(getClass().getResource("/exam/img_1.png").getFile()),
+                new ImageIcon(getClass().getResource("/exam/img_3.png").getFile()),
+                new ImageIcon(getClass().getResource("/exam/img_4.png").getFile()),
+                new ImageIcon(getClass().getResource("/exam/img_5.png").getFile()),
+        };
+
+        imageLabel = new JLabel();
+        ImageIcon randomImage = getRandomImage();
+        imageLabel.setIcon(randomImage);
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        imageLabel.setPreferredSize(new Dimension(200, 200));
+
+        add(imageLabel, BorderLayout.WEST);
 
         JLabel titleLabel = new JLabel("Отримання балів за екзамен з дисципліни «" + discipline.getName() + "»");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -192,18 +217,29 @@ public class ExamWindow extends JDialog {
 
     private void applySimsStyle() {
         getContentPane().setBackground(SIMS_LIGHT_PINK);
-        for (Component comp : ((JPanel) getContentPane().getComponent(0)).getComponents()) {
-            if (comp instanceof JButton) {
-                JButton button = (JButton) comp;
-                button.setBackground(SIMS_MEDIUM_PINK);
-                button.setForeground(SIMS_DARK_TEXT);
-                button.setFocusPainted(false);
-                button.setBorder(BorderFactory.createLineBorder(SIMS_LIGHT_BLUE, 2));
-            } else if (comp instanceof JLabel) {
-                comp.setForeground(SIMS_DARK_TEXT);
+
+        for (Component comp : getContentPane().getComponents()) {
+            if (comp instanceof JPanel panel) {
+                for (Component inner : panel.getComponents()) {
+                    styleComponent(inner);
+                }
+            } else {
+                styleComponent(comp);
             }
         }
     }
+
+    private void styleComponent(Component comp) {
+        if (comp instanceof JButton button) {
+            button.setBackground(SIMS_MEDIUM_PINK);
+            button.setForeground(SIMS_DARK_TEXT);
+            button.setFocusPainted(false);
+            button.setBorder(BorderFactory.createLineBorder(SIMS_LIGHT_BLUE, 2));
+        } else if (comp instanceof JLabel) {
+            comp.setForeground(SIMS_DARK_TEXT);
+        }
+    }
+
 
     private void updateUIBasedOnAttempts() {
         Integer currentTotalScore = student.getTrimesterScore(discipline.getDisciplineId());
@@ -242,7 +278,9 @@ public class ExamWindow extends JDialog {
     }
 
     private void spinWheel() {
+
         spinButton.setEnabled(false);
+        MusicPlayer.getInstance().playSpin();
 
         Random random = new Random();
         int finalScoreFromWheel = random.nextInt(60) + 1; // Score from 1 to 60 for visual/professor selection
@@ -340,7 +378,7 @@ public class ExamWindow extends JDialog {
             } else {
                 JOptionPane.showMessageDialog(this,
                         "На жаль, Ви не набрали достатньо балів після " + MAX_TOTAL_ATTEMPTS + " спроб. Вас відраховано з університету!",
-                        "Відрахування",
+                        "Невдача",
                         JOptionPane.ERROR_MESSAGE);
                 student.expel();
                 dispose();
@@ -447,7 +485,10 @@ public class ExamWindow extends JDialog {
                 int y = (int) (centerY + textRadius * Math.sin(angleInRadians));
 
                 // Get professor name, repeating if less than 60 unique names
-                String text = professorNames.get(i % professorNames.size());
+                //    String text = professorNames.get(i % professorNames.size());
+
+                    String text = " " + i;
+
                 int textWidth = fm.stringWidth(text);
                 int textHeight = fm.getHeight();
 

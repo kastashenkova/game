@@ -15,6 +15,8 @@ class ExamCalendar extends JPanel {
         examDates = new ArrayList<>();
         examDates.add(LocalDate.of(2024, Month.NOVEMBER,20));
         examDates.add(LocalDate.of(2024, Month.NOVEMBER, 22));
+        examDates.add(LocalDate.of(2024, Month.NOVEMBER,18));
+
     }
     public boolean showReminder() {
         LocalDate today = LocalDate.of(2024, Month.NOVEMBER, 17);

@@ -6,6 +6,7 @@ import org.example.StartWindow;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +15,7 @@ import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.net.URL;
 
-public class WelcomeFrame extends JFrame implements ActionListener {
+public class GoodbyeWindow extends JFrame implements ActionListener {
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenuItem newGameItem, exitItem;
@@ -26,94 +27,67 @@ public class WelcomeFrame extends JFrame implements ActionListener {
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
     private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
 
-    public WelcomeFrame() {
+    public GoodbyeWindow() {
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
 
-        setTitle("Sims NaUKMA");
+        setTitle("End of Game!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         MusicPlayer.getInstance().setMusicEnabled(true);
-        MusicPlayer.getInstance().playMusic("/assets/Sounds/welcome.wav");
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/theme1.wav");
 
-        BackgroundPanel backgroundPanel = new BackgroundPanel(getClass().getResource("/backMain.png").getFile());
-        setContentPane(backgroundPanel);
+       setBackground(SIMS_LIGHT_BLUE);
 
-        menuBar = new JMenuBar();
-        fileMenu = new JMenu("File");
-        newGameItem = new JMenuItem("New Game");
-        exitItem = new JMenuItem("Exit");
-
-        fileMenu.add(newGameItem);
-        fileMenu.add(exitItem);
-
-        menuBar.add(fileMenu);
-
-        setJMenuBar(menuBar);
-
-
-        newGameItem.addActionListener(this);
-        exitItem.addActionListener(this);
-
-        try {
-            URL url = getClass().getResource("/sims.gif");
-            ImageIcon icon = new ImageIcon(url);
-            JLabel gifLabel = new JLabel(icon, SwingConstants.CENTER);
-            gifLabel.setBounds(0, 500, 200, 184);
-            backgroundPanel.add(gifLabel);
-        } catch (Exception e) {
-        }
-        try {
-            URL url = getClass().getResource("/study.gif");
-            String html = "<html><body><img src='" + url + "' width='150' height='120'></body></html>";
-            JLabel gifLabel = new JLabel(html, SwingConstants.CENTER);
-            gifLabel.setBounds(800, 0, 200, 184);
-            backgroundPanel.add(gifLabel);
-        } catch (Exception e) {
-        }
-
-
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-         startButton = createButton("start");
-         optionsButton = createButton("settings");
-         quitButton = createButton("exit");
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        mainPanel.add(startButton, gbc);
-
-        gbc.gridy = 1;
-        mainPanel.add(optionsButton, gbc);
-
-        gbc.gridy = 2;
-        mainPanel.add(quitButton, gbc);
-        mainPanel.setOpaque(false);
-
-        add(mainPanel, BorderLayout.CENTER);
-
+        startButton = createButton("start");
         startButton.addActionListener(this);
-        optionsButton.addActionListener(this);
-        quitButton.addActionListener(this);
+
+        String instructions = "<html>" +
+                "<body style='font-family: \"Arial\"; font-size: 13px; color: #00000;'>" +
+                "<h1 style='color: #00000;'>Дякуємо за вашу увагу до гри Сімс НаУКМА!</h1>" +
+                "<p>Сподіваємось, вона хоч трохи дала вам відчути справжню атмосферу навчання в Могилянці</p>" +
+                "<p>До нових зустрічей та оновлень!</p>" +
+                "<ol>" +
+                "<li>Для того, щоб почати нову гру - натисніть кнопку <b> PLAY</b> </li>" +
+                "<li>У разі виникнення питань та пропозицій - звертайтеся до розробників(так, вони на фото).</li>" +
+                "</ol>" +
+                "<p><b>Бажаємо успіхів!</b></p>" +
+                "</body></html>";
+
+        JEditorPane editorPane = new JEditorPane("text/html", instructions);
+        editorPane.setEditable(false);
+        editorPane.setBackground(SIMS_LIGHT_PINK);
+        editorPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setPreferredSize(new Dimension(200, 220));
+
+
+        add(startButton, BorderLayout.SOUTH);
+        add(scrollPane, BorderLayout.NORTH);
 
         try {
             icon = loadImage("/logo.png");
         } catch (IOException e){
-
         }
+        setIconImage(icon);
+
+        ImageIcon icon1 = new ImageIcon(getClass().getResource("/mimi.png"));
+        JLabel label = new JLabel(icon1);
+        label.setBounds(800, 0, 200, 160);
+        add(label);
+
         setIconImage(icon);
         setVisible(true);
     }
     private BufferedImage loadImage(String path) throws IOException {
         return ImageIO.read(getClass().getResourceAsStream(path));
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -122,15 +96,7 @@ public class WelcomeFrame extends JFrame implements ActionListener {
                 MusicPlayer.getInstance().setMusicEnabled(false);
                 dispose();
                 LoadingFrame loading = new LoadingFrame();
-                loading.startLoading(() -> new StartWindow().setVisible(true));
-            });
-        } else if (e.getSource() == quitButton) {
-            MusicPlayer.getInstance().playButtonClick();
-            System.exit(0);
-        } else if(e.getSource() == optionsButton) {
-            SwingUtilities.invokeLater(() -> {
-                MusicPlayer.getInstance().playButtonClick();
-                new OptionsFrame().setVisible(true);
+                loading.startLoading(() -> new WelcomeFrame().setVisible(true));
             });
         }
     }
@@ -181,5 +147,6 @@ public class WelcomeFrame extends JFrame implements ActionListener {
 
         return new ImageIcon(darkened);
     }
+
 
 }

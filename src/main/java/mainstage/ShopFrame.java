@@ -17,7 +17,6 @@ public class ShopFrame extends JFrame {
 
     private final List<Product> inventory = new ArrayList<>();
     private Hero hero;
-    private GameBoard gameBoard;
 
 
     public ShopFrame(GameBoard gameBoard, List<Product> products) throws IOException {

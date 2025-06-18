@@ -7,10 +7,7 @@ public class BuildingManager {
     private Building[] buildings = new Building[10];
     private GameBoard gameBoard;
 
-
-
-
-    public BuildingManager(GameBoard gameBoard) throws IOException {
+    public BuildingManager(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
     }
 

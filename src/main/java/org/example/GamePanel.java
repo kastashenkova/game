@@ -1,6 +1,7 @@
 package org.example;
 
 
+import gui.GoodbyeWindow;
 import gui.HintPanel;
 import gui.LoadingFrame;
 import mainstage.MainFrame;
@@ -170,17 +171,11 @@ public class GamePanel extends JPanel implements ActionListener {
         currentGameState = GameState.PLAYING;
         setLayout(null);
 
-        // Initialize MusicPlayer (assuming default sound path or specific path if needed)
         MusicPlayer.getInstance().setMusicEnabled(true);
         MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
 
-        String nextHint = "Поточний етап: запис на дисципліни\n" +
-                "- Запасайся терпінням...\n" +
-                "- Готуй запасні дисципліни на випадок, якщо не встигнеш\n" +
-                "- Дій швидко!\n" +
-                "- Пауза, на жаль, тут не працює...";
-
-        hintPanel = new HintPanel(nextHint);
+        hintPanel = new HintPanel();
+        hintPanel.setHint(hero.getLevel());
         hintPanel.setBounds(900, 350, 280, 220);
         add(hintPanel);
 
@@ -285,6 +280,8 @@ public class GamePanel extends JPanel implements ActionListener {
                                 int timeLeft = secondsPassed[0];
                                 countdownLabel.setText(String.valueOf(secondsPassed[0]));
                                 hero.increaseEnergy(10);
+                                MusicPlayer.getInstance().setMusicEnabled(false);
+                                MusicPlayer.getInstance().playTick();
                                 int randomIndex = (int)(Math.random() * sleepMessages.length);
                                 String msg = sleepMessages[randomIndex];
                                 messageLabel.setText(msg);
@@ -296,6 +293,8 @@ public class GamePanel extends JPanel implements ActionListener {
                                     pulseTimerHolder[0].stop();
                                 }
                                 currentGameState = GameState.PLAYING;
+                                MusicPlayer.getInstance().setMusicEnabled(true);
+                                MusicPlayer.getInstance().playMusic("/assets/Sounds/Background.wav");
                                 glassPane.setVisible(false);
                                 JOptionPane.showMessageDialog(this, "Ваш сім відновив енергію і готовий до нових звершень!");
                             }
@@ -314,50 +313,33 @@ public class GamePanel extends JPanel implements ActionListener {
 
         floatingMessages = new ArrayList<>();
 
-        heroActionsPanel = new JPanel();
-        heroActionsPanel.setLayout(new GridLayout(2, 2, 5, 5));
-        heroActionsPanel.setBackground(new Color(200, 200, 255, 180));
-        heroActionsPanel.setVisible(false);
-
-        JButton eatButton = new JButton("Їсти");
-        eatButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        eatButton.addActionListener(evnt -> {
-            if (currentGameState == GameState.PLAYING) {
-                hero.eat();
-            }
-        });
-        heroActionsPanel.add(eatButton);
-
-      /*  JButton sleepButton = new JButton("Спати");
-        sleepButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        sleepButton.addActionListener(e -> {
-            if (currentGameState == GameState.PLAYING) {
-                hero.sleep();
-            }
-        });
-        heroActionsPanel.add(sleepButton);
-
-       */
-
-        JButton studyButton = new JButton("Навчатися");
-        studyButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        studyButton.addActionListener(e -> {
-            if (currentGameState == GameState.PLAYING) {
-                hero.study();
-            }
-        });
-        heroActionsPanel.add(studyButton);
-
-        JButton relaxButton = new JButton("Відпочивати");
-        relaxButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        relaxButton.addActionListener(e -> {
-            if (currentGameState == GameState.PLAYING) {
-                hero.relax();
-            }
-        });
-        heroActionsPanel.add(relaxButton);
-
-      //  add(heroActionsPanel);
+        if(hero.getLevel()==3){
+            JButton schedule = createSimsButton("Розклад сесії");
+            schedule.addActionListener(e-> {
+                MusicPlayer.getInstance().playButtonClick();
+                SwingUtilities.invokeLater(() -> {
+                    ExamSessionWindow examSessionWindow = new ExamSessionWindow();
+                    examSessionWindow.setVisible(true);
+                });
+            });
+            schedule.setBounds(800, 10, 150, 50);
+            add(schedule);
+        }
+        if(hero.getLevel()==4){
+            JButton fin = createSimsButton("Фінальне вікно");
+             fin.addActionListener(e-> {
+                         Window gameWindow = SwingUtilities.getWindowAncestor(this);
+                         if (gameWindow != null) {
+                             gameWindow.dispose();
+                         }
+                             MusicPlayer.getInstance().playButtonClick();
+                SwingUtilities.invokeLater(() -> {
+                    new GoodbyeWindow().setVisible(true);
+                });
+            });
+            fin.setBounds(800, 10, 150, 50);
+            add(fin);
+        }
 
         gameTimer = new Timer(1000 / 60, this);
         gameTimer.start();

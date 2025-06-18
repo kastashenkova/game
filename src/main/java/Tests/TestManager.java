@@ -1,5 +1,7 @@
 package Tests;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import gui.LoadingFrame;
 import org.example.Discipline;
 import org.example.GameFrame;
@@ -7,6 +9,8 @@ import org.example.Hero;
 import org.example.Student;
 
 import javax.swing.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,19 +22,16 @@ public class TestManager {
 
     private List<Discipline> examDisciplines;
 
+    private static final String DATA_FILE = "enrollment_data.json";
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     public TestManager(Hero hero) {
 
         this.hero = hero;
         this.student = hero.getStudent();
-        this.examDisciplines = student.getEnrolledDisciplines();
-        System.out.println(examDisciplines.size());
+        this.examDisciplines = student.getExamDisciplines();
+        hero.setKnowledge(80);
 
-    }
-
-    public void generateForAll() {
-        for (Discipline discipline : examDisciplines) {
-            generateQuestions(discipline);
-        }
     }
 
     public void startTest() {
@@ -57,13 +58,10 @@ public class TestManager {
                     hero.setStudent(student);
                     hero.decreaseEnergy(40);
                     hero.decreaseHunger(-30);
+                    hero.decreaseMood(30);
+                    saveDataJson();
                     GameFrame gameFrame = new GameFrame(hero);
-                    String nextHint = "Вітаємо з прозодженням 2-го рівня!\n" +
-                            "- Твій сім втомився - відпочинь\n" +
-                            "- Підкріпись чимось\n" +
-                            "- Гарно підготуйся перед останнім ривком!\n" +
-                            "- Вір у свою удачу";
-                    gameFrame.getGamePanel().getHintPanel().setText(nextHint);
+                    gameFrame.getGamePanel().getHintPanel().setHint(3);
                     gameFrame.setVisible(true);
                 });
             });
@@ -75,7 +73,7 @@ public class TestManager {
         LoadingFrame loading = new LoadingFrame();
         loading.startLoading(() -> {
             SwingUtilities.invokeLater(() -> {
-                MainTestFrame testFrame = new MainTestFrame(current, () -> {
+                MainTestFrame testFrame = new MainTestFrame(hero,current, () -> {
                     while (true) {
                         int result = JOptionPane.showOptionDialog(
                                 null,
@@ -96,6 +94,14 @@ public class TestManager {
                 testFrame.setVisible(true);
             });
         });
+    }
+
+    private void saveDataJson() {
+        try (FileWriter writer = new FileWriter(DATA_FILE)) {
+            gson.toJson(student, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -1390,6 +1396,41 @@ public class TestManager {
                     new Question("15. Що таке синхронізація в нелінійних системах?",
                             new String[]{"Наявність стабільного стану", "Випадковість", "Припасування траєкторій двох систем під впливом зв’язку", "Зникнення атрактора"}, 2),
             };
+        } else {
+            discipline.questions = new Question[]{new Question("1. Що вивчає теорія керування?",
+                    new String[]{"Фізичні коливання", "Статистичні дані", "Принципи побудови і аналізу керованих динамічних систем", "Теорію чисел"}, 2),
+                    new Question("2. Що таке об'єкт керування?",
+                            new String[]{"Пристрій в інтернеті", "Сигнал з шумом", "Система, на яку впливають з метою зміни її поведінки", "Значення параметра"}, 2),
+                    new Question("3. Що таке керованість системи?",
+                            new String[]{"Можливість виміряти параметри", "Можливість перевірити стабільність", "Можливість перевести систему з будь-якого стану в будь-який інший", "Можливість побудови графіка"}, 2),
+                    new Question("4. Яке з наведених є математичною моделлю динамічної системи?",
+                            new String[]{"Алгоритм шифрування", "Інтегральне рівняння", "Диференціальне рівняння", "Тригонометричний ряд"}, 2),
+                    new Question("5. Що таке стійкість системи керування?",
+                            new String[]{"Спроможність не змінювати параметри", "Здатність зменшити похибку", "Здатність повернутися до рівноваги після збурення", "Періодичність дії"}, 2),
+                    new Question("6. Що таке передатна функція?",
+                            new String[]{"Сигнал у часі", "Відношення виходу до входу в області частот", "Формула коефіцієнтів", "Механізм регуляції"}, 1),
+                    new Question("7. Як перевірити стійкість лінійної системи?",
+                            new String[]{"За частотою входу", "Методом Ляпунова", "Інтегруванням", "Аналізом коефіцієнтів Фур'є"}, 1),
+                    new Question("8. Яка типова динамічна ланка має передатну функцію 1/(Ts+1)?",
+                            new String[]{"Інтегруюча", "Пропорційна", "Інерційна першого порядку", "Деривативна"}, 2),
+                    new Question("9. Що таке зворотній зв’язок у системах керування?",
+                            new String[]{"Вхідний сигнал", "Вивід, що впливає на вхід", "Постійна складова сигналу", "Налаштування амплітуди"}, 1),
+                    new Question("10. Що таке похибка усталеного режиму?",
+                            new String[]{"Максимальна амплітуда", "Різниця між виходом і вхідним впливом при t → ∞", "Похибка похідної", "Розмах синусоїди"}, 1),
+                    new Question("11. Який елемент формує сигнал управління на основі похибки?",
+                            new String[]{"Сенсор", "Регулятор", "Об'єкт", "Виконавчий пристрій"}, 1),
+                    new Question("12. Яке рівняння описує дискретну систему керування?",
+                            new String[]{"Диференціальне", "Різницеве", "Інтегральне", "Логарифмічне"}, 1),
+                    new Question("13. Який тип системи забезпечує нульову усталену похибку для одиничного входу?",
+                            new String[]{"Інерційна", "Пропорційна", "Ідеальний інтегратор", "Система з диференціатором"}, 2),
+                    new Question("14. Що означає стабілізація системи?",
+                            new String[]{"Зміна її структури", "Налаштування амплітуди сигналу", "Забезпечення її стійкості", "Зменшення періоду"}, 2),
+                    new Question("15. Яке з тверджень відповідає принципу суперпозиції?",
+                            new String[]{"Система не залежить від початкових умов", "Сума реакцій відповідає сумі впливів", "Будь-який вхід призводить до сталого стану", "Система не має похибки"}, 1)
+            };
+
+
         }
     }
-}
+
+    }

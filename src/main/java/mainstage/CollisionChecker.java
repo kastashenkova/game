@@ -5,6 +5,7 @@ import gui.LoadingFrame;
 import org.example.EnrollmentSystemGUI;
 import org.example.Hero;
 import org.example.MusicPlayer;
+import org.example.StudyProgressGUI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +17,6 @@ import java.util.List;
 public class CollisionChecker {
 
     GameBoard gameBoard;
-    Hero hero;
 
     public CollisionChecker(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
@@ -61,10 +61,11 @@ public class CollisionChecker {
 
         private void checkSpecificCollisions(Building obj, Player player) {
 
-            if(!gameEnded && obj.name.equals("NaUKMA")){
+            if(!gameEnded && obj.name.equals("NaUKMA")) {
                 gameEnded = true;
                 gameBoard.gameThread.interrupt();
                 gameBoard.musicPlayer.stopMusic();
+                MusicPlayer.getInstance().playButtonClick();
                 Hero hero = gameBoard.hero;
                 System.out.println(hero.getBudget());
                 int level = player.hero.getLevel();
@@ -74,20 +75,29 @@ public class CollisionChecker {
                     if (gameWindow != null) {
                         gameWindow.dispose();
                     }
-                        if(level==1){
-                            hero.levelUp();
-                            LoadingFrame loading = new LoadingFrame();
-                            loading.startLoading(() -> {
-                                EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
-                                enrollmentSystemGUI.setVisible(true);
-                            });
-                        } else if(level==2){
-                            hero.setLevel(3);
-                            TestManager testManager = new TestManager(hero);
-                            testManager.startTest();
-                        }
-                    });
+                    if (level == 1) {
+                        hero.levelUp();
+                        LoadingFrame loading = new LoadingFrame();
+                        loading.startLoading(() -> {
+                            EnrollmentSystemGUI enrollmentSystemGUI = new EnrollmentSystemGUI(hero);
+                            enrollmentSystemGUI.setVisible(true);
+                        });
+                    } else if (level == 2) {
+                        hero.setLevel(3);
+                        TestManager testManager = new TestManager(hero);
+                        testManager.startTest();
+                    } else if (level == 3) {
+
+                        LoadingFrame loading = new LoadingFrame();
+                        loading.startLoading(() -> {
+
+                            new StudyProgressGUI(hero).setVisible(true);
+
+                        });
+                    }
+                });
             }
+
             else if(obj.name.equals("shop")){
                 java.util.List<Product> products = List.of(
                         new Product("Яблуко", 30, 10, "/food/apple.png"),

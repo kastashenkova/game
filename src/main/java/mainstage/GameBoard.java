@@ -1,8 +1,5 @@
 package mainstage;
 
-import gui.PauseAction;
-import org.example.GameFrame;
-import org.example.GamePanel;
 import org.example.Hero;
 import org.example.MusicPlayer;
 
@@ -32,7 +29,6 @@ public class GameBoard  extends JPanel implements Runnable {
     int cameraX = 0, cameraY = 0;
 
     public Thread gameThread;
-    GameFrame gameFrame;
 
     public TileManager tileManager = new TileManager(this);
     public BuildingManager buildingManager = new BuildingManager(this);

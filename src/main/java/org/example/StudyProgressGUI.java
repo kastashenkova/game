@@ -2,8 +2,10 @@ package org.example;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import gui.LoadingFrame;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -22,6 +24,9 @@ public class StudyProgressGUI extends JFrame {
     private static final Color SIMS_GREEN_INCORRECT = new Color(182, 209, 182);
 
     private Student currentStudent;
+    double totalScoresSum = 0;
+
+    private Hero hero;
     private JTable progressTable;
     private DefaultTableModel tableModel;
     private JLabel averageScoreLabel;
@@ -29,7 +34,11 @@ public class StudyProgressGUI extends JFrame {
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final String ENROLLMENT_FILE = "enrollment_data.json";
 
-    public StudyProgressGUI() {
+    public StudyProgressGUI(Hero hero) {
+        MusicPlayer.getInstance().setMusicEnabled(true);
+        MusicPlayer.getInstance().playMusic("/assets/Sounds/sessionBack.wav");
+
+        this.hero = hero;
         setTitle("Сесія");
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -37,6 +46,7 @@ public class StudyProgressGUI extends JFrame {
 
         initComponents();
         loadStudentData();
+        showInstructionsDialog();
         updateProgressDisplay();
     }
 
@@ -96,7 +106,10 @@ public class StudyProgressGUI extends JFrame {
         endSessionButton.setBackground(SIMS_MEDIUM_PINK);
         endSessionButton.setForeground(SIMS_DARK_TEXT);
         endSessionButton.setEnabled(true);
-        endSessionButton.addActionListener(e -> handleEndSession());
+        endSessionButton.addActionListener(e -> {
+            handleEndSession();
+        });
+
         southPanel.add(endSessionButton);
 
         add(southPanel, BorderLayout.SOUTH);
@@ -110,11 +123,9 @@ public class StudyProgressGUI extends JFrame {
                 currentStudent = new Student("Невідомий студент", 0, "Невідомо");
             }
 
-            if (currentStudent != null) {
-                for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
-                    if (disc.getControlType() == null || disc.getControlType().isEmpty()) {
-                        disc.setControlType(Discipline.CONTROL_TYPE_ZALIK);
-                    }
+            for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
+                if (disc.getControlType() == null || disc.getControlType().isEmpty()) {
+                    disc.setControlType(Discipline.CONTROL_TYPE_ZALIK);
                 }
             }
 
@@ -125,7 +136,7 @@ public class StudyProgressGUI extends JFrame {
                     "Не вдалося завантажити дані студента. Буде створено порожнього студента.",
                     "Помилка завантаження",
                     JOptionPane.ERROR_MESSAGE);
-            currentStudent = new Student( "Студент без даних", 0, "Н/Д");
+            currentStudent = new Student("Студент без даних", 0, "Н/Д");
         }
         updateStudentInfoLabel();
     }
@@ -154,7 +165,7 @@ public class StudyProgressGUI extends JFrame {
             return;
         }
 
-        double totalScoresSum = 0;
+
         int disciplinesCountedForAverage = currentStudent.getEnrolledDisciplines().size();
         boolean allScoresAbove60 = true;
 
@@ -175,41 +186,44 @@ public class StudyProgressGUI extends JFrame {
                         scoreForAverageCalculation = 0;
                     }
                 } else {
-                    scoreDisplay = "0";
-                    scoreForAverageCalculation = 0;
+                    scoreDisplay = String.valueOf(disc.getCurrentStudentsMark());
+                    scoreForAverageCalculation = disc.getCurrentStudentsMark();
                 }
-            } else {
-                scoreDisplay = String.valueOf(actualScore);
-                scoreForAverageCalculation = actualScore;
+
+                totalScoresSum += scoreForAverageCalculation;
+
+                if (actualScore == null || actualScore < 60) {
+                    if (!(Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0)) {
+                        allScoresAbove60 = false;
+                    } else if (Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0 && scoreForAverageCalculation <= 60) {
+                        allScoresAbove60 = false;
+                    } else if (actualScore != null && actualScore < 60) {
+                        allScoresAbove60 = false;
+                    }
+                }
+                String actionButtonText = " ";
+                if(disc.getAvtomat()){
+                    actionButtonText = "Автомат";
+
+
+                } else {
+
+                    actionButtonText = "Допуск";
+                }
+
+                Object[] rowData = {
+                        disc.getName(),
+                        displayControlType,
+                        scoreDisplay,
+                        actionButtonText
+                };
+                tableModel.addRow(rowData);
             }
 
-            totalScoresSum += scoreForAverageCalculation;
+            double average = (disciplinesCountedForAverage > 0) ? (totalScoresSum / disciplinesCountedForAverage) : 0;
+            averageScoreLabel.setText(String.format("Середній бал: %.2f", average));
 
-            if (actualScore == null || actualScore < 60) {
-                if (!(Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0)) {
-                    allScoresAbove60 = false;
-                } else if (Objects.equals(displayControlType, Discipline.CONTROL_TYPE_ZALIK) && currentStudent.getZalikAttempts(disc.getDisciplineId()) == 0 && scoreForAverageCalculation <= 60) {
-                    allScoresAbove60 = false;
-                } else if (actualScore != null && actualScore < 60) {
-                    allScoresAbove60 = false;
-                }
-            }
-
-            String actionButtonText = "Допуск";
-
-            Object[] rowData = {
-                    disc.getName(),
-                    displayControlType,
-                    scoreDisplay,
-                    actionButtonText
-            };
-            tableModel.addRow(rowData);
         }
-
-        double average = (disciplinesCountedForAverage > 0) ? (totalScoresSum / disciplinesCountedForAverage) : 0;
-        averageScoreLabel.setText(String.format("Середній бал: %.2f", average));
-
-        endSessionButton.setEnabled(allScoresAbove60);
     }
 
     private void displayDisciplineDetails(int row) {
@@ -246,54 +260,39 @@ public class StudyProgressGUI extends JFrame {
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
 
-        boolean allAttemptsUsed = true;
-        for (Discipline disc : currentStudent.getEnrolledDisciplines()) {
-            Integer actualScore = currentStudent.getTrimesterScore(disc.getDisciplineId());
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Ви впевнені, що хочете завершити сесію? Деякі іспити ще не складено або деякі предмети мають низький бал.",
+                "Підтвердження завершення сесії",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
 
-            if (actualScore == null) {
-                if (Objects.equals(disc.getControlType(), Discipline.CONTROL_TYPE_ZALIK)) {
-                    if (currentStudent.getZalikAttempts(disc.getDisciplineId()) < 2) {
-                        allAttemptsUsed = false;
-                        break;
-                    }
-                } else if (Objects.equals(disc.getControlType(), Discipline.CONTROL_TYPE_EXAM)) {
-                    allAttemptsUsed = false;
-                    break;
-                }
-            } else if (actualScore < 60) {
-                allAttemptsUsed = false;
-                break;
-            }
+        if (result != JOptionPane.YES_OPTION) {
+            return; // користувач натиснув "Ні"
         }
-
-        int confirmResult = JOptionPane.YES_OPTION;
-        if (!allAttemptsUsed) {
-            confirmResult = JOptionPane.showConfirmDialog(
-                    this,
-                    "Ви впевнені, що хочете завершити сесію? Деякі іспити ще не складено або деякі предмети мають низький бал.",
-                    "Підтвердження завершення сесії",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
-        }
-
-        if (confirmResult == JOptionPane.YES_OPTION) {
-            // Session completion logic
+        double currentAverageScore = Double.parseDouble(averageScoreLabel.getText().replace("Середній бал: ", "").replace(",", "."));
+        if (currentAverageScore > 95.0) {
             JOptionPane.showMessageDialog(this,
-                    "Вітаємо! Ви успішно пройшли 3 рівень гри!",
-                    "Сесію завершено!",
+                    "Вітаємо! Тепер щомісяця Ви отримуватиме стипендію у розмірі 2000 грн!",
+                    "ЮХУУУУ!!!! Стипендія!!!",
                     JOptionPane.INFORMATION_MESSAGE);
-
-            // Check for scholarship
-            double currentAverageScore = Double.parseDouble(averageScoreLabel.getText().replace("Середній бал: ", "").replace(",", "."));
-            if (currentAverageScore > 95.0) {
-                JOptionPane.showMessageDialog(this,
-                        "Вітаємо! Тепер щомісяця Ви отримуватиме стипендію у розмірі 2000 грн!",
-                        "ЮХУУУУ!!!! Стипендія!!!",
-                        JOptionPane.INFORMATION_MESSAGE);
-            }
-            dispose();
         }
+        dispose();
+        SwingUtilities.invokeLater(() -> {
+            LoadingFrame loading = new LoadingFrame();
+            loading.startLoading(() -> {
+                hero.levelUp();
+                hero.setLevel(4);
+                hero.setStudent(currentStudent);
+                hero.decreaseEnergy(40);
+                hero.decreaseHunger(-30);
+                hero.decreaseMood(-30);
+                GameFrame gameFrame = new GameFrame(hero);
+                gameFrame.getGamePanel().getHintPanel().setHint(4);
+                gameFrame.setVisible(true);
+            });
+        });
+
     }
 
 
@@ -337,9 +336,9 @@ public class StudyProgressGUI extends JFrame {
                 if (attempts >= 2) {
                     setEnabled(false);
                     setText("Іспит складено");
-                } else {
-                    setEnabled(true);
-                    setText("Допуск");
+                } else if (currentDisc.getAvtomat()){
+                    setEnabled(false);
+                    setText("Автомат");
                 }
             } else {
                 setEnabled(true);
@@ -473,6 +472,13 @@ public class StudyProgressGUI extends JFrame {
                     String controlTypeName = (controlType != null) ? controlType : "контролю";
 
                     if (Objects.equals(controlType, Discipline.CONTROL_TYPE_EXAM)) {
+
+                        if (selectedDiscipline.getAvtomat()){
+                            JOptionPane.showMessageDialog(null, "Цей предмет вже складено автоматично. Вікно іспиту не відкриватиметься.",
+                                    "Автомат",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            return "Автомат";
+                        }
                         ExamWindow examWindow = new ExamWindow(StudyProgressGUI.this, selectedDiscipline, currentStudent);
                         examWindow.setVisible(true);
                         //StudyProgressGUI.this.updateProgressDisplay();
@@ -514,17 +520,41 @@ public class StudyProgressGUI extends JFrame {
         }
     }
 
-    public static void main(String[] args) throws UnsupportedLookAndFeelException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        UIManager.put("nimbusBase", SIMS_MEDIUM_PINK);
-        UIManager.put("nimbusBlueGrey", SIMS_LIGHT_BLUE);
-        UIManager.put("control", SIMS_LIGHT_PINK);
-        UIManager.put("textForeground", SIMS_DARK_TEXT);
-        UIManager.put("nimbusLightBackground", SIMS_LIGHT_PINK);
+    private void showInstructionsDialog() {
+        String instructions = "<html>" +
+                "<body style='font-family: \"Arial\"; font-size: 13px; color: #00000;'>" +
+                "<h1 style='color: #00000;'>Інструкція до складання сесії</h1>" +
+                "<p>Вітаємо з тим, що ви дожили до сесії!</p>" +
+                "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
+                "<ol>" +
+                "<li>Кожна залікова дисципліна має колесо фортуни</li>" +
+                "<li><b>Вам буде надато 2 спроби крутити колесо та отримати бали!</li>" +
+                "<li>Натисніть на <b>«Допуск»</b> для проходження заліка чи іспита.</li>" +
+                "<li><b>Ви зможете</b> перескласти дисципліну у разі потреби.</li>" +
+                "<li>Поставтеся серйозно до іспитів!!!</li>" +
+                "<li>Після того, як Ви складете всі дисципліни, натисніть <b>«Завершити сесію»</b>.</li>" +
+                "<li> <b>НЕ НАТИСКАЙТЕ ЗАВЕРШИТИ ПОКИ НЕ СКЛАДЕТЕ</b>.</li>" +
+                "</ol>" +
+                "<p><b>Бажаємо успіху!</b></p>" +
+                "</body></html>";
 
-        ToolTipManager.sharedInstance().setInitialDelay(500);
-        ToolTipManager.sharedInstance().setDismissDelay(10000);
+        JEditorPane editorPane = new JEditorPane("text/html", instructions);
+        editorPane.setEditable(false);
+        editorPane.setBackground(SIMS_LIGHT_PINK);
+        editorPane.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        SwingUtilities.invokeLater(() -> new StudyProgressGUI().setVisible(true));
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setPreferredSize(new Dimension(600, 450));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Інструкція", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    public Hero getHero() {
+        return hero;
+    }
+
+    public void setHero(Hero hero) {
+        this.hero = hero;
+    }
+
 }

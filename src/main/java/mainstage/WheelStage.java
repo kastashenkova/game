@@ -1,7 +1,5 @@
 package mainstage;
 
-import gui.BackgroundPanel;
-import org.example.GameFrame;
 import org.example.Hero;
 import org.example.MusicPlayer;
 

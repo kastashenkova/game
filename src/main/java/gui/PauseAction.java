@@ -15,7 +15,6 @@ public class PauseAction extends AbstractAction {
     private static final Color GP_BG = new Color(0, 0, 0, ALPHA);
     private GameBoard gameBoard;
     private DeDialogPanel deDialogPanel = new DeDialogPanel(gameBoard);  // jpanel shown in JDialog
-    private Hero hero;
 
     public PauseAction(String name, GameBoard gameBoard) {
 
