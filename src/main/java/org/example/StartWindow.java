@@ -253,7 +253,6 @@ public class StartWindow extends JFrame {
             hero.setSpecialty(specialty); // Set the chosen specialty
             hero.setBudget(150); // Initial budget
             hero.setEnergy(100); // Initial energy
-            System.out.println(specialty.toString()); // For debugging/logging
             hero.setCourse(selectedCourse); // Set the chosen course
 
             MusicPlayer.getInstance().setMusicEnabled(false); // Stop background music

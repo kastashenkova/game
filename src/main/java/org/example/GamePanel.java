@@ -71,7 +71,6 @@ public class GamePanel extends JPanel implements ActionListener {
     private JButton sendUserMessageButton;
 
 
-
     private String[] studentNames = {"Ксенія", "Катя", "Петро", "Женя", "Ольга", "Тарас", "Стас", "Дмитро"};
     private String[] kmaMessages = {
             "Коли там вже результати модуля з вишки?",
@@ -332,6 +331,11 @@ public class GamePanel extends JPanel implements ActionListener {
         add(statsLabel);
 
         floatingMessages = new ArrayList<>();
+
+        heroActionsPanel = new JPanel();
+        heroActionsPanel.setLayout(new GridLayout(2, 2, 5, 5));
+        heroActionsPanel.setBackground(new Color(200, 200, 255, 180));
+        heroActionsPanel.setVisible(false);
 
         if(hero.getLevel()==3){
             JButton schedule = createSimsButton("Розклад сесії");
