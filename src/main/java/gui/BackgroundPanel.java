@@ -3,10 +3,11 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 
-public/**
+/**
  * class for a background picture
  */
-class BackgroundPanel extends JPanel {
+
+public class BackgroundPanel extends JPanel {
     private Image backgroundImage;
 
     /**

@@ -7,7 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
-
+/**
+ * class for a main Kontraktova Square simulation
+ * contains a "camera" that goes after the hero and allows user to
+ * rule the hero using keyboard
+ */
 public class GameBoard  extends JPanel implements Runnable {
 
     private static final double FPS = 60;
@@ -52,6 +56,10 @@ public class GameBoard  extends JPanel implements Runnable {
     }
     private boolean paused = false;
 
+    /**
+     * sets a game board on pause
+     * @param paused - flag if game is paused or not
+     */
     public void setPaused(boolean paused) {
         this.paused = paused;
     }
@@ -59,7 +67,9 @@ public class GameBoard  extends JPanel implements Runnable {
         return paused;
     }
 
-
+    /**
+     * initiates a main game thread
+     */
 
     public void startGameThread() {
         gameThread = new Thread(this);
@@ -69,8 +79,10 @@ public class GameBoard  extends JPanel implements Runnable {
 
     }
 
-
-
+    /**
+     * draws a main scene
+     * @param g the <code>Graphics</code> object to protect
+     */
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -86,7 +98,9 @@ public class GameBoard  extends JPanel implements Runnable {
 
     }
 
-
+    /**
+     * method that runs a whole simulation
+     */
     @Override
     public void run() {
 
@@ -107,6 +121,9 @@ public class GameBoard  extends JPanel implements Runnable {
         }
     }
 
+    /**
+     * updates camera or hero according to their current position
+     */
     private void update() {
         if (paused) return;
         player.update();

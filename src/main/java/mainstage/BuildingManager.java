@@ -1,7 +1,8 @@
 package mainstage;
 
-import java.awt.*;
-import java.io.IOException;
+/**
+ * class for a building manager
+ */
 
 public class BuildingManager {
     private Building[] buildings = new Building[10];
@@ -15,6 +16,9 @@ public class BuildingManager {
         return buildings;
     }
 
+    /**
+     * creates new buildings and sets a building zones
+     */
     public void setBuildings() {
         Building university = new Building();
         university.name = "NaUKMA";

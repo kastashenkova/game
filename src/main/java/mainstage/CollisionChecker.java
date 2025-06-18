@@ -14,14 +14,22 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * class to check the collision on the game board
+ */
 public class CollisionChecker {
-
     GameBoard gameBoard;
+
 
     public CollisionChecker(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
     }
 
+    /**
+     * analyzes collisions
+     * @param player - player of the game
+     * @param objects - analyse throw
+     */
     public void checkCollisions(Player player, Building[] objects) {
         player.collisionOn = false;
 
@@ -59,6 +67,12 @@ public class CollisionChecker {
     }
     private boolean gameEnded = false;
 
+    /**
+     * checks a collision  with a specific building and
+     * sets the logic according to occurred collision
+     * @param obj - a building to analyse
+     * @param player  - player of the game
+     */
         private void checkSpecificCollisions(Building obj, Player player) {
 
             if(!gameEnded && obj.name.equals("NaUKMA")) {

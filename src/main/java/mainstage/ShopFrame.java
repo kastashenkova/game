@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * class for a simulation of a shop or a cafe frame to buy something to eat
+ */
 public class ShopFrame extends JFrame {
 
 
@@ -53,6 +56,11 @@ public class ShopFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    /**
+     * creates a panel for a product
+     * @param product - product to add a panel  for
+     * @return panel of a product
+     */
     private JPanel addProductPanel(Product product) {
         JPanel productPanel = new JPanel();
         productPanel.setLayout(new BorderLayout());

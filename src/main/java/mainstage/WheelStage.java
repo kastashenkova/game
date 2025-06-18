@@ -10,6 +10,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * a frame to simulate a ferris wheel
+ */
 public class WheelStage extends JFrame {
 
     Hero hero;

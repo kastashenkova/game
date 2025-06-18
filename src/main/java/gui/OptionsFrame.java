@@ -12,6 +12,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * class for a frame with possible options
+ */
 public class OptionsFrame extends JFrame {
     private JSlider volumeSlider;
     private JButton themeButton;
@@ -19,7 +22,11 @@ public class OptionsFrame extends JFrame {
     boolean isDark = false;
 
     private int currentVolume = 50;
-        public OptionsFrame() {
+
+    /**
+     * basic constructor
+     */
+    public OptionsFrame() {
             setTitle("Налаштування гри");
             setSize(400, 300);
             setLocationRelativeTo(null);
@@ -80,6 +87,12 @@ public class OptionsFrame extends JFrame {
             add(panel);
 
         }
+
+    /**
+     * creates a formatted button
+     * @param text - text for the button
+     * @return - a formatted button
+     */
     private JButton createButton(String text) {
 
         JButton button = new JButton();
@@ -89,6 +102,11 @@ public class OptionsFrame extends JFrame {
 
         return button;
     }
+
+    /**
+     * creates a customised button for the instructions
+     * @return instruction button
+     */
     private JButton getInstructionButton(){
         instructionButton = new JButton("Інструкції та поради");
         instructionButton.setBackground(new Color(78, 90, 205));
@@ -114,6 +132,9 @@ public class OptionsFrame extends JFrame {
 
 }
 
+/**
+ * inner class for the instruction dialog with main advice for the player
+ */
 class InstructionDialog extends JDialog {
 
     public InstructionDialog(JFrame parent) {
@@ -170,6 +191,10 @@ class InstructionDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 }
+
+/**
+ * inner class to create a customised slider for volume changing
+ */
 class CustomSlider extends BasicSliderUI {
     Image im;
 

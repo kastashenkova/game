@@ -1,12 +1,15 @@
 package gui;
 
 import org.example.MusicPlayer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
+
+/**
+ * simulates a process of loading to make a game more realistic
+ */
 
 public class LoadingFrame extends JFrame {
 
@@ -16,6 +19,9 @@ public class LoadingFrame extends JFrame {
     private final Timer messageTimer;
     private final Random random = new Random();
 
+    /**
+     * basic constructor
+     */
     public LoadingFrame() {
         setTitle("Завантаження...");
         setSize(600, 500);
@@ -53,6 +59,10 @@ public class LoadingFrame extends JFrame {
         requestFocusInWindow();
     }
 
+    /**
+     * starts a loading process, plays a sound and shows the progress(1-100%)
+     * @param onFinish - defines a unit of work to be executed by a thread
+     */
     public void startLoading(Runnable onFinish) {
         setVisible(true);
         MusicPlayer.getInstance().setMusicEnabled(true);
@@ -76,6 +86,9 @@ public class LoadingFrame extends JFrame {
         }).start();
     }
 
+    /**
+     * creates string-messages for fun
+     */
     private void createRandomStrings() {
         messages.add("Завантаження Могилянки... дещо затягнулось, як і сесія 😅");
         messages.add("Завантаження може бути довгим..як пошук вільного місця в бібліо...");
@@ -84,6 +97,9 @@ public class LoadingFrame extends JFrame {
         messages.add("За цю невеличку паузу можна встигнути випити каву...");
     }
 
+    /**
+     * updates a string-message
+     */
     private void updateMessage() {
         int index = random.nextInt(messages.size());
         textLabel.setText(messages.get(index));

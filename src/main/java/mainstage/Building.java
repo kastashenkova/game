@@ -3,6 +3,9 @@ package mainstage;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * class for an object of building with its basic fields
+ */
 public class Building {
 
     public int worldX, worldY;

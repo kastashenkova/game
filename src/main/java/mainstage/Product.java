@@ -1,5 +1,8 @@
 package mainstage;
 
+/**
+ * class for a product in a shop or a cafe with its default fields
+ */
 public class Product {
     private final String name;
     private final String imagePath;
@@ -12,7 +15,7 @@ public class Product {
         this.price = price;
         this.nutrition = nutrition;
     }
-
+//--getters
     public String getName() { return name; }
     public String getImagePath() { return imagePath; }
     public int getPrice() { return price; }

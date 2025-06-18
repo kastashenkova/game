@@ -5,6 +5,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * class for a tiles manager
+ */
 public class TileManager {
 
     private GameBoard gameBoard;
@@ -18,6 +21,10 @@ public class TileManager {
         car = new Car(0, 0, carImg);
     }
 
+    /**
+     * sets a background picture
+     * @param g
+     */
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         try {
@@ -48,6 +55,11 @@ public class TileManager {
 
 
     }
+
+    /**
+     *
+     * @return cars updated screen x
+     */
     public int getCarScreenX() {
         int screenX = car.worldX - gameBoard.player.worldX + gameBoard.player.screenX;
         if (gameBoard.player.worldX < gameBoard.player.screenX) {
@@ -60,7 +72,10 @@ public class TileManager {
 
         return screenX;
     }
-
+    /**
+     *
+     * @return cars updated screen y
+     */
     public int getCarScreenY() {
         int screenY = car.worldY - gameBoard.player.worldY + gameBoard.player.screenY;
 
@@ -74,6 +89,10 @@ public class TileManager {
     }
 
 }
+
+/**
+ * class for a car object
+ */
 class Car{
     public int worldX, worldY;
     public int width = 64, height = 64;
@@ -87,6 +106,9 @@ class Car{
         this.image = image;
     }
 
+    /**
+     * simulates a moving process of a car
+     */
     public void update() {
         if (movingDown) {
             worldY += speed;

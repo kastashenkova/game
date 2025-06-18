@@ -1,9 +1,6 @@
 package gui;
 
-import com.formdev.flatlaf.FlatLightLaf;
 import org.example.MusicPlayer;
-import org.example.StartWindow;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,19 +10,17 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.IOException;
-import java.net.URL;
 
+/**
+ * class for the final window of the game
+ */
 public class GoodbyeWindow extends JFrame implements ActionListener {
-    private JMenuBar menuBar;
-    private JMenu fileMenu;
-    private JMenuItem newGameItem, exitItem;
-    JButton startButton; JButton optionsButton;  JButton quitButton;
+
+    JButton startButton;
     BufferedImage icon;
 
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
-    private static final Color SIMS_MEDIUM_PINK = new Color(255, 212, 222);
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
-    private static final Color SIMS_DARK_TEXT = new Color(50, 50, 50);
 
     public GoodbyeWindow() {
         UIManager.put("OptionPane.yesButtonText", "Так");
@@ -88,7 +83,10 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
         return ImageIO.read(getClass().getResourceAsStream(path));
     }
 
-
+    /**
+     * @Override actionPerformed void
+     * lets the user start a completely new game after the end
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == startButton) {
@@ -129,6 +127,14 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
 
         return button;
     }
+    /**
+     * Darkens an ImageIcon by applying a rescale operation to its RGB channels.
+     *
+     * @param originalIcon The original ImageIcon to darken.
+     * @param darknessFactor A float value between 0.0f and 1.0f, where smaller values
+     * result in more darkness (e.g., 0.85f for 85% brightness).
+     * @return A new ImageIcon that is a darkened version of the original.
+     */
     private ImageIcon darkenIcon(ImageIcon originalIcon, float darknessFactor) {
         BufferedImage original = new BufferedImage(
                 originalIcon.getIconWidth(),

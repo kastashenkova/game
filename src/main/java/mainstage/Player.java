@@ -7,6 +7,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * class for a player on a game board simulation
+ */
 public class Player {
 
     int worldX;
@@ -24,6 +27,10 @@ public class Player {
     public boolean collisionOn;
     public Hero hero;
 
+    /**
+     * @param gameBoard - a game board of the player
+     * @param keyEventHandler - key handler for a game
+     */
     public Player(GameBoard gameBoard, KeyEventHandler keyEventHandler) {
         this.gameBoard = gameBoard;
         this.keyEventHandler = keyEventHandler;
@@ -36,12 +43,19 @@ public class Player {
         getBufferedImages();
 
     }
+
+    /**
+     * start position of a player
+     */
     public void setDefaultValues(){
         worldX = gameBoard.charactersSize*5;
         worldY = gameBoard.charactersSize*10;
         speed = 3;
     }
 
+    /**
+     * updates a camera and player position according to key handler
+     */
     public void update() {
         collisionOn = false;
         if (keyEventHandler.upPressed || keyEventHandler.downPressed ||
@@ -98,6 +112,9 @@ public class Player {
         }
     }
 
+    /**
+     * helper method to extract images
+     */
 
     private void getBufferedImages() {
         String selectedCharacter = hero.getName();
@@ -115,10 +132,21 @@ public class Player {
         }
     }
 
+    /**
+     * helper method to load an image
+     * @param path - path of an image
+     * @return  loaded image
+     * @throws IOException
+     */
     private BufferedImage loadImage(String path) throws IOException {
         return ImageIO.read(getClass().getResourceAsStream(path));
     }
 
+    /**
+     * changes the pictures of a player according to its direction
+     * @param g
+     * @throws IOException
+     */
     public void draw(Graphics2D g) throws IOException {
 
         g.setColor(Color.BLACK);
@@ -159,6 +187,11 @@ public class Player {
 
 
     }
+
+    /**
+     *
+     * @return screen x of gthe player
+     */
     public int getScreenX() {
         int screenX = this.screenX;
 
@@ -173,7 +206,10 @@ public class Player {
         return screenX;
     }
 
-
+    /**
+     *
+     * @return screen y of  a player
+     */
     public int getScreenY() {
         int screenY = this.screenY;
 

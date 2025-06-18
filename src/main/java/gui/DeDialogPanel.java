@@ -1,25 +1,27 @@
 package gui;
 import mainstage.GameBoard;
 import org.example.GameFrame;
-import org.example.Hero;
 import org.example.MusicPlayer;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
-
+/**
+ * class for a pause panel with different options such as:
+ * returning to player panel, adjust settings and continue game
+ */
 public class DeDialogPanel extends JPanel {
+
+    // background color
     private static final Color BG = new Color(159, 131, 244);
 
     private GameBoard gameBoard;
 
-
+    /**
+     * constructor for the frames with a game board
+     */
     public DeDialogPanel(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
         JLabel pausedLabel = new JLabel("PAUSED");
@@ -38,6 +40,9 @@ public class DeDialogPanel extends JPanel {
         add(new JButton(new SettingsAction("НАЛАШТУВАННЯ")));
     }
 
+    /**
+     * constructor for the frames without game board
+     */
     public DeDialogPanel() {
 
         JLabel pausedLabel = new JLabel("PAUSED");
@@ -55,7 +60,9 @@ public class DeDialogPanel extends JPanel {
         add(new JButton(new SettingsAction("НАЛАШТУВАННЯ")));
     }
 
-
+    /**
+     * private class for resume action that resumes a game action when triggered
+     */
     private class ResumeAction extends AbstractAction {
         public ResumeAction(String name) {
             super(name);
@@ -70,7 +77,9 @@ public class DeDialogPanel extends JPanel {
             win.dispose();
         }
     }
-
+    /**
+     * private class for the action that takes user to player's panel
+     */
     private class PlayerPanelAction extends AbstractAction {
         public PlayerPanelAction(String name) {
             super(name);
@@ -97,7 +106,9 @@ public class DeDialogPanel extends JPanel {
             });
         }
     }
-
+    /**
+     * private class for showing all possible adjustments a user can do
+     */
     private class SettingsAction extends AbstractAction {
         public SettingsAction(String name) {
             super(name);

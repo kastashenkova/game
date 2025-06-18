@@ -12,6 +12,9 @@ import java.io.IOException;
 
 public class MainFrame extends JFrame {
 
+    /**
+     * a class for  main frame(for the game board)
+     */
     GameFrame gameFrame;
 public MainFrame(GameFrame gameFrame) {
     this.gameFrame = gameFrame;
@@ -23,7 +26,11 @@ public MainFrame(GameFrame gameFrame) {
         }
 }
 
-private void initUI() throws IOException {
+    /**
+     * initiates the main user interface and adds buttons for actions such as oause or resume
+     * @throws IOException
+     */
+    private void initUI() throws IOException {
     GameBoard gameBoard = new GameBoard(this);
     add(gameBoard);
     gameBoard.requestFocusInWindow();

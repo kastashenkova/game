@@ -3,11 +3,18 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * class for the small hints throughout the game
+ * Depend on the player's level
+ */
 public class HintPanel extends JPanel {
 
     private JTextArea textArea;
     private String text;
 
+    /**
+     * basic constructor
+     */
     public HintPanel() {
         setLayout(new BorderLayout());
         setOpaque(true);
@@ -28,11 +35,19 @@ public class HintPanel extends JPanel {
         add(textArea, BorderLayout.CENTER);
     }
 
+    /**
+     * sets a text for the hint
+     * @param text - text to set
+     */
     public void setText(String text){
         this.text = text;
         this.textArea.setText(text);
     }
 
+    /**
+     * sets a hint text
+     * @param level - according to the level the proper hint appears
+     */
     public void setHint(int level){
         String nextHint1 = "Поточний етап: запис на дисципліни\n" +
                 "- Запасайся терпінням...\n" +
@@ -65,6 +80,4 @@ public class HintPanel extends JPanel {
         }
 
     }
-
-
 }
