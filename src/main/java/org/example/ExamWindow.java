@@ -68,9 +68,6 @@ public class ExamWindow extends JDialog {
      */
     private static final Map<String, ProfessorQuestion> professorsAndQuestions = new LinkedHashMap<>();
     static {
-        // Example: "What is the maximum speed of light if moving perpendicular to it?"
-        // Correct: "the same", "unchanged"
-        // Partial: "probably the same"
         professorsAndQuestions.put("Проф. Довгань", new ProfessorQuestion(
                 "Яка максимальна швидкість світла, якщо рухатися перпендикулярно до нього?",
                 List.of("така ж", "незмінна", "швидкість світла", "с"),
@@ -122,11 +119,10 @@ public class ExamWindow extends JDialog {
                 List.of("навряд чи", "тільки якщо дуже постаратись", "теоретично ні")
         ));
 
-        // Add more default questions to fill up to 60 professor questions
         String[] defaultQuestions = {
                 "Що робити, якщо курс лекцій виявився нескінченним циклом?",
                 "Яка оптимальна кількість бутербродів для кодування?",
-                "Чи можна вважати, що ваш мозок - це комп'ютер, якщо ви вчитесь на програміста?",
+                "Чи можна вважати, що ваш мозок — це комп'ютер, якщо ви вчитеся на програміста?",
                 "Чи можна написати штучний інтелект, який буде писати заліковки?",
                 "Як ефективно використовувати час, коли до сесії залишилося 5 хвилин?",
                 "Чи може студент отримати відрахування, якщо він занадто геніальний?",
@@ -168,7 +164,7 @@ public class ExamWindow extends JDialog {
         if (owner instanceof StudyProgressGUI) {
             this.parentGUI = (StudyProgressGUI) owner;
         } else {
-            System.err.println("Помилка: CreditWindow повинен бути викликаний з StudyProgressGUI.");
+            System.err.println("Помилка. CreditWindow повинен бути викликаний з StudyProgressGUI.");
         }
 
         this.discipline = discipline;
@@ -211,7 +207,7 @@ public class ExamWindow extends JDialog {
         add(imageLabel, BorderLayout.WEST); // Add image to the west side
 
         // Title label for the discipline
-        JLabel titleLabel = new JLabel("Отримання балів за екзамен з дисципліни «" + discipline.getName() + "»");
+        JLabel titleLabel = new JLabel("Отримання балів за екзамен з дисципліни " + discipline.getName());
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(titleLabel);
@@ -332,7 +328,7 @@ public class ExamWindow extends JDialog {
             spinButton.setEnabled(false);
             spinButton.setText("Спроби вичерпано");
             scoreLabel.setText("Бал недостатній: " + (currentTotalScore != null ? currentTotalScore : "0") + "!");
-            attemptLabel.setText("Всі спроби вичерпано!");
+            attemptLabel.setText("Усі спроби вичерпано!");
         }
     }
 
@@ -359,7 +355,7 @@ public class ExamWindow extends JDialog {
             String landedProfessorName = professorNames.get(professorIndex);
             ProfessorQuestion pq = professorsAndQuestions.get(landedProfessorName);
 
-            String question = (pq != null) ? pq.question : "Цікаве питання від викладача!"; // Get question or default
+            String question = (pq != null) ? pq.question : "Цікаве запитання від викладача_ки!"; // Get question or default
 
             // Prompt user for answer
             String userAnswer = JOptionPane.showInputDialog(this,

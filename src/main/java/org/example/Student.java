@@ -52,8 +52,6 @@ public class Student implements Serializable {
         // Default constructor
     }
 
-    // --- Getters ---
-
     /**
      * Gets the unique identifier of the student.
      *

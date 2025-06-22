@@ -108,7 +108,7 @@ public class StudyProgressGUI extends JFrame {
         add(tablePanel, BorderLayout.CENTER);
 
         // Label for student information at the top
-        JLabel studentInfoLabel = new JLabel("Завантажую інформацію про студента...");
+        JLabel studentInfoLabel = new JLabel("Завантажую інформацію про студентку...");
         studentInfoLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         studentInfoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
         add(studentInfoLabel, BorderLayout.NORTH);
@@ -143,7 +143,7 @@ public class StudyProgressGUI extends JFrame {
         try (FileReader reader = new FileReader(ENROLLMENT_FILE)) {
             currentStudent = gson.fromJson(reader, Student.class);
             if (currentStudent == null) {
-                System.err.println("Error: Failed to load student data from JSON. File might be empty or corrupted.");
+                System.err.println("Помилка під час завантаження даних із JSON. Файл може бути порожній або пошкоджений.");
                 currentStudent = new Student("Невідомий студент", 0, "Невідомо"); // Fallback to default student
             }
 
@@ -155,11 +155,11 @@ public class StudyProgressGUI extends JFrame {
             }
 
         } catch (IOException e) {
-            System.err.println("Error loading student data from JSON: " + e.getMessage());
+            System.err.println("Помилка під час завантаження даних із JSON: " + e.getMessage());
             e.printStackTrace();
             JOptionPane.showMessageDialog(this,
-                    "Failed to load student data. An empty student will be created.",
-                    "Loading Error",
+                    "Помилка під час завантаження даних студента. Порожній студент буде створений...",
+                    "Помилка завантаження",
                     JOptionPane.ERROR_MESSAGE);
             currentStudent = new Student("Студент без даних", 0, "Н/Д"); // Fallback on error
         }
@@ -176,7 +176,7 @@ public class StudyProgressGUI extends JFrame {
             for (Discipline discipline : currentStudent.getEnrolledDisciplines()) {
                 totalCredits += discipline.getCredits();
             }
-            studentInfoLabel.setText("Студент: " + currentStudent.getName() + " (ID: " + currentStudent.getStudentId() +
+            studentInfoLabel.setText("Студентка: " + currentStudent.getName() + " (ID: " + currentStudent.getStudentId() +
                     ", курс: " + currentStudent.getCourse() + ", спеціальність: " + currentStudent.getMajor() +
                     ", кредити: " + totalCredits + ")");
         } else {
@@ -283,7 +283,7 @@ public class StudyProgressGUI extends JFrame {
         if (selectedDiscipline != null) {
             StringBuilder details = new StringBuilder();
             details.append("Назва: ").append(selectedDiscipline.getName()).append("\n");
-            details.append("Викладач: ").append(selectedDiscipline.getInstructor()).append("\n");
+            details.append("Викладач_ка: ").append(selectedDiscipline.getInstructor()).append("\n");
             details.append("Кредити: ").append(selectedDiscipline.getCredits()).append("\n");
             details.append("Тип контролю: ").append(selectedDiscipline.getControlType()).append("\n");
 
@@ -322,7 +322,7 @@ public class StudyProgressGUI extends JFrame {
         double currentAverageScore = Double.parseDouble(averageScoreLabel.getText().replace("Середній бал: ", "").replace(",", "."));
         if (currentAverageScore > 95.0) {
             JOptionPane.showMessageDialog(this,
-                    "Вітаємо! Тепер щомісяця Ви отримуватиме стипендію у розмірі 2000 грн!",
+                    "Вітаємо! Тепер щомісяця Ви отримуватиме стипендію 2000 грн!",
                     "ЮХУУУУ!!!! Стипендія!!!",
                     JOptionPane.INFORMATION_MESSAGE);
         }
@@ -511,7 +511,7 @@ public class StudyProgressGUI extends JFrame {
                 }
 
                 if (selectedDiscipline == null) {
-                    System.err.println("Error. Discipline not found.");
+                    System.err.println("Помилка. Дисципліну не знайдено");
                     return label; // Return original label if discipline not found
                 }
 
@@ -598,14 +598,14 @@ public class StudyProgressGUI extends JFrame {
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
                 "<li>Кожна залікова дисципліна має колесо фортуни</li>" +
-                "<li><b>Вам буде надато 2 спроби крутити колесо та отримати бали!</li>" +
-                "<li>Натисніть на <b>«Допуск»</b> для проходження заліка чи іспита.</li>" +
+                "<li><b>Вам буде надано 2 спроби крутити колесо та отримати бали!</li>" +
+                "<li>Натисніть на <b>«Допуск»</b> для проходження заліку чи іспиту.</li>" +
                 "<li><b>Ви зможете</b> перескласти дисципліну у разі потреби.</li>" +
                 "<li>Поставтеся серйозно до іспитів!!!</li>" +
-                "<li>Після того, як Ви складете всі дисципліни, натисніть <b>«Завершити сесію»</b>.</li>" +
-                "<li> <b>НЕ НАТИСКАЙТЕ ЗАВЕРШИТИ ПОКИ НЕ СКЛАДЕТЕ</b>.</li>" +
+                "<li>Після того, як ви складете всі дисципліни, натисніть <b>«Завершити сесію»</b>.</li>" +
+                "<li> <b>НЕ НАТИСКАЙТЕ ЗАВЕРШИТИ, ПОКИ НЕ СКЛАДЕТЕ ВСЕ</b>.</li>" +
                 "</ol>" +
-                "<p><b>Бажаємо успіху!</b></p>" +
+                "<p><b>Бажаємо успіхів!</b></p>" +
                 "</body></html>";
 
         JEditorPane editorPane = new JEditorPane("text/html", instructions);

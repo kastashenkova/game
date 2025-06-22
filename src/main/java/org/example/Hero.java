@@ -120,10 +120,10 @@ public class Hero {
             if (heroImageUrl != null) {
                 this.heroImage = ImageIO.read(heroImageUrl);
             } else {
-                System.err.println("Hero: Error: Hero image resource not found at path: " + heroResourcePath);
+                System.err.println("Помилка під час завантаження зображення геройки з ресурсу " + heroResourcePath);
             }
         } catch (IOException e) {
-            System.err.println("Hero: Error reading hero image file: " + e.getMessage());
+            System.err.println("Помилка під час читання зображення геройки: " + e.getMessage());
             e.printStackTrace();
             this.heroImage = null; // Ensure null if loading failed
         }
@@ -134,10 +134,10 @@ public class Hero {
             if (diamondImageUrl != null) {
                 this.diamondImage = ImageIO.read(diamondImageUrl);
             } else {
-                System.err.println("Hero: Error: Diamond image resource not found at path: " + diamondResourcePath);
+                System.err.println("Помилка під час завантаження зображення діаманта з ресурсу " + diamondResourcePath);
             }
         } catch (IOException e) {
-            System.err.println("Hero: Error reading diamond image file: " + e.getMessage());
+            System.err.println("Помилка під час читання зображення діаманта: " + e.getMessage());
             e.printStackTrace();
             this.diamondImage = null; // Ensure null if loading failed
         }

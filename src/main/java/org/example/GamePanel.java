@@ -75,28 +75,28 @@ public class GamePanel extends JPanel implements ActionListener {
     private String[] kmaMessages = {
             "Коли там вже результати модуля з вишки?",
             "Хтось розуміє, що робити з цим есе з філософії?",
-            "Треба здати дедлайн з проєктного менеджменту!",
+            "Треба встигнути до дедлайну з проєктного менеджменту!",
             "Де найкраща кава біля корпусу?",
             "Порадьте, як вижити на сесії в Могилянці!!!",
             "Завтра пара з Пєчкуровою, хто готовий?",
             "Хочу до Глибовця на лекцію!",
-            "У когось є конспект з історії України?",
+            "У когось є конспект з історії?",
             "Не забудьте зареєструватися на вибіркові!",
             "Мій сім вже п'яту годину сидить над курсовою...",
             "Хтось піде сьогодні на КМЦ?",
-            "Як же хочеться спати, але ж лекція з мікроекономіки!",
+            "Як же хочеться спати, але ж лекція з мікроекономіки...",
             "Шукаю одногрупників для роботи над спільним проєктом.",
-            "Чи є в когось вільний комп'ютер у бібліотеці?",
-            "Ого, мій сім щойно отримав 95 балів за колоквіум!",
-            "Цей семінар з логіки просто вибух мозку.",
-            "Коли наступний могилянський пікнік?",
-            "Хтось вже бачив розклад на наступний семестр?",
+            "Чи є вільний комп'ютер у бібліотеці?",
+            "Ого, мій сім щойно отримав 20 балів за колоквіум!",
+            "Цей семінар з логіки — просто вибух мозку.",
+            "Коли наступний шук?",
+            "Хтось уже бачив розклад на наступний семестр?",
             "Ура, здали всі лаби з матаналізу!",
-            "Думаю про те, як поєднати навчання і роботу.",
+            "Думаю про те, як поєднати навчання і роботу. Поможіть.",
             "Що не так із САЗом???",
             "Що робити, якщо я вже всьо?..",
             "Хеееееелп",
-            "Чому цей персонаж так швидко знову хоче їсти???",
+            "Чому цей сім так швидко знову хоче їсти???",
             "Нє, ну мій герой прям найкращий, ахахахах",
             "ПХХАХАХ, кринж",
             "Топова гра, канєшна",
@@ -104,8 +104,8 @@ public class GamePanel extends JPanel implements ActionListener {
             "Туць-туць-туць",
             "i want to break free",
             "Можна не спамити тут???",
-            "Чому на 3 курсі кожна пара — як фінальний босс?",
-            "Невже хтось уже написав курсову з ML? Поділіться натхненням!",
+            "Чому на 3 курсі кожна пара — жесть?",
+            "Невже хтось уже написав курсову? Поділіться натхненням!",
             "Як це «використайте API», якщо я ще чайник у ньому?",
             "Чи є в когось старі лаби з системного програмування?",
             "Мені здається, що інтеліджі мене ненавидить...",
@@ -221,7 +221,7 @@ public class GamePanel extends JPanel implements ActionListener {
             win.setGlassPane(glassPane);
 
 
-            JLabel messageLabel = new JLabel("Герой спить...", SwingConstants.CENTER);
+            JLabel messageLabel = new JLabel("Геройка спить...", SwingConstants.CENTER);
             messageLabel.setFont(new Font("MONOSPACED", Font.BOLD, 22));
             messageLabel.setForeground(Color.WHITE);
             messageLabel.setBounds(400, 80, 400, 50); // position and size can be adjusted
@@ -287,9 +287,9 @@ public class GamePanel extends JPanel implements ActionListener {
             final int[] secondsPassed = {10};
 
             String[] sleepMessages = {
-                    "Герой спить...",
+                    "Геройка спить...",
                     "Набираємося сил...",
-                    "Сон - важлива справа!",
+                    "Сон — важлива справа!",
                     "Заряджаємось енергією..."
             };
 
@@ -633,7 +633,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
             // Draw restart instruction
             g.setFont(new Font("Arial", Font.BOLD, 24));
-            String restartText = "Натисніть 'R', щоб почати спочатку.";
+            String restartText = "Натисніть R, щоб розпочати спочатку.";
             fm = g.getFontMetrics(g.getFont());
             textWidth = fm.stringWidth(restartText);
             g.drawString(restartText, (getWidth() - textWidth) / 2, getHeight() / 2 + 80);
@@ -907,7 +907,7 @@ public class GamePanel extends JPanel implements ActionListener {
         label.setForeground(new Color(30, 30, 30));
         panel.add(label, BorderLayout.NORTH);
 
-        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів, шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
+        JLabel label1 = new JLabel("<html><body style='width: 150px'>Для накопичення знань та проходження рівнів шукайте головний корпус Могилянки та сміливо заходьте!</body></html>");
         label1.setFont(new Font("Inter", Font.ITALIC, 12));
         label1.setForeground(new Color(30, 30, 30));
         panel.add(label1, BorderLayout.CENTER);

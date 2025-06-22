@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * simulates a process of loading to make a game more realistic
+ * Simulates a process of loading to make the game more realistic.
+ * Displays animated loading screen with progress bar and rotating messages.
  */
-
 public class LoadingFrame extends JFrame {
 
     private JProgressBar progressBar;
@@ -20,7 +20,8 @@ public class LoadingFrame extends JFrame {
     private final Random random = new Random();
 
     /**
-     * basic constructor
+     * Default constructor that initializes the loading frame with all UI components.
+     * Sets up the window, progress bar, animated GIF, and message rotation system.
      */
     public LoadingFrame() {
         setTitle("Завантаження...");
@@ -60,8 +61,10 @@ public class LoadingFrame extends JFrame {
     }
 
     /**
-     * starts a loading process, plays a sound and shows the progress(1-100%)
-     * @param onFinish - defines a unit of work to be executed by a thread
+     * Starts the loading process, plays background music and shows progress from 0 to 100%.
+     * Executes the provided task after loading completion.
+     *
+     * @param onFinish the Runnable task to be executed after loading completes
      */
     public void startLoading(Runnable onFinish) {
         setVisible(true);
@@ -87,22 +90,23 @@ public class LoadingFrame extends JFrame {
     }
 
     /**
-     * creates string-messages for fun
+     * Creates humorous loading messages related to university life.
+     * Populates the messages list with funny references to university experiences.
      */
     private void createRandomStrings() {
-        messages.add("Завантаження Могилянки... дещо затягнулось, як і сесія 😅");
-        messages.add("Завантаження може бути довгим..як пошук вільного місця в бібліо...");
-        messages.add("Завантаження корпусів... 1, 2,3, КМЦ...");
-        messages.add("Завантаження завершиться так само скоро,як ремонт 10 корпуса...");
-        messages.add("За цю невеличку паузу можна встигнути випити каву...");
+        messages.add("Завантаження Могилянки... дещо затягнулося, як і сесія 😅");
+        messages.add("Завантаження може бути тривалим.. як і пошук вільного місця в бібліо...");
+        messages.add("Завантаження корпусів... 1, 2, 3, КМЦ...");
+        messages.add("Завантаження завершиться так само скоро, як і ремонт 10 корпусу...");
+        messages.add("За цю невеличку паузу можна встигнути випити кави...");
     }
 
     /**
-     * updates a string-message
+     * Updates the displayed message by randomly selecting one from the messages list.
+     * Called periodically by the message timer to rotate loading messages.
      */
     private void updateMessage() {
         int index = random.nextInt(messages.size());
         textLabel.setText(messages.get(index));
     }
-
 }

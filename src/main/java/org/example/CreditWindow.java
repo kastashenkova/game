@@ -49,7 +49,7 @@ public class CreditWindow extends JDialog {
         if (owner instanceof StudyProgressGUI) {
             this.parentGUI = (StudyProgressGUI) owner;
         } else {
-            System.err.println("Помилка: CreditWindow повинен бути викликаний з StudyProgressGUI.");
+            System.err.println("Помилка. CreditWindow повинен бути викликаний з StudyProgressGUI.");
         }
 
         this.discipline = discipline;
@@ -77,7 +77,7 @@ public class CreditWindow extends JDialog {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
 
         // Title label for the discipline
-        JLabel titleLabel = new JLabel("Отримання балів за залік з дисципліни «" + discipline.getName() + "»");
+        JLabel titleLabel = new JLabel("Отримання балів за залік із дисципліни «" + discipline.getName() + "»");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center horizontally
         mainPanel.add(titleLabel);
@@ -112,9 +112,9 @@ public class CreditWindow extends JDialog {
         spinButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         // If the student has an "avtomat" (automatic pass), disable the spin button and notify
         if (discipline.getAvtomat()) {
-            JOptionPane.showMessageDialog(this, "Вітаємо! у вас автомат!");
+            JOptionPane.showMessageDialog(this, "Вітаємо! У вас автомат!");
             spinButton.setEnabled(false);
-            spinButton.setText("Залік складено (Автомат)"); // Update button text
+            spinButton.setText("Залік складено (автомат)"); // Update button text
         }
         // Add action listener to the spin button
         spinButton.addActionListener(e -> {
@@ -162,7 +162,7 @@ public class CreditWindow extends JDialog {
         if (student.isExpelled()) {
             spinButton.setEnabled(false);
             spinButton.setText("Відраховано");
-            scoreLabel.setText("Студента відраховано");
+            scoreLabel.setText("Студентку відраховано");
             attemptLabel.setText(" ");
             return; // Stop further updates
         }

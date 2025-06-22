@@ -13,7 +13,8 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * class for a frame with possible options
+ * Class for a frame with possible options such as volume control,
+ * theme switching, and game instructions.
  */
 public class OptionsFrame extends JFrame {
     private JSlider volumeSlider;
@@ -24,74 +25,76 @@ public class OptionsFrame extends JFrame {
     private int currentVolume = 50;
 
     /**
-     * basic constructor
+     * Default constructor that initializes the options frame with all settings controls.
+     * Sets up volume slider, theme switcher, and instruction button.
      */
     public OptionsFrame() {
-            setTitle("Налаштування гри");
-            setSize(400, 300);
-            setLocationRelativeTo(null);
-            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setTitle("Налаштування гри");
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-            panel.setBackground(new Color(241, 227, 253));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        panel.setBackground(new Color(241, 227, 253));
 
-            JLabel volumeLabel = new JLabel("Гучність музики:");
-            volumeSlider = new JSlider(0, 100, currentVolume);
-            volumeSlider.setUI(new CustomSlider(volumeSlider));
-            volumeSlider.setPaintTicks(true);
-            volumeSlider.setMajorTickSpacing(25);
-            volumeSlider.setMinorTickSpacing(5);
-            volumeSlider.setPaintLabels(true);
-            volumeSlider.setFont(new Font("Arial", Font.PLAIN, 10));
+        JLabel volumeLabel = new JLabel("Гучність музики");
+        volumeSlider = new JSlider(0, 100, currentVolume);
+        volumeSlider.setUI(new CustomSlider(volumeSlider));
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setMajorTickSpacing(25);
+        volumeSlider.setMinorTickSpacing(5);
+        volumeSlider.setPaintLabels(true);
+        volumeSlider.setFont(new Font("Arial", Font.PLAIN, 10));
 
-            volumeSlider.addChangeListener(e -> {
+        volumeSlider.addChangeListener(e -> {
 
-                    currentVolume = volumeSlider.getValue();
-                    MusicPlayer.getInstance().setVolume(currentVolume);
+            currentVolume = volumeSlider.getValue();
+            MusicPlayer.getInstance().setVolume(currentVolume);
 
-            });
+        });
 
-            themeButton = createButton("Змінити тему");
-            themeButton.addActionListener(e -> {
-                MusicPlayer.getInstance().playButtonClick();
-                if(!isDark) {
-                    try {
-                        UIManager.setLookAndFeel(new FlatDarkLaf());
-                        isDark = true;
-                    } catch (UnsupportedLookAndFeelException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                } else {
-                    try {
-                        UIManager.setLookAndFeel(new FlatLightLaf());
-                        isDark = false;
-                    } catch (UnsupportedLookAndFeelException ex) {
-                        throw new RuntimeException(ex);
-                    }
+        themeButton = createButton("Змінити тему");
+        themeButton.addActionListener(e -> {
+            MusicPlayer.getInstance().playButtonClick();
+            if(!isDark) {
+                try {
+                    UIManager.setLookAndFeel(new FlatDarkLaf());
+                    isDark = true;
+                } catch (UnsupportedLookAndFeelException ex) {
+                    throw new RuntimeException(ex);
                 }
-                SwingUtilities.updateComponentTreeUI(this);
-                JOptionPane.showMessageDialog(this,
-                        isDark ? "Темна тема активована!" : "Світла тема активована!", "THEME UPDATED", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                try {
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                    isDark = false;
+                } catch (UnsupportedLookAndFeelException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            SwingUtilities.updateComponentTreeUI(this);
+            JOptionPane.showMessageDialog(this,
+                    isDark ? "Темна тема активована" : "Світла тема активована", "ТЕМА ОНОВЛЕНА", JOptionPane.INFORMATION_MESSAGE);
 
-            });
+        });
 
 
-            panel.add(volumeLabel);
-            panel.add(volumeSlider, BorderLayout.CENTER);
-            panel.add(themeButton, BorderLayout.NORTH);
+        panel.add(volumeLabel);
+        panel.add(volumeSlider, BorderLayout.CENTER);
+        panel.add(themeButton, BorderLayout.NORTH);
 
-            instructionButton = getInstructionButton();
-            panel.add(instructionButton, BorderLayout.PAGE_END);
-            add(panel);
+        instructionButton = getInstructionButton();
+        panel.add(instructionButton, BorderLayout.PAGE_END);
+        add(panel);
 
-        }
+    }
 
     /**
-     * creates a formatted button
-     * @param text - text for the button
-     * @return - a formatted button
+     * Creates a formatted button with custom styling.
+     *
+     * @param text the text to display on the button
+     * @return a JButton with custom formatting and styling
      */
     private JButton createButton(String text) {
 
@@ -104,8 +107,9 @@ public class OptionsFrame extends JFrame {
     }
 
     /**
-     * creates a customised button for the instructions
-     * @return instruction button
+     * Creates a customized button for displaying game instructions.
+     *
+     * @return JButton configured for instruction dialog with custom styling
      */
     private JButton getInstructionButton(){
         instructionButton = new JButton("Інструкції та поради");
@@ -128,15 +132,21 @@ public class OptionsFrame extends JFrame {
 
         return instructionButton;
 
-}
+    }
 
 }
 
 /**
- * inner class for the instruction dialog with main advice for the player
+ * Inner class for the instruction dialog that displays main advice and tips for the player.
+ * Provides comprehensive game guidance and survival tips for university simulation.
  */
 class InstructionDialog extends JDialog {
 
+    /**
+     * Constructor that creates the instruction dialog with game tips and advice.
+     *
+     * @param parent the parent frame that owns this dialog
+     */
     public InstructionDialog(JFrame parent) {
         super(parent, "Як вижити в НаУКМА", true);
         setSize(500, 400);
@@ -154,20 +164,20 @@ class InstructionDialog extends JDialog {
                 🎓 Вітаємо в «Сімс НаУКМА»!
 
                 Тут ти управлятимеш сімом, якому треба:
-                - вижити між парами, дедлайнами і лекціями;
-                - боротися із САЗом, зібрати кредити, не втративши розум;
-                - встигнути все, окрім сну.
+                — вижити між парами, дедлайнами та лекціями;
+                — боротися із САЗом, зібрати кредити, не втративши розум;
+                — встигнути все, окрім сну.
                 
                 📋 Основні поради:
-                • Слідкуй за потребами: їсти, спати, і хоча б іноді відвідувати пари.
-                • Не витрачай усі гроші одразу(по можливості), стипендію ще треба заробити.
-                • Бали - це важливо. Бо так можна і до третього рівня не дійти.
-                • Для підняття настрою шукай колесо огляду!
+                • слідкуй за потребами: їсти, спати, і хоча б іноді відвідувати пари;
+                • не витрачай усі гроші одразу (по можливості), стипендію ще треба заробити;
+                • бали — це важливо (бо так можна й до третього рівня не дійти);
+                • для піднесення настрою шукай колесо огляду!
                 
-                ☕ Лайфхаки:
-                •Тут можна ставити все на паузу. Крім САЗу. САЗ пауз не пробачає.).
-                •Краще попотіти на другому рівні, аніж складати усі іспити на сесії.
-                •І хоча тобі може так не здаватися, але сон - це важливо!
+                ☕ Лайфгаки:
+                • тут можна ставити все на павзу (окрім САЗу, він павз не пробачає);
+                • краще попотіти на другому рівні, ніж складати всі іспити на сесії;
+                • і хоча тобі може так не здаватися, але сон — це важливо!
                
                 Успіхів та натхнення!
                 """
@@ -193,15 +203,26 @@ class InstructionDialog extends JDialog {
 }
 
 /**
- * inner class to create a customised slider for volume changing
+ * Inner class to create a customized slider UI for volume control.
+ * Provides custom thumb appearance using an image resource.
  */
 class CustomSlider extends BasicSliderUI {
     Image im;
 
+    /**
+     * Constructor for the custom slider UI.
+     *
+     * @param js the JSlider component to customize
+     */
     public CustomSlider(JSlider js) {
         super(js);
     }
 
+    /**
+     * Paints the slider thumb with a custom image instead of default appearance.
+     *
+     * @param g the Graphics context for painting
+     */
     @Override
     public void paintThumb(Graphics g) {
         try {

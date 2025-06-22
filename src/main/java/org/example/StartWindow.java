@@ -84,7 +84,7 @@ public class StartWindow extends JFrame {
         Font fieldFont = new Font("Inter", Font.PLAIN, 12);
 
 
-        JLabel nameLabel = new JLabel("Ім'я Сіма:", SwingConstants.CENTER);
+        JLabel nameLabel = new JLabel("Ім'я сіма:", SwingConstants.CENTER);
         nameLabel.setFont(labelFont);
         topFormPanel.add(nameLabel);
 
@@ -184,9 +184,9 @@ public class StartWindow extends JFrame {
             Image scaledImage = image.getScaledInstance(90, 155, Image.SCALE_SMOOTH);
             characterIcon = new ImageIcon(scaledImage); // Create a new ImageIcon with the scaled image
         } else {
-            System.err.println("Error: image not found in classpath at path: " + imageResourcePath);
+            System.err.println("Помилка під час знаходження файлу в ресурсі: " + imageResourcePath);
             // Add a placeholder text label if image not found
-            JLabel errorLabel = new JLabel("No Image", SwingConstants.CENTER);
+            JLabel errorLabel = new JLabel("Немає зображення", SwingConstants.CENTER);
             errorLabel.setForeground(Color.RED);
             errorLabel.setFont(new Font("Inter", Font.PLAIN, 12));
             characterPanel.add(errorLabel, BorderLayout.CENTER);

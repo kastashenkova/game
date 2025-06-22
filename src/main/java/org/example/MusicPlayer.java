@@ -55,7 +55,7 @@ public class MusicPlayer {
 
             URL url = getClass().getResource(filePath);
             if (url == null) {
-                System.out.println("File not found: " + filePath);
+                System.out.println("Файл із музикою не знайдено: " + filePath);
                 return;
             }
 

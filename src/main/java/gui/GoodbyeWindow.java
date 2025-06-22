@@ -12,7 +12,8 @@ import java.awt.image.RescaleOp;
 import java.io.IOException;
 
 /**
- * class for the final window of the game
+ * Class for the final window of the game that displays farewell message
+ * and allows user to start a new game.
  */
 public class GoodbyeWindow extends JFrame implements ActionListener {
 
@@ -22,12 +23,16 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
     private static final Color SIMS_LIGHT_PINK = new Color(255, 233, 243);
     private static final Color SIMS_LIGHT_BLUE = new Color(173, 216, 230);
 
+    /**
+     * Constructor that initializes the goodbye window with all UI components
+     * and sets up the final game screen.
+     */
     public GoodbyeWindow() {
         UIManager.put("OptionPane.yesButtonText", "Так");
         UIManager.put("OptionPane.noButtonText", "Ні");
         UIManager.put("OptionPane.cancelButtonText", "Скасувати");
 
-        setTitle("End of Game!");
+        setTitle("Кінець гри!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -36,19 +41,19 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
         MusicPlayer.getInstance().setMusicEnabled(true);
         MusicPlayer.getInstance().playMusic("/assets/Sounds/theme1.wav");
 
-       setBackground(SIMS_LIGHT_BLUE);
+        setBackground(SIMS_LIGHT_BLUE);
 
-        startButton = createButton("start");
+        startButton = createButton("Почати");
         startButton.addActionListener(this);
 
         String instructions = "<html>" +
                 "<body style='font-family: \"Arial\"; font-size: 13px; color: #00000;'>" +
-                "<h1 style='color: #00000;'>Дякуємо за вашу увагу до гри Сімс НаУКМА!</h1>" +
-                "<p>Сподіваємось, вона хоч трохи дала вам відчути справжню атмосферу навчання в Могилянці</p>" +
+                "<h1 style='color: #00000;'>Вдячні за вашу увагу до гри «Сімс НаУКМА»!</h1>" +
+                "<p>Сподіваємося, вона хоч трохи дала вам відчути справжню атмосферу навчання в Могилянці!</p>" +
                 "<p>До нових зустрічей та оновлень!</p>" +
                 "<ol>" +
-                "<li>Для того, щоб почати нову гру - натисніть кнопку <b> PLAY</b> </li>" +
-                "<li>У разі виникнення питань та пропозицій - звертайтеся до розробників(так, вони на фото).</li>" +
+                "<li>Для того, щоб почати нову гру, натисніть кнопку <b>PLAY</b> </li>" +
+                "<li>У разі виникнення питань та пропозицій — звертайтеся до розробників (так, це вони на фото).</li>" +
                 "</ol>" +
                 "<p><b>Бажаємо успіхів!</b></p>" +
                 "</body></html>";
@@ -79,13 +84,23 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
         setIconImage(icon);
         setVisible(true);
     }
+
+    /**
+     * Loads an image from the specified resource path.
+     *
+     * @param path the resource path to the image file
+     * @return BufferedImage loaded from the specified path
+     * @throws IOException if the image cannot be loaded
+     */
     private BufferedImage loadImage(String path) throws IOException {
         return ImageIO.read(getClass().getResourceAsStream(path));
     }
 
     /**
-     * @Override actionPerformed void
-     * lets the user start a completely new game after the end
+     * Handles action events, specifically button clicks.
+     * Lets the user start a completely new game after the end.
+     *
+     * @param e the action event that occurred
      */
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -98,10 +113,12 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
             });
         }
     }
+
     /**
-     * returns a formated button
-     * @param text text displayed on a button
-     * @return button
+     * Creates a formatted button with custom styling and hover effects.
+     *
+     * @param text text displayed on the button, used to determine button image
+     * @return JButton with custom styling and image icons
      */
     private JButton createButton(String text) {
 
@@ -127,13 +144,14 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
 
         return button;
     }
+
     /**
      * Darkens an ImageIcon by applying a rescale operation to its RGB channels.
      *
-     * @param originalIcon The original ImageIcon to darken.
-     * @param darknessFactor A float value between 0.0f and 1.0f, where smaller values
-     * result in more darkness (e.g., 0.85f for 85% brightness).
-     * @return A new ImageIcon that is a darkened version of the original.
+     * @param originalIcon the original ImageIcon to darken
+     * @param darknessFactor a float value between 0.0f and 1.0f, where smaller values
+     *                      result in more darkness (e.g., 0.85f for 85% brightness)
+     * @return a new ImageIcon that is a darkened version of the original
      */
     private ImageIcon darkenIcon(ImageIcon originalIcon, float darknessFactor) {
         BufferedImage original = new BufferedImage(
@@ -153,6 +171,4 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
 
         return new ImageIcon(darkened);
     }
-
-
 }

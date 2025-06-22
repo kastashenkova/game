@@ -85,7 +85,7 @@ public class GameFrame extends JFrame {
      * @param gameBoard The GameBoard instance containing the current game state.
      */
     public GameFrame(GameBoard gameBoard){
-        setTitle("NaUKMA Sims");
+        setTitle("Sims NaUKMA");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());

@@ -143,13 +143,13 @@ public class CollisionChecker {
         }
             else  if(obj.name.equals("cafe")){
                 java.util.List<Product> products = List.of(
-                        new Product("French Fries", 60, 20, "/food/french.png"),
-                        new Product("Hamburger", 65, 30, "/food/hamb.png"),
-                        new Product("Cheeseburger", 80, 35, "/food/cheese.png"),
-                        new Product("Ice Cream", 50, 20, "/food/ice.png"),
-                        new Product("Tacos", 70, 30, "/food/taco.png"),
-                        new Product("Sandwich", 60, 30, "/food/sand.png"),
-                        new Product("Shrimps", 75, 25, "/food/shrimps.png"));
+                        new Product("Картопля фрі", 60, 20, "/food/french.png"),
+                        new Product("Гамбургер", 65, 30, "/food/hamb.png"),
+                        new Product("Чизбургер", 80, 35, "/food/cheese.png"),
+                        new Product("Морозиво", 50, 20, "/food/ice.png"),
+                        new Product("Тако", 70, 30, "/food/taco.png"),
+                        new Product("Сендвіч", 60, 30, "/food/sand.png"),
+                        new Product("Креветки", 75, 25, "/food/shrimps.png"));
 
                         player.worldY -= 40;
                         player.worldX +=50;

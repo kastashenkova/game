@@ -27,7 +27,7 @@ public class ExamSessionWindow extends JFrame {
         setLayout(new BorderLayout()); // Sets the layout manager for the frame to BorderLayout
 
         // Label for the exam schedule title
-        JLabel schedule = new JLabel("Сесія: Розклад іспитів", SwingConstants.CENTER);
+        JLabel schedule = new JLabel("Сесія. Розклад іспитів", SwingConstants.CENTER);
         schedule.setFont(new Font("Verdana", Font.BOLD, 24)); // Sets the font for the label
         schedule.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0)); // Adds padding around the label
         add(schedule, BorderLayout.NORTH); // Adds the label to the top (NORTH) of the frame

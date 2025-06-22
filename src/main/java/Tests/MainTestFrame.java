@@ -57,7 +57,6 @@ public class MainTestFrame extends JFrame {
     private static final Color SIMS_GREEN_CORRECT = new Color(144, 238, 144);
     private static final Color SIMS_RED_INCORRECT = new Color(255, 99, 71);
 
-
     /**
      * Constructs a new MainTestFrame.
      * Initializes the test environment, sets up the UI, and prepares questions for the specified discipline.
@@ -210,7 +209,7 @@ public class MainTestFrame extends JFrame {
         questionPanel.setBackground(SIMS_TURQUOISE); // Background color
         questionPanel.setBorder(BorderFactory.createLineBorder(SIMS_LIGHT_BLUE, 5)); // Border with custom color
         questionLabel = new JLabel();
-        questionLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 20)); // Custom font for question text
+        questionLabel.setFont(new Font("Times New Roman", Font.BOLD, 20)); // Custom font for question text
         questionLabel.setForeground(SIMS_DARK_TEXT); // Text color
         questionPanel.add(questionLabel); // Add label to question panel
         mainPanel.add(questionPanel, BorderLayout.NORTH); // Add question panel to the top of main panel
@@ -259,7 +258,7 @@ public class MainTestFrame extends JFrame {
         navigationPanel.setBackground(SIMS_TURQUOISE); // Background color
         navigationPanel.setBorder(BorderFactory.createLineBorder(SIMS_LIGHT_BLUE, 5)); // Border
 
-        nextButton = createSimsButton("Наступна"); // Create custom styled "Next" button
+        nextButton = createSimsButton("Наступне"); // Create custom styled "Next" button
         finishButton = createSimsButton("Завершити тест"); // Create custom styled "Finish" button
 
         navigationPanel.add(nextButton); // Add buttons to navigation panel
@@ -395,7 +394,7 @@ public class MainTestFrame extends JFrame {
             JOptionPane.showMessageDialog(this, message, "Успіх", JOptionPane.INFORMATION_MESSAGE);
             showResultPanel(score); // Show detailed result panel if passed
         } else {
-            message += "\nНа жаль, Ви набрали менше ніж 10 балів. Спробуйте ще раз!";
+            message += "\nНа жаль, ви набрали менше ніж 10 балів. Спробуйте ще раз!";
             int option = JOptionPane.showConfirmDialog(
                     this,
                     message,
@@ -507,7 +506,7 @@ public class MainTestFrame extends JFrame {
         doneButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(
                     this,
-                    "Вітаємо з успішним проходженням контрольної роботи !", // Final success message
+                    "Вітаємо з успішним проходженням контрольної роботи!", // Final success message
                     "Успіх!",
                     JOptionPane.INFORMATION_MESSAGE
             );
@@ -545,14 +544,13 @@ public class MainTestFrame extends JFrame {
                 "<p>Будь ласка, дотримуйтеся цих простих кроків!</p>" +
                 "<ol>" +
                 "<li>Кожне запитання має <b>чотири варіанти відповіді</b> (А, Б, В, Г).</li>" +
-                "<li><b>Оберіть лише одну</b> правильну, на Вашу думку, відповідь.</li>" +
-                "<li>Використовуйте кнопку <b>«Наступна»</b> для переходу до наступного запитання.</li>" +
-                "<li><b>Ви не зможете повернутися</b> до попередніх запитань.</li>" + // Updated instruction
+                "<li><b>Оберіть лише одну</b> правильну, на вашу думку, відповідь.</li>" +
+                "<li>Використовуйте кнопку <b>«Наступне»</b> для переходу до наступного запитання.</li>" +
                 "<li>Ваша відповідь на поточне запитання буде збережена під час переходу до наступного.</li>" +
                 "<li>Після того, як Ви відповісте на всі запитання, натисніть <b>«Завершити тест»</b>.</li>" +
-                "<li>Тест буде вважатися успішно пройденим, якщо Ви наберете <b>10 або більше балів</b>.</li>" +
-                "<li>Якщо Ви наберете менше за 10 балів, Вам буде запропоновано <b>пройти тест ще раз</b>.</li>" +
-                "<li>Якщо Ви успішно пройдете тест (10 або більше балів), Ви зможете переглянути <b>всі правильні відповіді</b>.</li>" + // Updated instruction
+                "<li>Тест буде вважатися успішно пройденим, якщо ви наберете <b>10 або більше балів</b>.</li>" +
+                "<li>Якщо ви наберете менше ніж 10 балів, вам буде запропоновано <b>пройти тест ще раз</b>.</li>" +
+                "<li>Якщо ви успішно пройдете тест (10 або більше балів), ви зможете переглянути <b>всі правильні відповіді</b>.</li>" +
                 "</ol>" +
                 "<p><b>Бажаємо успіху!</b></p>" +
                 "</body></html>";

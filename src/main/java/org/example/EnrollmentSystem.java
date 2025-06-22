@@ -302,7 +302,7 @@ public class EnrollmentSystem {
         int courseCreditLimit = COURSE_CREDIT_LIMITS.getOrDefault(student.getCourse(), Integer.MAX_VALUE);
 
         if (newTotalCredits > courseCreditLimit) {
-            return "Помилка запису. Запис на дисципліну '" + discipline.getName() + "' призведе до перевищення сумарної кількості кредитів (" + courseCreditLimit + ") для " + student.getCourse() + "-го курсу. Поточна сума: " + currentTotalCredits + ", з цією дисципліною: " + newTotalCredits + ".";
+            return "Помилка запису. Запис на дисципліну '" + discipline.getName() + "' призведе до перевищення сумарної кількости кредитів (" + courseCreditLimit + ") для " + student.getCourse() + "-го курсу. Поточна сума: " + currentTotalCredits + ", з цією дисципліною: " + newTotalCredits + ".";
         }
 
         // 4. Enrollment logic for elective disciplines (both unlimited and limited capacity)

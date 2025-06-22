@@ -1,25 +1,36 @@
 package mainstage;
 
 /**
- * class for a building manager
+ * Manages the creation and properties of various buildings within the game.
  */
-
 public class BuildingManager {
-    private Building[] buildings = new Building[10];
-    private GameBoard gameBoard;
+    private Building[] buildings = new Building[10]; // Array to store building objects
+    private GameBoard gameBoard; // Reference to the game board
 
+    /**
+     * Constructs a {@code BuildingManager} with a reference to the game board.
+     *
+     * @param gameBoard The game board instance.
+     */
     public BuildingManager(GameBoard gameBoard) {
         this.gameBoard = gameBoard;
     }
 
+    /**
+     * Returns the array of buildings managed by this class.
+     *
+     * @return An array of {@link Building} objects.
+     */
     public Building[] getBuildings() {
         return buildings;
     }
 
     /**
-     * creates new buildings and sets a building zones
+     * Initializes and sets up the properties for various buildings,
+     * including their names, world coordinates, dimensions, and collision status.
      */
     public void setBuildings() {
+        // University building
         Building university = new Building();
         university.name = "NaUKMA";
         university.worldX = 230;
@@ -27,8 +38,9 @@ public class BuildingManager {
         university.width = 430;
         university.height = 200;
         university.collision = true;
-        buildings[0] = (university);
+        buildings[0] = university;
 
+        // Ferris wheel building
         Building wheel = new Building();
         wheel.name = "wheel";
         wheel.worldX = 1220;
@@ -36,8 +48,9 @@ public class BuildingManager {
         wheel.width = 210;
         wheel.height = 230;
         wheel.collision = true;
-        buildings[1] = (wheel);
+        buildings[1] = wheel;
 
+        // Cafe building
         Building cafe = new Building();
         cafe.name = "cafe";
         cafe.width = 130;
@@ -47,6 +60,7 @@ public class BuildingManager {
         cafe.worldY = 580;
         buildings[2] = cafe;
 
+        // Corpus 1 building
         Building corpus1 = new Building();
         corpus1.name = "corpus1";
         corpus1.width = 350;
@@ -56,6 +70,7 @@ public class BuildingManager {
         corpus1.worldY = 0;
         buildings[3] = corpus1;
 
+        // Shop building
         Building shop = new Building();
         shop.name = "shop";
         shop.width = 155;
@@ -65,6 +80,7 @@ public class BuildingManager {
         shop.worldY = 590;
         buildings[4] = shop;
 
+        // Road building (likely a placeholder for a non-traversable road section)
         Building road = new Building();
         road.name = "road";
         road.width = 75;
@@ -74,6 +90,7 @@ public class BuildingManager {
         road.worldY = 0;
         buildings[5] = road;
 
+        // Light object (e.g., a street light)
         Building light = new Building();
         light.name = "light";
         light.width = 40;
@@ -83,6 +100,7 @@ public class BuildingManager {
         light.worldY = 350;
         buildings[6] = light;
 
+        // Generic building
         Building building = new Building();
         building.name = "building";
         building.width = 100;
@@ -91,7 +109,5 @@ public class BuildingManager {
         building.worldX = 1320;
         building.worldY = 0;
         buildings[7] = building;
-
     }
 }
-

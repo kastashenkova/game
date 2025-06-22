@@ -61,8 +61,8 @@ public class WelcomeFrame extends JFrame implements ActionListener {
         // Set up the menu bar
         menuBar = new JMenuBar();
         fileMenu = new JMenu("File");
-        newGameItem = new JMenuItem("New Game");
-        exitItem = new JMenuItem("Exit");
+        newGameItem = new JMenuItem("Нова гра");
+        exitItem = new JMenuItem("Вийти");
 
         fileMenu.add(newGameItem);
         fileMenu.add(exitItem);

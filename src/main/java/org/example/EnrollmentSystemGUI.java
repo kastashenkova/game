@@ -284,7 +284,7 @@ public class EnrollmentSystemGUI extends JFrame {
         enrollElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         dropElectiveButton = new JButton("Виписатися з вибіркової");
         dropElectiveButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        confirmSelectionButton = new JButton("Готово (Кредитів: 0)"); // Initial text, updated dynamically
+        confirmSelectionButton = new JButton("Готово (кредитів: 0)"); // Initial text, updated dynamically
         confirmSelectionButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         confirmSelectionButton.setEnabled(false); // Disabled initially
 
@@ -335,7 +335,7 @@ public class EnrollmentSystemGUI extends JFrame {
             searchButton.setEnabled(false);
 
             // Display message instead of elective list
-            JLabel noElectivesMessage = new JLabel("На першому курсі бакалаврату немає можливості обирати додаткові дисципліни", SwingConstants.CENTER);
+            JLabel noElectivesMessage = new JLabel("На 1-ому курсі бакалаврату немає можливости обирати додаткові дисципліни", SwingConstants.CENTER);
             noElectivesMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
             noElectivesMessage.setForeground(RED.darker());
 
@@ -451,7 +451,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
                 int confirm = JOptionPane.showConfirmDialog(
                         EnrollmentSystemGUI.this,
-                        "Ви дійсно хочете завершити поточну гру та повернутися на початок?",
+                        "Ви дійсно хочете завершити поточну гру?",
                         "Завершити гру",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE
@@ -461,9 +461,7 @@ public class EnrollmentSystemGUI extends JFrame {
                     if (autoEnrollTimer != null) {
                         autoEnrollTimer.stop(); // Stop the timer before closing
                     }
-                    EnrollmentSystemGUI.this.dispose(); // Close the current window
-                    // TODO: Re-enable call to StartWindow or equivalent for game restart
-                    // SwingUtilities.invokeLater(() -> new StartWindow().setVisible(true));
+                    EnrollmentSystemGUI.this.dispose();
                 }
             }
         });
@@ -522,7 +520,7 @@ public class EnrollmentSystemGUI extends JFrame {
      */
     private void showWarningDialog(){
         MusicPlayer.getInstance().playError(); // Play an error sound
-        JOptionPane.showMessageDialog(this, "За намагання обдурити систему ваш сім втрачає 20 очок енергії!Обирайте правильні дані!", "ATTENTION", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(this, "За намагання обдурити систему ваш сім втрачає 20 очок енергії! Обирайте правильні дані!", "УВАГА!", JOptionPane.WARNING_MESSAGE);
         hero.setEnergy(hero.getEnergy()-20); // Deduct energy from the hero
     }
 
@@ -538,7 +536,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         String selectedDegreeStr = (String) JOptionPane.showInputDialog(
                 this,
-                "Будь ласка, оберіть Ваш освітній ступінь!",
+                "Будь ласка, оберіть ваш освітній ступінь!",
                 "Вибір освітнього ступеня",
                 JOptionPane.QUESTION_MESSAGE,
                 null,
@@ -579,12 +577,12 @@ public class EnrollmentSystemGUI extends JFrame {
 
         if ("Бакалаврат".equals(degree)) {
             courses = new String[]{"1", "2", "3", "4"};
-            dialogTitle = "Вибір курсу (Бакалаврат)";
-            dialogMessage = "Будь ласка, оберіть Ваш курс бакалаврату!";
+            dialogTitle = "Вибір курсу (бакалаврат)";
+            dialogMessage = "Будь ласка, оберіть ваш курс бакалаврату!";
         } else if ("Магістратура".equals(degree)) {
             courses = new String[]{"1", "2"}; // Master's courses are typically 1st and 2nd year of magistracy
-            dialogTitle = "Вибір курсу (Магістратура)";
-            dialogMessage = "Будь ласка, оберіть Ваш курс магістратури!";
+            dialogTitle = "Вибір курсу (магістратура)";
+            dialogMessage = "Будь ласка, оберіть ваш курс магістратури!";
         } else {
             JOptionPane.showMessageDialog(this, "Неправильний освітній ступінь.", "Помилка", JOptionPane.ERROR_MESSAGE);
             return -1; // Indicate error
@@ -623,7 +621,6 @@ public class EnrollmentSystemGUI extends JFrame {
                 selectedCourse = student.getCourse(); // Otherwise, force to actual course
             }
         }
-        System.out.println("Selected Course: " + selectedCourse);
         return selectedCourse;
     }
 
@@ -1597,7 +1594,7 @@ public class EnrollmentSystemGUI extends JFrame {
 
         if (selectedDiscipline == null) {
             JOptionPane.showMessageDialog(this,
-                    "Будь ласка, оберіть вибіркову дисципліну для виписки з розділу «Ваші обрані».",
+                    "Будь ласка, для виписки оберіть вибіркову дисципліну з розділу «Ваші обрані».",
                     "Помилка",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -1638,7 +1635,7 @@ public class EnrollmentSystemGUI extends JFrame {
                         updateDisciplineLists();
                     } catch (Exception ex) {
                         MusicPlayer.getInstance().playError();
-                        appendOutput("Виникла непередбачена помилка під час виконання виписки: " + ex.getMessage() + "\n");
+                        appendOutput("Виникла непередбачувана помилка під час виконання виписки: " + ex.getMessage() + "\n");
                     }
                 }
             }.execute();
