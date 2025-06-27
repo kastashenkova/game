@@ -43,7 +43,7 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
 
         setBackground(SIMS_LIGHT_BLUE);
 
-        startButton = createButton("Почати");
+        startButton = createButton("start");
         startButton.addActionListener(this);
 
         String instructions = "<html>" +
@@ -170,5 +170,9 @@ public class GoodbyeWindow extends JFrame implements ActionListener {
         BufferedImage darkened = rescaleOp.filter(original, null);
 
         return new ImageIcon(darkened);
+    }
+
+    public static void main(String[] args){
+        new GoodbyeWindow().setVisible(true);
     }
 }
